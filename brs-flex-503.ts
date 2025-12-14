@@ -4,45 +4,38 @@ import { content503Input, content503Output } from './content-definitions';
 
 export const brsFlex503: BRSData = {
   id: "BRS-FLEX-503",
-  title: "Registrera CU-mätvärden",
-  purpose: "SP rapporterar uppmätt data från enheten (Sub-metering) för verifiering. Detta krävs när huvudmätaren (från DHV) inte ger tillräcklig upplösning eller avser en större anläggning än själva flexibilitetsresursen.",
+  title: "Begär detaljerad baselinemetod information",
+  purpose: "Hämtar den tekniska specifikationen för en metod, inklusive vilka parametrar som krävs vid konfiguration.",
   actors: [
-    { role: "Initiator", description: "Service Provider (SP)" },
+    { role: "Initiator", description: "SP" },
     { role: "Mottagare", description: "Flexibilitetsregistret (FIS)" }
   ],
   diagramCode: `sequenceDiagram
-    title BRS-FLEX-503: Registrera Mätvärden
+    title BRS-FLEX-503: Hämta Metoddetaljer
     participant SP as SP
     participant FIS as Flexibilitetsregistret
 
-    SP->>FIS: SubmitMeterData (CU, Värden)
+    SP->>FIS: GetBaselineMethodDetails (Metod-ID)
     activate FIS
-    FIS->>FIS: Validera CU och Flexavtal
-    FIS->>FIS: Validera upplösning och period
-    FIS->>FIS: Lagra mätvärden
-    FIS-->>SP: Ack
+    FIS->>FIS: Hämta definition
+    FIS-->>SP: MethodDetails (Namn, Parametrar, Beskrivning)
     deactivate FIS`,
   process: [
-    "SP samlar in data från undermätare.",
-    "SP skickar tidsserier till FIS.",
-    "FIS validerar att CU existerar och att SP har ett giltigt avtal för perioden.",
-    "FIS lagrar värdena kopplat till CU."
+    { id: "BRSFLEX503-1", description: "SP begär detaljer för en specifik metod." },
+    { id: "BRSFLEX503-2", description: "FIS returnerar fullständig information inklusive parameterdefinitioner." }
   ],
   preConditions: [
-    "SP vill registrera mätvärden för en CU."
+    { id: "BRSFLEX503-PRE-1", description: "SP har ett Metod-ID." }
   ],
   businessRules: [
-    { id: "Regel 1", description: "Angivet CU-ID måste existera i FIS.", errorCode: "E_503_CU_NOT_FOUND" },
-    { id: "Regel 2", description: "SP måste ha ett aktivt flexavtal för resursen som täcker den tidsperiod mätvärdena avser.", errorCode: "E_503_NO_AGREEMENT" },
-    { id: "Regel 3", description: "Tidsserier måste matcha upplösningen i produkten (t.ex. 15 min eller 1 timme).", errorCode: "E_503_INVALID_RESOLUTION" },
-    { id: "Regel 4", description: "Mätvärden får inte överstiga registrerad maximal kapacitet (varningsflagga).", errorCode: "W_503_CAPACITY_EXCEEDED" }
+    { id: "BRSFLEX503-BR-1", description: "Metod-ID måste existera.", errorCode: "E_503_NOT_FOUND" }
   ],
   postConditions: {
     accepted: [
-      { id: "BRS-FLEX-503-POST-1", description: "Mätvärden har lagrats." }
+      { id: "BRSFLEX503-POST-1", description: "Detaljer returnerade." }
     ],
     rejected: [
-      { id: "BRS-FLEX-503-POST-2", description: "Data avvisad." }
+      { id: "BRSFLEX503-POST-2", description: "Metod hittades ej." }
     ]
   },
   infoObjects: [content503Input, content503Output]

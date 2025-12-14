@@ -24,7 +24,6 @@ import { brsFlex203 } from './brs-flex-203';
 import { brsFlex2040 } from './brs-flex-2040';
 import { brsFlex205 } from './brs-flex-205';
 import { brsFlex206 } from './brs-flex-206';
-import { brsFlex210 } from './brs-flex-210';
 import { brsFlex301 } from './brs-flex-301';
 import { brsFlex302 } from './brs-flex-302';
 import { brsFlex303 } from './brs-flex-303';
@@ -34,15 +33,47 @@ import { brsFlex313 } from './brs-flex-313';
 import { brsFlex321 } from './brs-flex-321';
 import { brsFlex322 } from './brs-flex-322';
 import { brsFlex323 } from './brs-flex-323';
-import { brsFlex324 } from './brs-flex-324'; // New BRS
-import { brsFlex401 } from './brs-flex-400';
-import { brsFlex402 } from './brs-flex-401';
+import { brsFlex324 } from './brs-flex-324';
+import { brsFlex401 } from './brs-flex-401'; // Corrected file path
+import { brsFlex402 } from './brs-flex-402'; // Corrected file path
 import { brsFlex403 } from './brs-flex-403';
-import { brsFlex601 } from './brs-flex-402';
-import { brsFlex500 } from './brs-flex-500';
+// Domain 5 imports
 import { brsFlex501 } from './brs-flex-501';
 import { brsFlex502 } from './brs-flex-502';
 import { brsFlex503 } from './brs-flex-503';
+import { brsFlex511 } from './brs-flex-511';
+import { brsFlex512 } from './brs-flex-512';
+import { brsFlex521 } from './brs-flex-521';
+import { brsFlex522 } from './brs-flex-522';
+import { brsFlex5210 } from './brs-flex-5210';
+
+// Domain 6
+import { brsFlex601 } from './brs-flex-601';
+import { brsFlex602 } from './brs-flex-602';
+import { brsFlex603 } from './brs-flex-603';
+import { brsFlex611 } from './brs-flex-611';
+import { brsFlex6110 } from './brs-flex-6110';
+import { brsFlex612 } from './brs-flex-612';
+import { brsFlex613 } from './brs-flex-613';
+import { brsFlex622 } from './brs-flex-622';
+
+// Domain 7
+import { brsFlex701 } from './brs-flex-701';
+import { brsFlex702 } from './brs-flex-702';
+import { brsFlex705 } from './brs-flex-705';
+import { brsFlex706 } from './brs-flex-706';
+import { brsFlex711 } from './brs-flex-711';
+import { brsFlex712 } from './brs-flex-712';
+import { brsFlex713 } from './brs-flex-713';
+import { brsFlex715 } from './brs-flex-715';
+import { brsFlex716 } from './brs-flex-716';
+import { brsFlex721 } from './brs-flex-721';
+import { brsFlex722 } from './brs-flex-722';
+import { brsFlex723 } from './brs-flex-723';
+import { brsFlex7011 } from './brs-flex-7011';
+import { brsFlex7110 } from './brs-flex-7110';
+import { brsFlex7120 } from './brs-flex-7120';
+import { brsFlex7121 } from './brs-flex-7121';
 
 export const brsList: BRSData[] = [
   // Domän 1: Master data och aggregeringsobjekt
@@ -70,21 +101,21 @@ export const brsList: BRSData[] = [
   brsFlex201,
   brsFlex202,
   brsFlex203,
+  brsFlex2040,
   brsFlex205,
   brsFlex206,
-  brsFlex2040,
 
   // Domän 3: Produkt & Kvalificering
-  brsFlex301, // Register Product
-  brsFlex302, // List Products
-  brsFlex303, // Get Product Details
-  brsFlex311, // Request Product Qual
-  brsFlex312, // Update Product Qual
-  brsFlex313, // Notify Product Qual
-  brsFlex321, // Request Grid Qual
-  brsFlex322, // Update Grid Qual
-  brsFlex323, // Notify Grid Qual
-  brsFlex324, // Notify DSO Grid Qual Request
+  brsFlex301,
+  brsFlex302,
+  brsFlex303,
+  brsFlex311,
+  brsFlex312,
+  brsFlex313,
+  brsFlex321,
+  brsFlex322,
+  brsFlex323,
+  brsFlex324,
 
   // Domän 4: Nätbegränsningar
   brsFlex401,
@@ -92,12 +123,40 @@ export const brsList: BRSData[] = [
   brsFlex403,
 
   // Domän 5: Baseline
-  brsFlex500,
   brsFlex501,
   brsFlex502,
   brsFlex503,
+  brsFlex511,
+  brsFlex512,
+  brsFlex521,
+  brsFlex522,
+  brsFlex5210,
+  
+  // Domän 6: Mätvärden
+  brsFlex601,
+  brsFlex602,
+  brsFlex603,
+  brsFlex611,
+  brsFlex6110,
+  brsFlex612,
+  brsFlex613,
+  brsFlex622,
 
-  // Domän 6: Verifiering
-  brsFlex210,
-  brsFlex601
+  // Domän 7: Verifiering & Budgivning
+  brsFlex701,  // TSO Register Balancing Bid
+  brsFlex702,  // DSO Register Local Flex Bid
+  brsFlex705,  // TSO Notify Capacity Result (Legacy 7012 specific)
+  brsFlex706,  // DSO Notify Capacity Result (Legacy 7012 specific)
+  brsFlex711,  // TSO Register Activated Energy
+  brsFlex712,  // DSO Register Activated Energy
+  brsFlex713,  // NEMO Register DA/ID Trade
+  brsFlex715,  // TSO Notify Verified Energy
+  brsFlex716,  // DSO Notify Verified Energy
+  brsFlex721,  // TSO Notify Imbalance Adj
+  brsFlex722,  // BRP Notify Imbalance Adj
+  brsFlex723,  // Supplier Notify Compensation
+  brsFlex7011, // FIS Check Capacity
+  brsFlex7110, // FIS Verify Activated Energy
+  brsFlex7120, // FIS Allocate Volume BRP
+  brsFlex7121  // FIS Allocate Volume Supplier
 ];

@@ -4,41 +4,36 @@ import { content502Input, content502Output } from './content-definitions';
 
 export const brsFlex502: BRSData = {
   id: "BRS-FLEX-502",
-  title: "Registrera Beräknad Baseline",
-  purpose: "SP skickar in den kontrafaktiska kurvan (vad förbrukningen/produktionen hade varit utan aktivering) för en leveransperiod. Detta används som jämförelseunderlag mot mätvärden vid verifiering.",
+  title: "Lista godkända baselinemetoder",
+  purpose: "Möjliggör för SP att se vilka baselinemetoder som finns tillgängliga att välja för deras resurser.",
   actors: [
-    { role: "Initiator", description: "Service Provider (SP)" },
+    { role: "Initiator", description: "SP" },
     { role: "Mottagare", description: "Flexibilitetsregistret (FIS)" }
   ],
   diagramCode: `sequenceDiagram
-    title BRS-FLEX-502: Registrera Baseline-data
+    title BRS-FLEX-502: Lista godkända baselinemetoder
     participant SP as SP
     participant FIS as Flexibilitetsregistret
 
-    SP->>FIS: SubmitBaselineData (CU, Period, Värden)
+    SP->>FIS: ListBaselineMethods (Filter)
     activate FIS
-    FIS->>FIS: Validera format mot vald Metod (BRS-FLEX-501)
-    FIS->>FIS: Lagra tidsserie
-    FIS-->>SP: Ack
+    FIS->>FIS: Hämta aktiva metoder
+    FIS-->>SP: BaselineMethodList (ID, Namn)
     deactivate FIS`,
   process: [
-    "SP beräknar baseline enligt vald metod och skickar in dataserien till FIS.",
-    "FIS validerar att formatet stämmer.",
-    "Data lagras för senare verifiering."
+    { id: "BRSFLEX502-1", description: "SP begär en lista över tillgängliga baselinemetoder." },
+    { id: "BRSFLEX502-2", description: "FIS returnerar ID och Namn på alla godkända metoder." }
   ],
   preConditions: [
-    "En baselinemetod är vald (BRS-FLEX-501)."
+    { id: "BRSFLEX502-PRE-1", description: "SP vill konfigurera en resurs." }
   ],
-  businessRules: [
-    { id: "Regel 1", description: "Dataformatet valideras mot den metod som är konfigurerad för CU:n.", errorCode: "E_502_FORMAT_MISMATCH" },
-    { id: "Regel 2", description: "Tidsupplösningen måste matcha marknadsproduktens krav.", errorCode: "E_502_INVALID_RESOLUTION" }
-  ],
+  businessRules: [],
   postConditions: {
     accepted: [
-      { id: "BRS-FLEX-502-POST-1", description: "Baselinedata har lagrats." }
+      { id: "BRSFLEX502-POST-1", description: "Lista returnerad." }
     ],
     rejected: [
-      { id: "BRS-FLEX-502-POST-2", description: "Data avvisad." }
+      { id: "BRSFLEX502-POST-2", description: "Ingen data." }
     ]
   },
   infoObjects: [content502Input, content502Output]

@@ -1,57 +1,51 @@
 
 import { BRSData } from './types';
-import { content402Input, content402Output } from './content-definitions';
+import { content401Input, content401Output } from './content-definitions';
 
-export const brsFlex402: BRSData = {
-  id: "BRS-FLEX-402",
-  title: "DSO registrerar Nätbegränsning",
-  purpose: "Att registrera en tillfällig begränsning (tak eller golv för effekt) på en eller flera mätpunkter/CU:s för att undvika överlast i nätet (Temporary Limit).",
+export const brsFlex401: BRSData = {
+  id: "BRS-FLEX-401",
+  title: "DSO begär flexibilitetsresurser i nätområde",
+  purpose: "För att kunna sätta begränsningar måste Nätägaren (DSO) veta vilka mätpunkter i deras nät som har aktiva flexibilitetsresurser.",
   actors: [
-    { role: "Initiator", description: "Nätägare (DSO) eller TSO" },
-    { role: "Mottagare", description: "Flexibilitetsregistret (FIS)" },
-    { role: "Mottagare", description: "SP - via notifiering" }
+    { role: "Initiator", description: "Nätägare (DSO)" },
+    { role: "Mottagare", description: "Flexibilitetsregistret (FIS)" }
   ],
   diagramCode: `sequenceDiagram
-    title BRS-FLEX-402: DSO registrerar Nätbegränsning
+    title BRS-FLEX-401: DSO begär flexibilitetsresurser i nätområde
     participant DSO as Nätägare
     participant FIS as Flexibilitetsregistret
-    participant SP as SP
 
-    DSO->>FIS: RegisterConstraint (Lista IDn, Period, Limit)
+    DSO->>FIS: GetGridAreaResources (Nätområdes-ID)
     activate FIS
     FIS->>FIS: Validera affärsregler
 
     alt Validering OK
-        FIS->>FIS: Spara Begränsning
-        FIS->>SP: Notify (Constraint Activated)
-        FIS-->>DSO: Ack
+        FIS->>FIS: Sök Aktiva Resurser (Mätpunkter)
+        FIS-->>DSO: ShowResources (Nätområdes-ID, Lista [Mätpunkts-ID])
     else Validering Fel
         FIS-->>DSO: Error (Validation Failed)
     end
     deactivate FIS`,
   process: [
-    { id: "BRSFLEX402-10", description: "DSO/TSO identifierar behov av begränsning och skickar begäran till FIS." },
-    { id: "BRSFLEX402-11", description: "FIS validerar att mätpunkterna tillhör aktörens nätområde." },
-    { id: "BRSFLEX402-12", description: "FIS lagrar begränsningen (Tidsperiod, Max/Min effekt)." },
-    { id: "BRSFLEX402-13", description: "FIS notifierar berörda SP om att deras resurser är begränsade." }
+    { id: "BRSFLEX401-10", description: "DSO skickar förfrågan med Nätområdes-ID." },
+    { id: "BRSFLEX401-11", description: "FIS validerar att nätområdet finns och att anropande DSO är registrerad ägare till detta." },
+    { id: "BRSFLEX401-12", description: "FIS söker fram alla mätpunkter i detta område som har en aktiv resurskoppling." },
+    { id: "BRSFLEX401-13", description: "FIS returnerar Nätområdes-ID och listan på mätpunkter till DSO." }
   ],
   preConditions: [
-    { id: "BRSFLEX402-1", description: "Nätägare/TSO vill registrera en nätbegränsning." }
+    { id: "BRSFLEX401-1", description: "En nätägare vill hämta lista på mätpunkter med aktiva resurser." }
   ],
   businessRules: [
-    { id: "BRSFLEX402-6", description: "Resurserna måste finnas och vara aktiva.", errorCode: "E_402_NOT_FOUND" },
-    { id: "BRSFLEX402-7", description: "Mätpunkterna måste tillhöra Nätägarens område (valideras mot ägarskap i Master Data).", errorCode: "E_402_WRONG_GRID_AREA" },
-    { id: "BRSFLEX402-8", description: "Begränsningen måste innehålla tidsperiod (Start/Slut) samt effektvärde och riktning.", errorCode: "E_402_INVALID_DATA" }
+    { id: "BRSFLEX401-7", description: "Angivet Nätområdes-ID måste existera i systemet.", errorCode: "E_401_GRID_AREA_NOT_FOUND" },
+    { id: "BRSFLEX401-8", description: "Anropande DSO måste vara registrerad ägare av det angivna nätområdet.", errorCode: "E_401_UNAUTHORIZED_GRID_OWNER" }
   ],
   postConditions: {
     accepted: [
-      { id: "BRSFLEX402-2", description: "Begränsning har sparats i systemet." },
-      { id: "BRSFLEX402-3", description: "Berörda SP har notifierats." },
-      { id: "BRSFLEX402-4", description: "Nätägaren/TSO har mottagit en positiv kvittens." }
+      { id: "BRSFLEX401-2", description: "Lista på mätpunkter har returnerats." }
     ],
     rejected: [
-      { id: "BRSFLEX402-5", description: "Ingen begränsning sparad." }
+      { id: "BRSFLEX401-3", description: "Åtkomst nekad eller ogiltigt ID, ingen data returnerad." }
     ]
   },
-  infoObjects: [content402Input, content402Output]
+  infoObjects: [content401Input, content401Output]
 };

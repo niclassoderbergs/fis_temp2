@@ -4,43 +4,40 @@ import { content501Input, content501Output } from './content-definitions';
 
 export const brsFlex501: BRSData = {
   id: "BRS-FLEX-501",
-  title: "Välj Baselinemetod för CU",
-  purpose: "SP konfigurerar vilken beräkningsmetod som ska användas för en specifik CU vid verifiering av leverans. Detta styr hur den kontrafaktiska kurvan ska beräknas eller valideras.",
+  title: "TSO registrerar godkänd baselinemetod",
+  purpose: "Att lägga in de beräkningsmetoder för baseline som är godkända av tillsynsmyndigheten (Ei) i systemet (katalogdata). SP kan sedan välja från dessa vid konfiguration av sina resurser.",
   actors: [
-    { role: "Initiator", description: "Service Provider (SP)" },
-    { role: "Mottagare", description: "Flexibilitetsregistret (FIS)" }
+    { role: "Initiator", description: "System Admin (FIS) på uppdrag av TSO/DSO" },
+    { role: "Mottagare", description: "Service Provider (SP) - som konsument av listan" }
   ],
   diagramCode: `sequenceDiagram
-    title BRS-FLEX-501: Välj Baselinemetod
-    participant SP as SP
+    title BRS-FLEX-501: Registrera Baselinemetod
+    participant Admin as FIS Admin
     participant FIS as Flexibilitetsregistret
 
-    SP->>FIS: SetBaselineConfig (CU-ID, Metod-ID)
+    Admin->>FIS: RegisterBaselineMethod (Namn, Logik, Parametrar)
     activate FIS
-    FIS->>FIS: Kontrollera Metodens giltighet
-    FIS->>FIS: Spara konfiguration för CU
-    FIS-->>SP: Ack (Config-ID)
+    FIS->>FIS: Validera struktur
+    FIS->>FIS: Spara i metodkatalog
+    FIS-->>Admin: OK (Metod-ID)
     deactivate FIS`,
   process: [
-    "SP väljer en metod från listan av godkända metoder (BRS-FLEX-500) för sin resurs.",
-    "FIS sparar valet som gällande konfiguration från angivet startdatum."
+    { id: "BRSFLEX501-1", description: "Administratör registrerar en ny godkänd baselinemetod i systemet." },
+    { id: "BRSFLEX501-2", description: "Metoden görs tillgänglig för val i BRS-FLEX-511." }
   ],
   preConditions: [
-    "Metoden måste finnas i registret (BRS-FLEX-500).",
-    "CU måste vara aktiv."
+    { id: "BRSFLEX501-PRE-1", description: "Metoden har godkänts regulatoriskt (av Ei) eller överenskommits i branschregelverk." }
   ],
   businessRules: [
-    { id: "Regel 1", description: "Angivet CU-ID måste existera i FIS.", errorCode: "E_501_CU_NOT_FOUND" },
-    { id: "Regel 2", description: "Angivet Metod-ID måste existera i FIS.", errorCode: "E_501_METHOD_NOT_FOUND" },
-    { id: "Regel 3", description: "En CU måste ha en aktiv baselinemetod vald för att kunna verifieras.", errorCode: "E_501_METHOD_REQUIRED" },
-    { id: "Regel 4", description: "Vald metod måste vara giltig för resurstypen (om begränsningar finns).", errorCode: "E_501_INVALID_METHOD_FOR_TYPE" }
+    { id: "BRSFLEX501-BR-1", description: "Endast administratörer får redigera metodkatalogen.", errorCode: "E_GEN_AUTH_FAILED" },
+    { id: "BRSFLEX501-BR-2", description: "Metodnamn måste vara unikt.", errorCode: "E_501_DUPLICATE_NAME" }
   ],
   postConditions: {
     accepted: [
-      { id: "BRS-FLEX-501-POST-1", description: "Metodval har sparats för CU." }
+      { id: "BRSFLEX501-POST-1", description: "Ny metod finns tillgänglig i systemet." }
     ],
     rejected: [
-      { id: "BRS-FLEX-501-POST-2", description: "Konfiguration ej sparad." }
+      { id: "BRSFLEX501-POST-2", description: "Ingen metod sparad." }
     ]
   },
   infoObjects: [content501Input, content501Output]

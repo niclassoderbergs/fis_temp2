@@ -395,7 +395,8 @@ const groups: GroupDef[] = [
   { id: '300', title: 'Domän 3: Produkt & Förkvalificering', prefixes: ['BRS-FLEX-3'] },
   { id: '400', title: 'Domän 4: Nätbegränsningar', prefixes: ['BRS-FLEX-4'] },
   { id: '500', title: 'Domän 5: Baseline', prefixes: ['BRS-FLEX-5'] },
-  { id: '600', title: 'Domän 6: Verifiering', prefixes: ['BRS-FLEX-6'] },
+  { id: '600', title: 'Domän 6: Mätvärden', prefixes: ['BRS-FLEX-6'] },
+  { id: '700', title: 'Domän 7: Verifiering', prefixes: ['BRS-FLEX-7'] },
 ];
 
 interface SidebarGroupProps {
@@ -410,8 +411,6 @@ interface SidebarGroupProps {
 
 const SidebarGroup: React.FC<SidebarGroupProps> = ({ group, items, isOpen, onToggle, selectedId, onSelect, viewMode }) => {
   const [hover, setHover] = useState(false);
-
-  if (items.length === 0 && group.id !== '500') return null;
 
   if (items.length === 0) {
       return (
@@ -541,7 +540,7 @@ const STORAGE_KEY = 'fis-wiki-data-v1';
 function App() {
   const [brsData, setBrsData] = useState<BRSData[]>(initialBrsList);
   const [selectedId, setSelectedId] = useState<string>(initialBrsList[0].id);
-  const [openGroups, setOpenGroups] = useState<string[]>(['100', '200', '300', '400', '500', '600']);
+  const [openGroups, setOpenGroups] = useState<string[]>(['100', '200', '300', '400', '500', '600', '700']);
   const [viewMode, setViewMode] = useState<'detail' | 'status'>('detail');
   const [isEditing, setIsEditing] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false); // Flag to prevent overwriting storage

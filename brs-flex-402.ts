@@ -1,50 +1,57 @@
 
 import { BRSData } from './types';
+import { content402Input, content402Output } from './content-definitions';
 
-export const brsFlex601: BRSData = {
-  id: "BRS-FLEX-601",
-  title: "Kontrollera Bud",
-  purpose: "En kontrolltjänst för att se om ett budobjekt är godkänt att buda med för en given period och marknad.",
+export const brsFlex402: BRSData = {
+  id: "BRS-FLEX-402",
+  title: "DSO registrerar Nätbegränsning",
+  purpose: "Att registrera en tillfällig begränsning (tak eller golv för effekt) på en eller flera mätpunkter/CU:s för att undvika överlast i nätet (Temporary Limit).",
   actors: [
-    { role: "Initiator", description: "SP eller Marknadsplats" },
-    { role: "Mottagare", description: "Flexibilitetsregistret (FIS)" }
+    { role: "Initiator", description: "Nätägare (DSO) eller TSO" },
+    { role: "Mottagare", description: "Flexibilitetsregistret (FIS)" },
+    { role: "Mottagare", description: "SP - via notifiering" }
   ],
   diagramCode: `sequenceDiagram
-    title BRS-FLEX-601: Kontrollera Budbehörighet
-    participant Requester as SP/Marknad
+    title BRS-FLEX-402: DSO registrerar Nätbegränsning
+    participant DSO as Nätägare
     participant FIS as Flexibilitetsregistret
+    participant SP as SP
 
-    Requester->>FIS: ValidateBidCapability (Budobjekt-ID, Tid, Produkt)
+    DSO->>FIS: RegisterConstraint (Lista IDn, Period, Limit)
     activate FIS
-    FIS->>FIS: Kontrollera Kvalificering (Qualified?)
-    FIS->>FIS: Kontrollera Nätbegränsningar (Inga limits?)
-    FIS->>FIS: Kontrollera Flexavtal (Aktivt?)
-    
-    alt Allt OK
-        FIS-->>Requester: OK (Valid)
-    else Fel
-        FIS-->>Requester: Invalid (Orsak)
+    FIS->>FIS: Validera affärsregler
+
+    alt Validering OK
+        FIS->>FIS: Spara Begränsning
+        FIS->>SP: Notify (Constraint Activated)
+        FIS-->>DSO: Ack
+    else Validering Fel
+        FIS-->>DSO: Error (Validation Failed)
     end
     deactivate FIS`,
   process: [
-    { id: "BRSFLEX601-10", description: "Anropande part frågar om ett objekt får buda." },
-    { id: "BRSFLEX601-11", description: "FIS kontrollerar: 1. Kvalificering, 2. Nätbegränsningar, 3. Avtal." },
-    { id: "BRSFLEX601-12", description: "FIS returnerar svar." }
+    { id: "BRSFLEX402-10", description: "DSO/TSO identifierar behov av begränsning och skickar begäran till FIS." },
+    { id: "BRSFLEX402-11", description: "FIS validerar att mätpunkterna tillhör aktörens nätområde." },
+    { id: "BRSFLEX402-12", description: "FIS lagrar begränsningen (Tidsperiod, Max/Min effekt)." },
+    { id: "BRSFLEX402-13", description: "FIS notifierar berörda SP om att deras resurser är begränsade." }
   ],
   preConditions: [
-    { id: "BRSFLEX601-1", description: "En aktör vill kontrollera budbehörighet." }
+    { id: "BRSFLEX402-1", description: "Nätägare/TSO vill registrera en nätbegränsning." }
   ],
   businessRules: [
-    { id: "BRSFLEX601-6", description: "Objektet måste ha status 'Qualified' för produkten.", errorCode: "E_601_NOT_QUALIFIED" },
-    { id: "BRSFLEX601-7", description: "Ingen aktiv nätbegränsning får finnas under budperioden.", errorCode: "E_601_GRID_LIMIT" },
-    { id: "BRSFLEX601-8", description: "Ett aktivt Flexavtal måste finnas för resursen.", errorCode: "E_601_NO_AGREEMENT" }
+    { id: "BRSFLEX402-6", description: "Resurserna måste finnas och vara aktiva.", errorCode: "E_402_NOT_FOUND" },
+    { id: "BRSFLEX402-7", description: "Mätpunkterna måste tillhöra Nätägarens område (valideras mot ägarskap i Master Data).", errorCode: "E_402_WRONG_GRID_AREA" },
+    { id: "BRSFLEX402-8", description: "Begränsningen måste innehålla tidsperiod (Start/Slut) samt effektvärde och riktning.", errorCode: "E_402_INVALID_DATA" }
   ],
   postConditions: {
     accepted: [
-      { id: "BRSFLEX601-2", description: "Ett svar med status OK/Valid har returnerats." }
+      { id: "BRSFLEX402-2", description: "Begränsning har sparats i systemet." },
+      { id: "BRSFLEX402-3", description: "Berörda SP har notifierats." },
+      { id: "BRSFLEX402-4", description: "Nätägaren/TSO har mottagit en positiv kvittens." }
     ],
     rejected: [
-      { id: "BRSFLEX601-3", description: "Ett svar med status Invalid och felorsak har returnerats." }
+      { id: "BRSFLEX402-5", description: "Ingen begränsning sparad." }
     ]
-  }
+  },
+  infoObjects: [content402Input, content402Output]
 };
