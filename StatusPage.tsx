@@ -1,11 +1,14 @@
 
-import React from 'react';
-import { BRSData } from './types';
+import React, { useState, useMemo } from 'react';
+import { BRSData, MPSData } from './types';
 import { calculateQuality, QualityReport, SectionScore } from './QualityCalculator';
+import { calculateMPSQuality, MPSQualityReport } from './MPSQualityCalculator';
 
 interface StatusPageProps {
   data: BRSData[];
+  mpsData?: MPSData[];
   onSelectBRS: (id: string) => void;
+  onSelectMPS?: (id: string) => void;
 }
 
 const styles = {
@@ -21,13 +24,24 @@ const styles = {
     marginBottom: '24px',
     color: '#172b4d'
   },
+  sectionHeader: {
+    fontSize: '1.5rem',
+    fontWeight: 600,
+    marginTop: '48px',
+    marginBottom: '16px',
+    color: '#42526e',
+    borderBottom: '2px solid #ebecf0',
+    paddingBottom: '8px'
+  },
   table: {
     width: '100%',
     borderCollapse: 'collapse' as const,
     boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
     fontSize: '0.85rem'
   },
-  th: {
+  thSortable: {
+    cursor: 'pointer',
+    userSelect: 'none' as const,
     backgroundColor: '#f4f5f7',
     color: '#172b4d',
     padding: '12px 12px',
@@ -35,7 +49,21 @@ const styles = {
     borderBottom: '2px solid #dfe1e6',
     fontWeight: 600,
     position: 'sticky' as const,
-    top: 0
+    top: 0,
+    whiteSpace: 'nowrap' as const
+  },
+  thCenterSortable: {
+    cursor: 'pointer',
+    userSelect: 'none' as const,
+    backgroundColor: '#f4f5f7',
+    color: '#172b4d',
+    padding: '12px 12px',
+    textAlign: 'center' as const,
+    borderBottom: '2px solid #dfe1e6',
+    fontWeight: 600,
+    position: 'sticky' as const,
+    top: 0,
+    whiteSpace: 'nowrap' as const
   },
   td: {
     padding: '8px 12px',
@@ -61,6 +89,47 @@ const styles = {
     borderRadius: '4px',
     minWidth: '36px',
     fontSize: '0.8rem'
+  },
+  // Integrity Box Styles
+  integrityBox: {
+    marginBottom: '32px',
+    padding: '20px',
+    borderRadius: '8px',
+    border: '1px solid',
+  },
+  integrityOk: {
+    backgroundColor: '#e3fcef',
+    borderColor: '#36b37e',
+    color: '#006644'
+  },
+  integrityError: {
+    backgroundColor: '#ffebe6',
+    borderColor: '#ff5630',
+    color: '#bf2600'
+  },
+  integrityTitle: {
+    fontWeight: 700,
+    fontSize: '1.2rem',
+    marginBottom: '12px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px'
+  },
+  errorList: {
+    listStyle: 'none',
+    padding: 0,
+    margin: 0
+  },
+  errorItem: {
+    padding: '8px 0',
+    borderBottom: '1px solid rgba(0,0,0,0.1)',
+    display: 'flex',
+    gap: '12px',
+    fontSize: '0.9rem'
+  },
+  errorLabel: {
+    fontWeight: 600,
+    minWidth: '120px'
   }
 };
 
@@ -90,45 +159,232 @@ const ScoreDisplay = ({ data }: { data: SectionScore }) => {
   );
 };
 
-export const StatusPage: React.FC<StatusPageProps> = ({ data, onSelectBRS }) => {
-  // Sortera listan på ID
-  const sortedData = [...data].sort((a, b) => a.id.localeCompare(b.id));
+// --- Integrity Check Function ---
+interface IntegrityError {
+  mpsId: string;
+  scenarioId: string;
+  stepId: string;
+  refBRS: string;
+  refRule?: string;
+  type: 'MISSING_BRS' | 'MISSING_RULE';
+}
+
+const checkIntegrity = (mpsList: MPSData[], brsList: BRSData[]): IntegrityError[] => {
+  const errors: IntegrityError[] = [];
+  const brsMap = new Map(brsList.map(b => [b.id, b]));
+
+  mpsList.forEach(mps => {
+    mps.scenarios.forEach(sc => {
+      sc.steps.forEach(step => {
+        if (step.refBRS) {
+          const brs = brsMap.get(step.refBRS);
+          
+          if (!brs) {
+            errors.push({
+              mpsId: mps.id,
+              scenarioId: sc.id,
+              stepId: step.stepId,
+              refBRS: step.refBRS,
+              type: 'MISSING_BRS'
+            });
+          } else if (step.refRule) {
+            // Check if rule exists in BRS (Pre, Post, BusinessRules, Process)
+            const allIds = [
+              ...brs.preConditions.map(p => typeof p === 'string' ? null : p.id),
+              ...brs.businessRules.map(r => r.id),
+              ...brs.process.map(p => typeof p === 'string' ? null : p.id),
+              ...(Array.isArray(brs.postConditions.accepted) ? brs.postConditions.accepted : [brs.postConditions.accepted]).map((p: any) => p?.id),
+              ...(Array.isArray(brs.postConditions.rejected) ? brs.postConditions.rejected : [brs.postConditions.rejected]).map((p: any) => p?.id),
+            ].filter(Boolean);
+
+            if (!allIds.includes(step.refRule)) {
+               errors.push({
+                mpsId: mps.id,
+                scenarioId: sc.id,
+                stepId: step.stepId,
+                refBRS: step.refBRS,
+                refRule: step.refRule,
+                type: 'MISSING_RULE'
+              });
+            }
+          }
+        }
+      });
+    });
+  });
+
+  return errors;
+};
+
+type SortKey = 'id' | 'title' | 'purpose' | 'diagram' | 'startConditions' | 'stopConditions' | 'businessRules' | 'flows' | 'content' | 'total' 
+             | 'meta' | 'scenarios' | 'traceability' | 'conditionCoverage'; 
+
+export const StatusPage: React.FC<StatusPageProps> = ({ data, mpsData = [], onSelectBRS, onSelectMPS }) => {
+  const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'asc' | 'desc' }>({ key: 'id', direction: 'asc' });
+  const [mpsSortConfig, setMpsSortConfig] = useState<{ key: SortKey; direction: 'asc' | 'desc' }>({ key: 'id', direction: 'asc' });
+
+  const handleSort = (key: SortKey) => {
+    setSortConfig(prev => {
+      if (prev.key === key) {
+        return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' };
+      }
+      return { key, direction: 'asc' };
+    });
+  };
+
+  const handleMpsSort = (key: SortKey) => {
+    setMpsSortConfig(prev => {
+        if (prev.key === key) {
+          return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' };
+        }
+        return { key, direction: 'asc' };
+      });
+  }
+
+  const getSortIcon = (key: SortKey, currentConfig: any) => {
+    if (currentConfig.key !== key) return null;
+    return currentConfig.direction === 'asc' ? ' ↓' : ' ↑';
+  };
+
+  // --- Calculations ---
+  const processedData = useMemo(() => {
+    return data.map(brs => ({
+      ...brs,
+      report: calculateQuality(brs)
+    }));
+  }, [data]);
+
+  const sortedData = useMemo(() => {
+    const sorted = [...processedData];
+    const { key, direction } = sortConfig;
+    const multiplier = direction === 'asc' ? 1 : -1;
+
+    sorted.sort((a, b) => {
+      if (key === 'id') {
+        const getNum = (idStr: string) => {
+          const match = idStr.match(/BRS-FLEX-(\d+)/);
+          return match ? parseInt(match[1], 10) : 0;
+        };
+        const numA = getNum(a.id);
+        const numB = getNum(b.id);
+        if (numA !== numB) return (numA - numB) * multiplier;
+        return a.id.localeCompare(b.id) * multiplier;
+      }
+      if (key === 'title') return a.title.localeCompare(b.title) * multiplier;
+      if (key === 'total') return (a.report.total - b.report.total) * multiplier;
+
+      const scoreA = (a.report as any)[key]?.score ?? 0;
+      const scoreB = (b.report as any)[key]?.score ?? 0;
+      return (scoreA - scoreB) * multiplier;
+    });
+    return sorted;
+  }, [processedData, sortConfig]);
+
+  const processedMPS = useMemo(() => {
+    return mpsData.map(mps => ({
+        ...mps,
+        report: calculateMPSQuality(mps, data) 
+    }));
+  }, [mpsData, data]);
+
+  const sortedMPS = useMemo(() => {
+    const sorted = [...processedMPS];
+    const { key, direction } = mpsSortConfig;
+    const multiplier = direction === 'asc' ? 1 : -1;
+
+    sorted.sort((a, b) => {
+        if (key === 'id') return a.id.localeCompare(b.id) * multiplier;
+        if (key === 'title') return a.title.localeCompare(b.title) * multiplier;
+        if (key === 'total') return (a.report.total - b.report.total) * multiplier;
+
+        const scoreA = (a.report as any)[key]?.score ?? 0;
+        const scoreB = (b.report as any)[key]?.score ?? 0;
+        return (scoreA - scoreB) * multiplier;
+    });
+    return sorted;
+  }, [processedMPS, mpsSortConfig]);
+
+  // Run Integrity Check
+  const integrityErrors = useMemo(() => checkIntegrity(mpsData, data), [mpsData, data]);
 
   return (
     <div style={styles.container}>
       <h1 style={styles.header}>Quality Assurance Dashboard</h1>
+      
+      {/* Integrity Check Panel */}
+      <div style={{
+        ...styles.integrityBox,
+        ...(integrityErrors.length > 0 ? styles.integrityError : styles.integrityOk)
+      }}>
+        <div style={styles.integrityTitle}>
+          {integrityErrors.length > 0 ? '⚠️ Integrity Issues Found' : '✅ System Integrity OK'}
+        </div>
+        
+        {integrityErrors.length > 0 ? (
+          <div>
+            <p style={{marginTop: 0, marginBottom: '16px'}}>
+              Följande <strong>{integrityErrors.length}</strong> referenser i MPS-scenarier pekar på BRS-objekt eller regler som inte existerar. 
+              Detta kan bero på att BRS-filer har bytt namn eller ID (t.ex. 104 -> 1040).
+            </p>
+            <ul style={styles.errorList}>
+              {integrityErrors.map((err, idx) => (
+                <li key={idx} style={styles.errorItem}>
+                  <div style={{minWidth: '150px', fontWeight: 600}}>{err.mpsId}</div>
+                  <div style={{minWidth: '80px'}}>{err.stepId}</div>
+                  <div style={{flex: 1}}>
+                    {err.type === 'MISSING_BRS' 
+                      ? <span>References missing BRS: <code style={{backgroundColor: 'rgba(255,255,255,0.5)', padding: '2px 4px'}}>{err.refBRS}</code></span>
+                      : <span>References missing Rule: <code style={{backgroundColor: 'rgba(255,255,255,0.5)', padding: '2px 4px'}}>{err.refRule}</code> in {err.refBRS}</span>
+                    }
+                  </div>
+                  <button 
+                    onClick={() => onSelectMPS && onSelectMPS(err.mpsId)}
+                    style={{
+                      background: 'transparent', border: '1px solid currentColor', borderRadius: '4px', 
+                      cursor: 'pointer', fontSize: '0.75rem', padding: '2px 8px', color: 'inherit'
+                    }}
+                  >
+                    Fix
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <p style={{margin: 0}}>Alla MPS-steg refererar till existerande BRS-ID:n och regler.</p>
+        )}
+      </div>
+
       <p style={{marginBottom: '24px', color: '#666'}}>
-        Kvalitetskontroll av samtliga BRS-dokument. Hovra över en siffra för att se avvikelser.
+        Nedan visas kvalitetsmätningar för BRS och MPS.
       </p>
       
+      <h2 style={styles.sectionHeader}>BRS - Business Requirement Specifications</h2>
       <table style={styles.table}>
         <thead>
           <tr>
-            <th style={styles.th}>ID</th>
-            <th style={styles.th}>Titel</th>
-            <th style={{...styles.th, textAlign: 'center'}}>Syfte</th>
-            <th style={{...styles.th, textAlign: 'center'}}>Diagram</th>
-            <th style={{...styles.th, textAlign: 'center'}}>Start</th>
-            <th style={{...styles.th, textAlign: 'center'}}>Stopp</th>
-            <th style={{...styles.th, textAlign: 'center'}}>Regler</th>
-            <th style={{...styles.th, textAlign: 'center'}}>Flöde</th>
-            <th style={{...styles.th, textAlign: 'center'}}>Data</th>
-            <th style={{...styles.th, textAlign: 'center'}}>Totalt</th>
+            <th style={styles.thSortable} onClick={() => handleSort('id')}>ID{getSortIcon('id', sortConfig)}</th>
+            <th style={styles.thSortable} onClick={() => handleSort('title')}>Titel{getSortIcon('title', sortConfig)}</th>
+            <th style={styles.thCenterSortable} onClick={() => handleSort('purpose')}>Syfte{getSortIcon('purpose', sortConfig)}</th>
+            <th style={styles.thCenterSortable} onClick={() => handleSort('diagram')}>Diagram{getSortIcon('diagram', sortConfig)}</th>
+            <th style={styles.thCenterSortable} onClick={() => handleSort('startConditions')}>Start{getSortIcon('startConditions', sortConfig)}</th>
+            <th style={styles.thCenterSortable} onClick={() => handleSort('stopConditions')}>Stopp{getSortIcon('stopConditions', sortConfig)}</th>
+            <th style={styles.thCenterSortable} onClick={() => handleSort('businessRules')}>Regler{getSortIcon('businessRules', sortConfig)}</th>
+            <th style={styles.thCenterSortable} onClick={() => handleSort('flows')}>Flöde{getSortIcon('flows', sortConfig)}</th>
+            <th style={styles.thCenterSortable} onClick={() => handleSort('content')}>Data{getSortIcon('content', sortConfig)}</th>
+            <th style={styles.thCenterSortable} onClick={() => handleSort('total')}>Totalt{getSortIcon('total', sortConfig)}</th>
           </tr>
         </thead>
         <tbody>
-          {sortedData.map(brs => {
-            const report: QualityReport = calculateQuality(brs);
+          {sortedData.map(item => {
+            const report = item.report;
             const totalColor = getScoreColor(report.total);
-            
             return (
-              <tr key={brs.id}>
+              <tr key={item.id}>
                 <td style={styles.td}>
-                  <span style={styles.idCell} onClick={() => onSelectBRS(brs.id)}>
-                    {brs.id}
-                  </span>
+                  <span style={styles.idCell} onClick={() => onSelectBRS(item.id)}>{item.id}</span>
                 </td>
-                <td style={styles.td}>{brs.title}</td>
+                <td style={styles.td}>{item.title}</td>
                 <td style={styles.scoreCell}><ScoreDisplay data={report.purpose} /></td>
                 <td style={styles.scoreCell}><ScoreDisplay data={report.diagram} /></td>
                 <td style={styles.scoreCell}><ScoreDisplay data={report.startConditions} /></td>
@@ -136,14 +392,86 @@ export const StatusPage: React.FC<StatusPageProps> = ({ data, onSelectBRS }) => 
                 <td style={styles.scoreCell}><ScoreDisplay data={report.businessRules} /></td>
                 <td style={styles.scoreCell}><ScoreDisplay data={report.flows} /></td>
                 <td style={styles.scoreCell}><ScoreDisplay data={report.content} /></td>
-                <td style={{...styles.td, textAlign: 'center', fontWeight: 700, color: totalColor.color}}>
-                   {report.total}%
-                </td>
+                <td style={{...styles.td, textAlign: 'center', fontWeight: 700, color: totalColor.color}}>{report.total}%</td>
               </tr>
             );
           })}
         </tbody>
       </table>
+
+      {sortedMPS.length > 0 && (
+        <>
+            <h2 style={styles.sectionHeader}>MPS - Market Process Scenarios</h2>
+            <table style={styles.table}>
+                <thead>
+                    <tr>
+                        <th style={styles.thSortable} onClick={() => handleMpsSort('id')}>ID{getSortIcon('id', mpsSortConfig)}</th>
+                        <th style={styles.thSortable} onClick={() => handleMpsSort('title')}>Titel{getSortIcon('title', mpsSortConfig)}</th>
+                        <th style={styles.thCenterSortable} onClick={() => handleMpsSort('meta')}>Meta{getSortIcon('meta', mpsSortConfig)}</th>
+                        <th style={styles.thCenterSortable} onClick={() => handleMpsSort('diagram')}>Diagram{getSortIcon('diagram', mpsSortConfig)}</th>
+                        <th style={styles.thCenterSortable} onClick={() => handleMpsSort('scenarios')}>Struktur{getSortIcon('scenarios', mpsSortConfig)}</th>
+                        <th style={styles.thCenterSortable} onClick={() => handleMpsSort('traceability')}>Spårbarhet{getSortIcon('traceability', mpsSortConfig)}</th>
+                        <th style={styles.thCenterSortable} onClick={() => handleMpsSort('conditionCoverage')}>Villkor (Start / Stopp){getSortIcon('conditionCoverage', mpsSortConfig)}</th>
+                        <th style={styles.thCenterSortable} onClick={() => handleMpsSort('total')}>Totalt{getSortIcon('total', mpsSortConfig)}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {sortedMPS.map(item => {
+                        const report = item.report;
+                        const totalColor = getScoreColor(report.total);
+                        const totalStart = report.scenarioMetrics.reduce((sum, m) => sum + m.startConditions, 0);
+                        const totalStop = report.scenarioMetrics.reduce((sum, m) => sum + m.stopConditions, 0);
+
+                        return (
+                            <React.Fragment key={item.id}>
+                                {/* Huvudrad för MPS */}
+                                <tr style={{backgroundColor: '#fafbfc'}}>
+                                    <td style={styles.td}>
+                                        <span style={{...styles.idCell, fontSize: '1rem'}} onClick={() => onSelectMPS && onSelectMPS(item.id)}>{item.id}</span>
+                                    </td>
+                                    <td style={{...styles.td, fontWeight: 600}}>{item.title}</td>
+                                    <td style={styles.scoreCell}><ScoreDisplay data={report.meta} /></td>
+                                    <td style={styles.scoreCell}><ScoreDisplay data={report.diagram} /></td>
+                                    <td style={styles.scoreCell}><ScoreDisplay data={report.scenarios} /></td>
+                                    <td style={styles.scoreCell}><ScoreDisplay data={report.traceability} /></td>
+                                    <td style={{...styles.scoreCell, color: '#333'}}>
+                                        <span style={{fontWeight: 700}}>{totalStart} / {totalStop}</span>
+                                    </td>
+                                    <td style={{...styles.td, textAlign: 'center', fontWeight: 700, color: totalColor.color}}>{report.total}%</td>
+                                </tr>
+                                {/* Scenarier rader */}
+                                {report.scenarioMetrics.map(sc => (
+                                    <tr key={sc.id} style={{backgroundColor: '#ffffff'}}>
+                                        <td style={{...styles.td, paddingLeft: '40px', color: '#555', fontSize: '0.85rem'}}>
+                                            ↳ {sc.id}
+                                        </td>
+                                        <td style={{...styles.td, color: '#555', fontStyle: 'italic'}}>{sc.title}</td>
+                                        <td style={styles.td}></td>
+                                        <td style={styles.td}></td>
+                                        <td style={styles.td}></td>
+                                        <td style={styles.td}></td>
+                                        <td style={{...styles.scoreCell, backgroundColor: '#fff'}}>
+                                            <span style={{
+                                                fontSize: '0.9rem',
+                                                fontWeight: 600,
+                                                color: (sc.startConditions > 0 && sc.stopConditions > 0) ? '#006644' : '#bf2600'
+                                            }}>
+                                                {sc.startConditions} / {sc.stopConditions}
+                                            </span>
+                                            { (sc.startConditions === 0 || sc.stopConditions === 0) && 
+                                                <span style={{fontSize: '0.7rem', color: '#bf2600', display: 'block'}}>Saknas</span>
+                                            }
+                                        </td>
+                                        <td style={styles.td}></td>
+                                    </tr>
+                                ))}
+                            </React.Fragment>
+                        )
+                    })}
+                </tbody>
+            </table>
+        </>
+      )}
     </div>
   );
 };

@@ -302,3 +302,63 @@ export const content144Output: InfoObject = {
     { attribute: "Slutdatum", description: "Datum då kopplingen upphör.", article: "-" }
   ]
 };
+
+// --- BRS-FLEX-1110 (Admin): FIS registrerar SPU ---
+export const content1110Input: InfoObject = {
+  title: "Från FIS (Admin)",
+  attributes: [
+    { attribute: "SP-ID", description: "Aktören som ska äga SPU:n.", article: "-" },
+    { attribute: "Namn", description: "Namn på SPU.", article: "-" },
+    { attribute: "Elområde-ID", description: "Elområde.", article: "-" },
+    { attribute: "Orsakskod/Kommentar", description: "Anledning till administrativ åtgärd.", article: "-" }
+  ]
+};
+
+export const content1110Output: InfoObject = {
+  title: "Resultat (Internt)",
+  attributes: [
+    { attribute: "Status", description: "OK/Fel", article: "-" },
+    { attribute: "SPU-ID", description: "Skapat ID", article: "-" }
+  ]
+};
+
+// --- BRS-FLEX-111: Notifiering om registrerad SPU (ny) ---
+export const content111Output: InfoObject = {
+  title: "Notifiering till SP",
+  attributes: [
+    { attribute: "Meddelande", description: "Information om att SPU skapats administrativt.", article: "-" },
+    { attribute: "SPU-ID", description: "Det skapade ID:t.", article: "-" },
+    { attribute: "Namn", description: "Namnet.", article: "-" },
+    { attribute: "Elområde-ID", description: "Elområdet.", article: "-" }
+  ]
+};
+
+// --- BRS-FLEX-1210 (Admin): FIS registrerar SPG ---
+export const content1210Input: InfoObject = {
+  title: "Från FIS (Admin)",
+  attributes: [
+    { attribute: "SP-ID", description: "Aktören som ska äga SPG:n.", article: "-" },
+    { attribute: "Namn", description: "Namn på SPG.", article: "-" },
+    { attribute: "Elområde-ID", description: "Elområde.", article: "-" },
+    { attribute: "Orsakskod/Kommentar", description: "Anledning till administrativ åtgärd.", article: "-" }
+  ]
+};
+
+export const content1210Output: InfoObject = {
+  title: "Resultat (Internt)",
+  attributes: [
+    { attribute: "Status", description: "OK/Fel", article: "-" },
+    { attribute: "SPG-ID", description: "Skapat ID", article: "-" }
+  ]
+};
+
+// --- BRS-FLEX-121: Notifiering om registrerad SPG (ny) ---
+export const content121Output: InfoObject = {
+  title: "Notifiering till SP",
+  attributes: [
+    { attribute: "Meddelande", description: "Information om att SPG skapats administrativt.", article: "-" },
+    { attribute: "SPG-ID", description: "Det skapade ID:t.", article: "-" },
+    { attribute: "Namn", description: "Namnet.", article: "-" },
+    { attribute: "Elområde-ID", description: "Elområdet.", article: "-" }
+  ]
+};

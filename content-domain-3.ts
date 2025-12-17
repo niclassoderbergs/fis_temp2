@@ -152,6 +152,18 @@ export const content313Output: InfoObject = {
   ]
 };
 
+// --- BRS-FLEX-314: Notifiering till TSO om ansökan ---
+export const content314Output: InfoObject = {
+  title: "Notifiering till TSO",
+  attributes: [
+    { attribute: "Kvalificerings-ID", description: "Referens till ansökan.", article: "Art 20" },
+    { attribute: "SPU-ID / SPG-ID", description: "Resursen som ansökan avser.", article: "-" },
+    { attribute: "Produkt-ID", description: "Produkten som ska kvalificeras.", article: "-" },
+    { attribute: "Maximal budbar effekt", description: "Den effekt SP ansöker om.", article: "-" },
+    { attribute: "Ingående CUs", description: "Lista på ingående enheter och deras tekniska data (för analys).", article: "-" }
+  ]
+};
+
 // --- BRS-FLEX-321: SP begär Nätförkvalificering ---
 export const content321Input: InfoObject = {
   title: "Från SP",

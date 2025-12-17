@@ -59,6 +59,7 @@ export const content511Input: InfoObject = {
   attributes: [
     { attribute: "CU-ID", description: "Resursen konfigurationen gäller.", article: "-" },
     { attribute: "Metod-ID", description: "Vald metod från godkänd lista.", article: "-" },
+    { attribute: "Mätkälla", description: "Anger om baseline baseras på Huvudmätare (MP) eller Undermätare (CU).", article: "-" },
     { attribute: "Giltig från", description: "Startdatum för konfigurationen.", article: "-" },
     { attribute: "Specifika Parametrar", description: "Värden för metodens parametrar (om tillämpligt).", article: "-" }
   ]
@@ -77,7 +78,9 @@ export const content512Output: InfoObject = {
   title: "Till TSO/DSO",
   attributes: [
     { attribute: "CU-ID", description: "Resursen som konfigurerats.", article: "-" },
+    { attribute: "Mätpunkts-ID", description: "Kopplad anläggning (Huvudmätare).", article: "-" },
     { attribute: "Metod-ID", description: "Vilken metod som valts.", article: "-" },
+    { attribute: "Mätkälla", description: "Anger om baseline baseras på Huvudmätare (MP) eller Undermätare (CU).", article: "-" },
     { attribute: "Giltig från", description: "Startdatum för metodvalet.", article: "-" },
     { attribute: "Konfigurationsparametrar", description: "Valda parametervärden (för replikerbarhet).", article: "-" }
   ]
@@ -128,5 +131,3 @@ export const content522Output: InfoObject = {
     { attribute: "Källa", description: "Om datan är 'Calculated by FIS' eller 'Provided by SP'.", article: "-" }
   ]
 };
-
-// --- BRS-FLEX-521 OLD replaced by BRS-FLEX-601, keeping def if needed but not used here ---

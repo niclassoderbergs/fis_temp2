@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState, useId } from 'react';
 import mermaid from 'mermaid';
 
 mermaid.initialize({
@@ -12,6 +12,12 @@ mermaid.initialize({
     secondaryColor: '#ffffff',
     tertiaryColor: '#ffffff'
   },
+  flowchart: { htmlLabels: true },
+  sequence: { 
+    showSequenceNumbers: false,
+    useMaxWidth: true,
+    stickyHeader: false
+  },
   securityLevel: 'loose',
 });
 
@@ -20,51 +26,62 @@ interface MermaidProps {
 }
 
 export const MermaidDiagram: React.FC<MermaidProps> = ({ chart }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
+  // Generate a unique ID for this specific diagram instance.
+  // We remove colons because Mermaid IDs must be valid CSS selectors.
+  const baseId = useId().replace(/:/g, '');
+  const elementId = `mermaid-svg-${baseId}`;
+  
+  const [svgContent, setSvgContent] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (containerRef.current) {
-      // Återställ innehållet och sätt in koden
-      containerRef.current.innerHTML = chart;
-      containerRef.current.removeAttribute('data-processed');
-      
-      // Kör mermaid render
-      mermaid.run({
-        nodes: [containerRef.current]
-      }).catch(err => {
-        console.error("Mermaid error:", err);
-        if (containerRef.current) {
-             let msg = "Unknown error";
-             if (err instanceof Error) {
-                msg = err.message;
-             } else if (typeof err === 'string') {
-                msg = err;
-             } else if (typeof err === 'object' && err !== null) {
-                 if ('message' in err) {
-                     msg = (err as any).message;
-                 } else if ('str' in err) {
-                     msg = (err as any).str;
-                 } else {
-                     try {
-                        msg = JSON.stringify(err);
-                     } catch (e) {
-                        msg = "Error object could not be stringified";
-                     }
-                 }
-             }
+    let isCanceled = false;
 
-             containerRef.current.innerHTML = `<div style="color:#c00; font-family:monospace; padding:10px; border:1px solid #fdd; background:#fee;">
-               <strong>Diagram Syntax Error:</strong><br/>${msg}
-             </div>`;
+    const renderDiagram = async () => {
+      if (!chart) return;
+      
+      try {
+        setError(null);
+        // Use mermaid.render which returns an SVG string. 
+        // This is much safer than mermaid.run for multiple diagrams on one page.
+        const { svg } = await mermaid.render(elementId, chart);
+        
+        if (!isCanceled) {
+          setSvgContent(svg);
         }
-      });
-    }
-  }, [chart]);
+      } catch (err: any) {
+        console.error("Mermaid rendering failed:", err);
+        if (!isCanceled) {
+          setError(err.message || "Could not render diagram");
+        }
+      }
+    };
+
+    renderDiagram();
+
+    return () => {
+      isCanceled = true;
+    };
+  }, [chart, elementId]);
+
+  if (error) {
+    return (
+      <div style={{
+        color: '#c00', 
+        fontFamily: 'monospace', 
+        padding: '16px', 
+        border: '1px solid #fdd', 
+        backgroundColor: '#fee',
+        borderRadius: '4px',
+        fontSize: '0.8rem'
+      }}>
+        <strong>Diagram Syntax Error:</strong><br/>{error}
+      </div>
+    );
+  }
 
   return (
     <div 
-      className="mermaid" 
-      ref={containerRef}
       style={{ 
         display: 'flex', 
         justifyContent: 'center', 
@@ -73,10 +90,10 @@ export const MermaidDiagram: React.FC<MermaidProps> = ({ chart }) => {
         borderRadius: '8px',
         border: '1px solid #ebecf0',
         minHeight: '100px',
-        overflowX: 'auto'
+        overflowX: 'auto',
+        width: '100%'
       }}
-    >
-      {/* Initial content handled by useEffect */}
-    </div>
+      dangerouslySetInnerHTML={{ __html: svgContent }}
+    />
   );
 };

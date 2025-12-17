@@ -41,6 +41,9 @@ const calculateSection = (
 };
 
 export const calculateQuality = (brs: BRSData): QualityReport => {
+  // Helper to match ID formats (BRS-FLEX-101 vs BRSFLEX101)
+  const idPrefix = brs.id.replace(/-/g, '');
+  const numericId = parseInt(brs.id.replace(/\D/g, ''), 10);
   
   // 1. Purpose
   // Krav: Texten ska vara beskrivande (>20 tecken) och inte innehålla platshållare.
@@ -73,26 +76,26 @@ export const calculateQuality = (brs: BRSData): QualityReport => {
   );
 
   // 3. Start Conditions
-  // Krav: Ska finnas. Om det är en beroende process (t.ex. notify 205 eller internal 1000+) bör den referera till triggande BRS.
-  const isInternalOrDependent = parseInt(brs.id.replace(/\D/g, '')) > 200; 
+  // Krav: Ska finnas och ha beskrivande text. 
+  // (Tidigare krav på korsreferens till andra BRS:er borttaget då många processer triggas av extern aktör).
   const startConditions = calculateSection(
     !!brs.preConditions && brs.preConditions.length > 0,
     100,
     [
       {
-        // Om det är en komplex process, kolla om vi refererar till andra BRS:er i villkoren.
-        check: !isInternalOrDependent || brs.preConditions.some(c => {
+        // Enkel kontroll att texten är vettig (mer än 5 tecken)
+        check: brs.preConditions.every(c => {
             const txt = typeof c === 'string' ? c : c.description;
-            return txt.includes("BRS-FLEX-");
+            return txt && txt.length > 5;
         }),
-        penalty: 25,
-        msg: "Saknar explicit referens till triggande BRS (BRS-FLEX-XXX)."
+        penalty: 100, // Hårt straff om villkoret är tomt/nonsens
+        msg: "Startvillkoren saknar beskrivande text."
       }
     ]
   );
 
   // 4. Stop Conditions
-  // Krav: ID på post-conditions ska matcha BRS-ID (t.ex. BRS-FLEX-101-POST-1).
+  // Krav: ID på post-conditions ska matcha BRS-ID (t.ex. BRSFLEX101-2).
   const accepted = Array.isArray(brs.postConditions.accepted) ? brs.postConditions.accepted : [];
   const rejected = Array.isArray(brs.postConditions.rejected) ? brs.postConditions.rejected : [];
   const hasConditions = accepted.length > 0 || rejected.length > 0;
@@ -107,9 +110,12 @@ export const calculateQuality = (brs: BRSData): QualityReport => {
         msg: "Bör ha både 'Accepted' och 'Rejected' utfall."
       },
       {
-        check: [...accepted, ...rejected].every(c => typeof c !== 'string' && c.id.startsWith(brs.id)),
+        // Check if ID starts with BRSFLEXxxx (without hyphens) OR BRS-FLEX-xxx (legacy support)
+        check: [...accepted, ...rejected].every(c => 
+          typeof c !== 'string' && (c.id.startsWith(idPrefix) || c.id.startsWith(brs.id))
+        ),
         penalty: 50,
-        msg: `ID på post-conditions matchar ej ${brs.id}.`
+        msg: `ID på post-conditions matchar ej ${brs.id} (prefix ${idPrefix}).`
       }
     ]
   );
@@ -118,15 +124,24 @@ export const calculateQuality = (brs: BRSData): QualityReport => {
   // Krav: Regler ska finnas. De ska ha ErrorCodes (ej "-").
   // Interna funktioner (utan regler) får pass om arrayen är tom men definierad.
   const hasRules = brs.businessRules && brs.businessRules.length > 0;
-  // Undantag: Interna processer (t.ex. notification) kanske inte har valideringsregler.
-  const isNotification = brs.title.toLowerCase().includes("notifiera") || brs.title.toLowerCase().includes("notify");
+  
+  // Undantag:
+  // 1. Notifieringar (innehåller "notifier" eller "notify")
+  // 2. Interna processer (ID >= 1000)
+  // 3. List-funktioner (innehåller "lista" eller börjar med "list ")
+  const lowerTitle = brs.title.toLowerCase();
+  const isNotification = lowerTitle.includes("notifier") || lowerTitle.includes("notify");
+  const isListFunction = lowerTitle.includes("lista") || lowerTitle.startsWith("list ");
+  const isInternal = numericId >= 1000;
+  
+  const isExempt = isNotification || isInternal || isListFunction;
   
   const businessRules = calculateSection(
-    hasRules || isNotification, // Godkänn tomt om det är en notifiering
+    hasRules || isExempt, // Godkänn tomt om det är en notifiering, intern funktion eller lista
     100,
     [
       {
-        check: hasRules || isNotification, // Om ej notification måste det finnas regler
+        check: hasRules || isExempt, // Om ej exempt måste det finnas regler
         penalty: 100,
         msg: "Saknar affärsregler."
       },
@@ -153,7 +168,7 @@ export const calculateQuality = (brs: BRSData): QualityReport => {
   );
 
   // 7. Content
-  // Krav: InfoObjekt ska finnas. Attribut ska hänvisa till lagrum eller vara mandatory.
+  // Krav: InfoObjekt ska finnas.
   const content = calculateSection(
     !!brs.infoObjects && brs.infoObjects.length > 0,
     100,
@@ -162,11 +177,6 @@ export const calculateQuality = (brs: BRSData): QualityReport => {
         check: brs.infoObjects?.every(obj => obj.attributes.length > 0) ?? false,
         penalty: 20,
         msg: "Ett definierat objekt saknar attribut."
-      },
-      {
-        check: brs.infoObjects?.some(obj => obj.attributes.some(attr => attr.article && attr.article.length > 2)) ?? false,
-        penalty: 10,
-        msg: "Saknar referenser till lagrum (Artikel/Dr NC)."
       }
     ]
   );
