@@ -4,7 +4,7 @@ import { content101Input, content101Output } from '../../content-definitions';
 
 export const brsFlex101: BRSData = {
   id: "BRS-FLEX-101",
-  title: "SP registrerar en CU",
+  title: "SP registrerar CU",
   purpose: "Processen används av en SP för att registrera en ny Styrbar Enhet (Controllable Unit - CU) i FIS. Syftet är att skapa en unik identitet för en teknisk resurs och koppla denna till en specifik mätpunkt.",
   actors: [
     { role: "Initiator", description: "SP" },

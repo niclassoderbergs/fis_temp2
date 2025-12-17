@@ -7,6 +7,41 @@ import { MPSSection } from './MPSSection';
 import { BRSData, MPSData } from './types';
 import { StatusPage } from './StatusPage';
 import { DomainConditionsPage } from './DomainConditionsPage';
+import { ProceduresPage } from './ProceduresPage';
+import { JWGProcedure1 } from './JWGProcedure1';
+import { JWGProcedure2 } from './JWGProcedure2';
+import { JWGProcedure3 } from './JWGProcedure3';
+import { JWGProcedure4 } from './JWGProcedure4';
+import { JWGProcedure5 } from './JWGProcedure5';
+import { JWGProcedure6 } from './JWGProcedure6';
+import { JWGProcedure7 } from './JWGProcedure7';
+import { JWGProcedure8 } from './JWGProcedure8';
+import { JWGProcedure9 } from './JWGProcedure9';
+import { JWGProcedure10 } from './JWGProcedure10';
+import { JWGProcedure11 } from './JWGProcedure11';
+import { JWGProcedure12 } from './JWGProcedure12';
+import { JWGProcedure13 } from './JWGProcedure13';
+import { JWGProcedure14 } from './JWGProcedure14';
+import { JWGProcedure15 } from './JWGProcedure15';
+import { JWGProcedure16 } from './JWGProcedure16';
+import { JWGProcedure17 } from './JWGProcedure17';
+import { JWGProcedure18 } from './JWGProcedure18';
+import { JWGProcedure19 } from './JWGProcedure19';
+import { JWGProcedure20 } from './JWGProcedure20';
+import { JWGProcedure21 } from './JWGProcedure21';
+import { JWGProcedure22 } from './JWGProcedure22';
+import { JWGProcedure23 } from './JWGProcedure23';
+import { JWGProcedure24 } from './JWGProcedure24';
+import { JWGProcedure25 } from './JWGProcedure25';
+import { JWGProcedure26 } from './JWGProcedure26';
+import { JWGProcedure27 } from './JWGProcedure27';
+import { JWGProcedure28 } from './JWGProcedure28';
+import { JWGProcedure29 } from './JWGProcedure29';
+import { JWGProcedure30 } from './JWGProcedure30';
+import { JWGProcedure31 } from './JWGProcedure31';
+import { JWGProcedure32 } from './JWGProcedure32';
+import { JWGProcedure33 } from './JWGProcedure33';
+import { JWGProcedure34 } from './JWGProcedure34';
 
 // --- Styles ---
 const styles = {
@@ -398,6 +433,7 @@ const groups: GroupDef[] = [
   { id: '500', title: 'Domän 5: Baseline', brsPrefixes: ['BRS-FLEX-5'], mpsPrefixes: ['MPS-FLEX-5'] },
   { id: '600', title: 'Domän 6: Mätvärden', brsPrefixes: ['BRS-FLEX-6'], mpsPrefixes: ['MPS-FLEX-6'] },
   { id: '700', title: 'Domän 7: Verifiering', brsPrefixes: ['BRS-FLEX-7'], mpsPrefixes: ['MPS-FLEX-7'] },
+  { id: '800', title: 'Domän 8: Aktörsadministration', brsPrefixes: ['BRS-FLEX-8'], mpsPrefixes: ['MPS-FLEX-8'] },
 ];
 
 interface SidebarGroupProps {
@@ -412,7 +448,7 @@ interface SidebarGroupProps {
   onSelectBRS: (id: string) => void;
   onSelectMPS: (id: string) => void;
   onSelectConditions: (domainId: string) => void;
-  viewMode: 'detail' | 'status' | 'mps' | 'conditions';
+  viewMode: string;
 }
 
 const SidebarGroup: React.FC<SidebarGroupProps> = ({ 
@@ -453,11 +489,12 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
   else if (group.id === '500') mpsHeader = "MPS - Marknadsprocesser Domän 5";
   else if (group.id === '600') mpsHeader = "MPS - Marknadsprocesser Domän 6";
   else if (group.id === '700') mpsHeader = "MPS - Marknadsprocesser Domän 7";
+  else if (group.id === '800') mpsHeader = "MPS - Marknadsprocesser Domän 8";
 
   // Determine domain ID
   const domainId = group.id.substring(0, 1);
-  // Allow condition matrix for domain 1-7
-  const showConditionsLink = ['100', '200', '300', '400', '500', '600', '700'].includes(group.id);
+  // Allow condition matrix for domain 1-8
+  const showConditionsLink = ['100', '200', '300', '400', '500', '600', '700', '800'].includes(group.id);
 
   return (
     <div style={styles.treeGroup}>
@@ -601,6 +638,15 @@ const STORAGE_KEY = 'fis-wiki-data-v1';
 const sortById = (a: { id: string }, b: { id: string }) => 
   a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' });
 
+type ViewMode = 'detail' | 'status' | 'mps' | 'conditions' | 'procedures' 
+| 'jwg-procedure-1' | 'jwg-procedure-2' | 'jwg-procedure-3' | 'jwg-procedure-4' | 'jwg-procedure-5' 
+| 'jwg-procedure-6' | 'jwg-procedure-7' | 'jwg-procedure-8' | 'jwg-procedure-9' | 'jwg-procedure-10' 
+| 'jwg-procedure-11' | 'jwg-procedure-12' | 'jwg-procedure-13' | 'jwg-procedure-14' | 'jwg-procedure-15'
+| 'jwg-procedure-16' | 'jwg-procedure-17' | 'jwg-procedure-18' | 'jwg-procedure-19' | 'jwg-procedure-20'
+| 'jwg-procedure-21' | 'jwg-procedure-22' | 'jwg-procedure-23' | 'jwg-procedure-24' | 'jwg-procedure-25'
+| 'jwg-procedure-26' | 'jwg-procedure-27' | 'jwg-procedure-28' | 'jwg-procedure-29' | 'jwg-procedure-30'
+| 'jwg-procedure-31' | 'jwg-procedure-32' | 'jwg-procedure-33' | 'jwg-procedure-34';
+
 function App() {
   const [brsData, setBrsData] = useState<BRSData[]>(initialBrsList);
   const [mpsData, setMpsData] = useState<MPSData[]>(initialMpsList);
@@ -609,8 +655,8 @@ function App() {
   const [selectedMpsId, setSelectedMpsId] = useState<string>(initialMpsList[0]?.id || '');
   const [selectedDomain, setSelectedDomain] = useState<string>('1'); // '1' or '2' etc.
   
-  const [openGroups, setOpenGroups] = useState<string[]>(['100', '200', '300', '400', '500', '600', '700']);
-  const [viewMode, setViewMode] = useState<'detail' | 'status' | 'mps' | 'conditions'>('detail');
+  const [openGroups, setOpenGroups] = useState<string[]>(['100', '200', '300', '400', '500', '600', '700', '800']);
+  const [viewMode, setViewMode] = useState<ViewMode>('detail');
   const [isEditing, setIsEditing] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -759,6 +805,11 @@ function App() {
                     <span style={{fontSize: '1.1rem', marginRight: '8px'}}>📊</span> Status Dashboard
                 </div>
              </button>
+             <button onClick={() => setViewMode('procedures')} style={{...styles.treeItem, fontWeight: 500, ...(viewMode === 'procedures' ? styles.treeItemActive : {})}}>
+                <div style={{display: 'flex', alignItems: 'center'}}>
+                    <span style={{fontSize: '1.1rem', marginRight: '8px'}}>📜</span> JWG Processlista
+                </div>
+             </button>
 
             <div style={styles.menuHeader}>Dokumentation</div>
             {groups.map(group => {
@@ -802,6 +853,55 @@ function App() {
               </div>
             )}
 
+            {viewMode === 'procedures' && (
+              <div style={styles.mainScroll}>
+                <div style={styles.paper}>
+                  <ProceduresPage 
+                    onNavigateToBRS={handleSelectBRS} 
+                    onNavigateToProcedure={(id) => {
+                      if (id >= 1 && id <= 34) setViewMode(`jwg-procedure-${id}` as ViewMode);
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* JWG Procedures 1-34 */}
+            {viewMode === 'jwg-procedure-1' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure1 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-2' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure2 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-3' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure3 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-4' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure4 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-5' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure5 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-6' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure6 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-7' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure7 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-8' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure8 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-9' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure9 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-10' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure10 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-11' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure11 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-12' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure12 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-13' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure13 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-14' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure14 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-15' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure15 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-16' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure16 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-17' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure17 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-18' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure18 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-19' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure19 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-20' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure20 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-21' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure21 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-22' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure22 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-23' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure23 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-24' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure24 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-25' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure25 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-26' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure26 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-27' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure27 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-28' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure28 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-29' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure29 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-30' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure30 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-31' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure31 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-32' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure32 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-33' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure33 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-34' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure34 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+
             {viewMode === 'conditions' && (
               <div style={styles.mainScroll}>
                 <DomainConditionsPage 
@@ -820,7 +920,7 @@ function App() {
                 <div style={styles.paper}>
                   <MPSSection 
                     activeMPS={activeMPS} 
-                    brsList={brsData} // Passed brsList here
+                    brsList={brsData} 
                     styles={styles} 
                     onNavigateToBRS={handleSelectBRS}
                   />
@@ -858,7 +958,6 @@ function App() {
                       onRemove={(idx) => handleRemoveArrayItem('preConditions', idx)}
                     />
                     
-                    {/* Simplified for brevity - Post conditions logic is same as before */}
                     <h3 style={styles.subHeader}>Stop conditions</h3>
                     <h4 style={styles.subSubHeader}>If accepted</h4>
                     <EditableTable 

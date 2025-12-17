@@ -252,17 +252,35 @@ export const mpsFlex130: MPSData = {
     deactivate FIS`,
       steps: [
         { 
-          stepId: "MPS-FLEX-130-Sc1.1", role: "SP", action: "Begäran", 
+          stepId: "MPS-FLEX-130-Sc1.1", role: "SP", action: "Registrering av CU", 
+          description: "SP har registrerat en ny styrbar enhet (CU).", 
+          refBRS: "BRS-FLEX-101", refRule: "BRSFLEX101-1",
+          isPrerequisite: true
+        },
+        { 
+          stepId: "MPS-FLEX-130-Sc1.2", role: "FIS", action: "CU Skapad", 
+          description: "FIS har registrerat den nya styrbara enheten (CU).", 
+          refBRS: "BRS-FLEX-101", refRule: "BRSFLEX101-2",
+          isPrerequisite: true
+        },
+        { 
+          stepId: "MPS-FLEX-130-Sc1.3", role: "SP", action: "Har CU-ID", 
+          description: "SP har mottagit kvittens med den nya enhetens ID.", 
+          refBRS: "BRS-FLEX-101", refRule: "BRSFLEX101-3",
+          isPrerequisite: true
+        },
+        { 
+          stepId: "MPS-FLEX-130-Sc1.4", role: "SP", action: "Begäran", 
           description: "SP begär koppling av CU till SPU.", 
           refBRS: "BRS-FLEX-130", refRule: "BRSFLEX130-1" 
         },
         { 
-          stepId: "MPS-FLEX-130-Sc1.2", role: "FIS", action: "Koppla", 
+          stepId: "MPS-FLEX-130-Sc1.5", role: "FIS", action: "Koppla", 
           description: "FIS upprättar relationen mellan CU och SPU.", 
           refBRS: "BRS-FLEX-130", refRule: "BRSFLEX130-2" 
         },
         { 
-          stepId: "MPS-FLEX-130-Sc1.3", role: "FIS", action: "Statusuppdatering", 
+          stepId: "MPS-FLEX-130-Sc1.6", role: "FIS", action: "Statusuppdatering", 
           description: "FIS uppdaterar SPU:ns status (t.ex. till Active).", 
           refBRS: "BRS-FLEX-130", refRule: "BRSFLEX130-3" 
         }
@@ -292,7 +310,7 @@ export const mpsFlex130: MPSData = {
         },
         { 
           stepId: "MPS-FLEX-130-Sc2.2", role: "FIS", action: "Bortkoppling", 
-          description: "FIS tar bort kopplingen mellan resurs and SPU.", 
+          description: "FIS tar bort kopplingen mellan resurs och SPU.", 
           refBRS: "BRS-FLEX-131", refRule: "BRSFLEX131-2" 
         },
         { 

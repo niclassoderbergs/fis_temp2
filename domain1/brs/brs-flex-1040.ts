@@ -1,6 +1,6 @@
 
 import { BRSData } from '../../types';
-import { content104Input, content104Output } from '../../content-definitions';
+import { content1040Input, content1040Output } from '../../content-definitions';
 
 export const brsFlex1040: BRSData = {
   id: "BRS-FLEX-1040",
@@ -38,5 +38,5 @@ export const brsFlex1040: BRSData = {
     { id: "BRSFLEX1040-5", description: "FIS uppdaterar CU-status baserat på extern händelse." },
     { id: "BRSFLEX1040-6", description: "FIS notifierar SP om uppdateringen." }
   ],
-  infoObjects: [content104Input, content104Output]
+  infoObjects: [content1040Input, content1040Output]
 };

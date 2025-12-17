@@ -5,12 +5,23 @@ import { BRSData, MPSData } from './types';
 import { brsFlex101 } from './domain1/brs/brs-flex-101';
 import { brsFlex102 } from './domain1/brs/brs-flex-102';
 import { brsFlex103 } from './domain1/brs/brs-flex-103';
+import { brsFlex104 } from './domain1/brs/brs-flex-104'; // New
 import { brsFlex1040 } from './domain1/brs/brs-flex-1040';
 import { brsFlex110 } from './domain1/brs/brs-flex-110';
 import { brsFlex111 } from './domain1/brs/brs-flex-111';
+import { brsFlex112 } from './domain1/brs/brs-flex-112';
+import { brsFlex113 } from './domain1/brs/brs-flex-113';
+import { brsFlex114 } from './domain1/brs/brs-flex-114';
+import { brsFlex115 } from './domain1/brs/brs-flex-115';
+import { brsFlex116 } from './domain1/brs/brs-flex-116';
 import { brsFlex1110 } from './domain1/brs/brs-flex-1110';
 import { brsFlex120 } from './domain1/brs/brs-flex-120';
 import { brsFlex121 } from './domain1/brs/brs-flex-121';
+import { brsFlex122 } from './domain1/brs/brs-flex-122';
+import { brsFlex123 } from './domain1/brs/brs-flex-123';
+import { brsFlex124 } from './domain1/brs/brs-flex-124';
+import { brsFlex125 } from './domain1/brs/brs-flex-125';
+import { brsFlex126 } from './domain1/brs/brs-flex-126';
 import { brsFlex1210 } from './domain1/brs/brs-flex-1210';
 import { brsFlex130 } from './domain1/brs/brs-flex-130';
 import { brsFlex131 } from './domain1/brs/brs-flex-131';
@@ -84,7 +95,6 @@ import { brsFlex613 } from './domain6/brs/brs-flex-613';
 import { brsFlex622 } from './domain6/brs/brs-flex-622';
 
 // MPS Domain 6
-// Added missing import for mpsFlex600
 import { mpsFlex600 } from './domain6/mps/mps-domain-6';
 
 // Domän 7: Verifiering & Budgivning
@@ -99,7 +109,7 @@ import { brsFlex713 } from './domain7/brs/brs-flex-713';
 import { brsFlex7110 } from './domain7/brs/brs-flex-7110';
 import { brsFlex7120 } from './domain7/brs/brs-flex-7120';
 import { brsFlex7121 } from './domain7/brs/brs-flex-7121';
-import { brsFlex714 } from './domain7/brs/brs-flex-714'; // New
+import { brsFlex714 } from './domain7/brs/brs-flex-714';
 import { brsFlex715 } from './domain7/brs/brs-flex-715';
 import { brsFlex716 } from './domain7/brs/brs-flex-716';
 import { brsFlex721 } from './domain7/brs/brs-flex-721';
@@ -109,9 +119,24 @@ import { brsFlex723 } from './domain7/brs/brs-flex-723';
 // MPS Domain 7
 import { mpsFlex700, mpsFlex710, mpsFlex720 } from './domain7/mps/mps-domain-7';
 
+// Domän 8: Aktörsadministration
+import { brsFlex801 } from './domain8/brs/brs-flex-801';
+import { brsFlex802 } from './domain8/brs/brs-flex-802';
+import { brsFlex803 } from './domain8/brs/brs-flex-803';
+import { brsFlex804 } from './domain8/brs/brs-flex-804';
+import { brsFlex810 } from './domain8/brs/brs-flex-810';
+import { brsFlex811 } from './domain8/brs/brs-flex-811';
+import { brsFlex812 } from './domain8/brs/brs-flex-812';
+
+// MPS Domain 8
+import { mpsFlex800 } from './domain8/mps/mps-domain-8';
+
 export const brsList: BRSData[] = [
   // Domän 1: Master data och aggregeringsobjekt
-  brsFlex101, brsFlex102, brsFlex103, brsFlex1040, brsFlex110, brsFlex111, brsFlex1110, brsFlex120, brsFlex121, brsFlex1210, brsFlex130, brsFlex131, brsFlex1310, brsFlex1320, brsFlex134, brsFlex140, brsFlex141, brsFlex1420, brsFlex144,
+  brsFlex101, brsFlex102, brsFlex103, brsFlex104, brsFlex1040, 
+  brsFlex110, brsFlex111, brsFlex112, brsFlex113, brsFlex114, brsFlex115, brsFlex116, brsFlex1110, 
+  brsFlex120, brsFlex121, brsFlex122, brsFlex123, brsFlex124, brsFlex125, brsFlex126, brsFlex1210, 
+  brsFlex130, brsFlex131, brsFlex1310, brsFlex1320, brsFlex134, brsFlex140, brsFlex141, brsFlex1420, brsFlex144,
   // Domän 2: Avtal & Marknad
   brsFlex201, brsFlex202, brsFlex203, brsFlex2040, brsFlex205, brsFlex206,
   // Domän 3: Produkt & Kvalificering
@@ -123,9 +148,11 @@ export const brsList: BRSData[] = [
   // Domän 6: Mätvärden
   brsFlex601, brsFlex602, brsFlex603, brsFlex611, brsFlex6110, brsFlex612, brsFlex613, brsFlex622,
   // Domän 7: Verifiering & Budgivning
-  brsFlex701, brsFlex702, brsFlex7011, brsFlex705, brsFlex706, brsFlex711, brsFlex712, brsFlex713, brsFlex7110, brsFlex7120, brsFlex7121, brsFlex714, brsFlex715, brsFlex716, brsFlex721, brsFlex722, brsFlex723
+  brsFlex701, brsFlex702, brsFlex7011, brsFlex705, brsFlex706, brsFlex711, brsFlex712, brsFlex713, brsFlex7110, brsFlex7120, brsFlex7121, brsFlex714, brsFlex715, brsFlex716, brsFlex721, brsFlex722, brsFlex723,
+  // Domän 8: Aktörsadministration
+  brsFlex801, brsFlex802, brsFlex803, brsFlex804, brsFlex810, brsFlex811, brsFlex812
 ];
 
 export const mpsList: MPSData[] = [
-  mpsFlex100, mpsFlex110, mpsFlex130, mpsFlex140, mpsFlex200, mpsFlex300, mpsFlex400, mpsFlex500, mpsFlex600, mpsFlex700, mpsFlex710, mpsFlex720
+  mpsFlex100, mpsFlex110, mpsFlex130, mpsFlex140, mpsFlex200, mpsFlex300, mpsFlex400, mpsFlex500, mpsFlex600, mpsFlex700, mpsFlex710, mpsFlex720, mpsFlex800
 ];

@@ -4,14 +4,14 @@ import { content102Input } from '../../content-definitions';
 
 export const brsFlex102: BRSData = {
   id: "BRS-FLEX-102",
-  title: "SP uppdaterar en CU",
+  title: "SP uppdaterar CU",
   purpose: "Processen används för att uppdatera stamdata för en befintlig Styrbar Enhet (CU). Detta säkerställer att registret speglar verkligheten vid förändringar (t.ex. utökad effekt).",
   actors: [
     { role: "Initiator", description: "SP" },
     { role: "Mottagare", description: "FIS" }
   ],
   diagramCode: `sequenceDiagram
-    title BRS-FLEX-102: SP uppdaterar en CU
+    title BRS-FLEX-102: SP uppdaterar CU
     participant SP as SP
     participant FIS as FIS
 
