@@ -9,6 +9,45 @@ interface ProcedureDef {
   brs: string[];
 }
 
+// "Sanningen" om vad som faktiskt är kodat/importerat i respektive JWGProcedure-fil.
+// Detta används för att kontrollera integriteten mot listan nedan.
+const implementationMap: Record<number, string[]> = {
+  1: ["BRS-FLEX-103"],
+  2: ["BRS-FLEX-101"],
+  3: ["BRS-FLEX-102", "BRS-FLEX-1040"],
+  4: ["BRS-FLEX-102"], // Detaljsidan implementerar 102, men processen kanske kräver 1040 också?
+  5: ["BRS-FLEX-104"],
+  6: ["BRS-FLEX-105", "BRS-FLEX-106", "BRS-FLEX-107"],
+  7: ["BRS-FLEX-801"],
+  8: ["BRS-FLEX-802"],
+  9: ["BRS-FLEX-208", "BRS-FLEX-205"],
+  10: ["BRS-FLEX-202"],
+  11: ["BRS-FLEX-201"],
+  12: ["BRS-FLEX-207"], // Hävning
+  13: ["BRS-FLEX-803"],
+  14: ["BRS-FLEX-803"],
+  15: ["BRS-FLEX-804"],
+  16: ["BRS-FLEX-810"],
+  17: ["BRS-FLEX-811"],
+  18: ["BRS-FLEX-812"],
+  19: ["BRS-FLEX-321"],
+  20: ["BRS-FLEX-312"],
+  21: ["BRS-FLEX-714"],
+  22: ["BRS-FLEX-110"],
+  23: ["BRS-FLEX-112"],
+  24: ["BRS-FLEX-113"],
+  25: ["BRS-FLEX-311"],
+  26: ["BRS-FLEX-114"],
+  27: ["BRS-FLEX-115"],
+  28: ["BRS-FLEX-116"],
+  29: ["BRS-FLEX-701"],
+  30: ["BRS-FLEX-402"],
+  31: ["BRS-FLEX-511"],
+  32: ["BRS-FLEX-603"],
+  33: ["BRS-FLEX-6110"],
+  34: ["BRS-FLEX-5210"]
+};
+
 const procedures: ProcedureDef[] = [
   { 
     id: 1, 
@@ -62,7 +101,7 @@ const procedures: ProcedureDef[] = [
     id: 9, 
     name: "Återkallelse av serviceavtal (av Slutkund)", 
     desc: "Slutkunden avslutar avtalet med sin SP (vilket tar bort SP:ns rätt till CU:n).",
-    brs: ["BRS-FLEX-2040", "BRS-FLEX-205"]
+    brs: ["BRS-FLEX-208", "BRS-FLEX-205"]
   },
   { 
     id: 10, 
@@ -80,7 +119,7 @@ const procedures: ProcedureDef[] = [
     id: 12, 
     name: "Annullering av SP-registrering på CU", 
     desc: "Den nya SP:n eller kunden ångrar bytet/registreringen innan startdatumet har infallit.",
-    brs: ["BRS-FLEX-202"]
+    brs: ["BRS-FLEX-207"] // Här kan man testa att byta till 202 för att se varningen
   },
   { 
     id: 13, 
@@ -294,6 +333,14 @@ const styles = {
     fontSize: '0.8rem',
     cursor: 'pointer',
     marginTop: '4px'
+  },
+  warning: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    marginLeft: '8px',
+    color: '#bf2600',
+    fontSize: '0.9rem',
+    cursor: 'help'
   }
 };
 
@@ -320,44 +367,75 @@ export const ProceduresPage: React.FC<ProceduresPageProps> = ({ onNavigateToBRS,
           </tr>
         </thead>
         <tbody>
-          {procedures.map((proc, index) => (
-            <tr key={proc.id} style={index % 2 === 1 ? styles.trEven : {}}>
-              <td style={{...styles.td, ...styles.idCell}}>{proc.id}</td>
-              <td style={{...styles.td, fontWeight: 600, width: '25%'}}>
-                {proc.name}
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34].includes(proc.id) && onNavigateToProcedure && (
-                  <div>
-                    <button 
-                      style={styles.viewButton} 
-                      onClick={() => onNavigateToProcedure(proc.id)}
-                    >
-                      Se detaljer
-                    </button>
-                  </div>
-                )}
-              </td>
-              <td style={styles.td}>{proc.desc}</td>
-              <td style={styles.td}>
-                {proc.brs && proc.brs.length > 0 ? (
-                  proc.brs.map(brsId => {
-                    return (
-                        <div key={brsId} style={{marginBottom: '6px', display: 'flex', alignItems: 'flex-start'}}>
-                            <span 
-                            style={styles.brsTag}
-                            onClick={() => onNavigateToBRS(brsId)}
-                            title={`Gå till ${brsId}`}
-                            >
-                            {brsId}
-                            </span>
-                        </div>
-                    );
-                  })
-                ) : (
-                  <span style={styles.missingTag}>Ej täckt</span>
-                )}
-              </td>
-            </tr>
-          ))}
+          {procedures.map((proc, index) => {
+            // Kontrollera om listan matchar implementationen
+            const declaredBRS = proc.brs || [];
+            const implementedBRS = implementationMap[proc.id] || [];
+            
+            // Hitta skillnader
+            const missingInImplementation = declaredBRS.filter(x => !implementedBRS.includes(x));
+            const missingInList = implementedBRS.filter(x => !declaredBRS.includes(x));
+            
+            // Flagga om det finns skillnader, men ignorera om implementationMap är tom (t.ex. för processer > 34 om de fanns)
+            const hasMismatch = (missingInImplementation.length > 0 || missingInList.length > 0) && implementedBRS.length > 0;
+            
+            const warningTooltip = hasMismatch 
+                ? `Mismatch detected!\nListed but missing in code: ${missingInImplementation.join(', ') || 'None'}\nFound in code but missing in list: ${missingInList.join(', ') || 'None'}`
+                : '';
+
+            return (
+                <tr key={proc.id} style={index % 2 === 1 ? styles.trEven : {}}>
+                <td style={{...styles.td, ...styles.idCell}}>{proc.id}</td>
+                <td style={{...styles.td, fontWeight: 600, width: '25%'}}>
+                    {proc.name}
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34].includes(proc.id) && onNavigateToProcedure && (
+                    <div>
+                        <button 
+                        style={styles.viewButton} 
+                        onClick={() => onNavigateToProcedure(proc.id)}
+                        >
+                        Se detaljer
+                        </button>
+                    </div>
+                    )}
+                </td>
+                <td style={styles.td}>{proc.desc}</td>
+                <td style={styles.td}>
+                    {declaredBRS.length > 0 ? (
+                    declaredBRS.map(brsId => {
+                        const brsObj = brsList.find(b => b.id === brsId);
+                        return (
+                            <div key={brsId} style={{marginBottom: '8px'}}>
+                                <div style={{display: 'flex', alignItems: 'center'}}>
+                                    <span 
+                                    style={styles.brsTag}
+                                    onClick={() => onNavigateToBRS(brsId)}
+                                    title={`Gå till ${brsId}`}
+                                    >
+                                    {brsId}
+                                    </span>
+                                </div>
+                                {brsObj && (
+                                    <div style={{fontSize: '0.75rem', color: '#666', marginTop: '2px', paddingLeft: '2px'}}>
+                                        {brsObj.title}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })
+                    ) : (
+                    <span style={styles.missingTag}>Ej täckt</span>
+                    )}
+                    
+                    {hasMismatch && (
+                        <span style={styles.warning} title={warningTooltip}>
+                            ⚠️ <span style={{fontSize: '0.7rem', marginLeft: '4px', textDecoration: 'underline'}}>Mismatch</span>
+                        </span>
+                    )}
+                </td>
+                </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

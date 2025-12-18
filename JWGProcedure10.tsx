@@ -13,7 +13,9 @@ const styles = {
   table: { width: '100%', borderCollapse: 'collapse' as const, boxShadow: '0 1px 3px rgba(0,0,0,0.1)', fontSize: '0.9rem', border: '1px solid #dfe1e6', marginBottom: '24px' },
   th: { backgroundColor: '#f4f5f7', color: '#172b4d', padding: '12px 16px', textAlign: 'left' as const, borderBottom: '2px solid #dfe1e6', fontWeight: 600 },
   td: { padding: '12px 16px', borderBottom: '1px solid #dfe1e6', verticalAlign: 'top' as const, color: '#172b4d', lineHeight: '1.5' },
-  backButton: { marginBottom: '20px', padding: '8px 16px', backgroundColor: '#e6effc', color: '#0052cc', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 },
+  backButton: { padding: '8px 16px', backgroundColor: '#e6effc', color: '#0052cc', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 },
+  navHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
+  navButtons: { display: 'flex', gap: '8px' },
   brsBox: { backgroundColor: '#e3fcef', padding: '16px', borderRadius: '4px', borderLeft: '4px solid #006644', marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
   brsLink: { color: '#006644', fontWeight: 700, textDecoration: 'underline', cursor: 'pointer', fontSize: '1.1rem' },
   mappingTag: { display: 'inline-block', backgroundColor: '#e3fcef', color: '#006644', padding: '2px 6px', borderRadius: '3px', fontSize: '0.8rem', fontWeight: 600, marginBottom: '4px' },
@@ -21,38 +23,72 @@ const styles = {
 };
 
 const diagramCode = `sequenceDiagram
-    title Procedure 10: Termination of a contract (by SP)
+    title Procedure 10: Service contract termination by service provider
+    participant FC as Final Customer
     participant SP as Service Provider
     participant CUMA as CU Module Administrator
+    participant EP as Entitled parties
 
-    SP->>CUMA: 10.1 Request termination (ID: A)
+    Note over SP: 10.1 Send contract termination message
+    SP->>FC: Info Item R: Termination message
+
+    Note over SP: 10.2 Request to remove the assignment of the CU
+    SP->>CUMA: Info Item S: Request removal
     activate CUMA
-    CUMA->>CUMA: 10.2 Validate request
-    CUMA->>CUMA: Set End Date
-    CUMA-->>SP: 10.3 Confirm termination (ID: B)
-    deactivate CUMA`;
+    
+    Note over CUMA: 10.3 Validate request to remove assignment
+    
+    alt Request validation failed
+        CUMA-->>SP: Info Item B: Validation failed
+    else Request validation passed
+        Note over CUMA: 10.4 Execute removal of the CU unassignment
+        
+        Note over CUMA: 10.5 Send removal of CU assignment
+        CUMA-->>SP: Info Item S: Confirmation
+        
+        Note over CUMA: 10.6 Notify about contractless CU
+        CUMA->>EP: Info Item U: Notification
+        
+        opt Notify final customer?
+            Note over CUMA: 10.7 Notify contract termination
+            CUMA->>FC: Info Item V: Notification
+        end
+    end
+    deactivate CUMA
+
+    opt Notify final customer?
+        Note over SP: 10.8 (Conditional) Notify contract termination
+        SP->>FC: Info Item V: Notification
+    end`;
 
 const steps = [
-  { step: "10.1", action: "Request termination", description: "SP requests to terminate the contract.", producer: "SP", receiver: "CUMA", infoId: "A" },
-  { step: "10.2", action: "Validate", description: "Validate contract exists and belongs to SP.", producer: "CUMA", receiver: "SP", infoId: "B" },
-  { step: "10.3", action: "Confirm", description: "Confirm end date.", producer: "CUMA", receiver: "SP", infoId: "B" }
+  { step: "10.1", action: "Send contract termination message", description: "The Service Provider informs the Final Customer about the contract termination.", producer: "Service provider", receiver: "Final customer", infoId: "R" },
+  { step: "10.2", action: "Request to remove the assignment of the CU", description: "The SP requests CUMA to remove the link between SP and CU.", producer: "Service provider", receiver: "CU Module Administrator", infoId: "S" },
+  { step: "10.3", action: "Validate request to remove assignment of the CU", description: "CUMA validates the request.", producer: "CU Module Administrator", receiver: "-", infoId: "-" },
+  { step: "10.4", action: "Execute removal of the CU unassignment", description: "CUMA performs the unassignment.", producer: "CU Module Administrator", receiver: "-", infoId: "-" },
+  { step: "10.5", action: "Send removal of CU assignment", description: "CUMA confirms the removal to the Service Provider.", producer: "CU Module Administrator", receiver: "Service provider", infoId: "S" },
+  { step: "10.6", action: "Notify about contractless CU", description: "CUMA notifies entitled parties that the CU is now contractless.", producer: "CU Module Administrator", receiver: "Entitled parties", infoId: "U" },
+  { step: "10.7", action: "Notify contract termination", description: "Conditional: CUMA notifies the Final Customer.", producer: "CU Module Administrator", receiver: "Final customer", infoId: "V" },
+  { step: "10.8", action: "Notify contract termination", description: "Conditional: SP notifies the Final Customer (if not done in 10.1 or 10.7).", producer: "Service provider", receiver: "Final customer", infoId: "V" }
 ];
 
 const attributes = [
-  { name: "Contract identifier", desc: "The contract to end." },
-  { name: "End date", desc: "The last day of validity." },
-  { name: "Reason", desc: "Optional reason." }
+  { name: "CU identification", desc: "The resource to unassign." },
+  { name: "Contract End Date", desc: "The date when the contract ends." }
 ];
 
 const jwgToBrsMapping: Record<string, string> = {
-  "Contract identifier": "Flexibilitetsavtals-ID",
-  "End date": "Slutdatum",
-  "Reason": "Orsak"
+  "CU identification": "CU-ID",
+  "Contract End Date": "Slutdatum"
 };
 
-interface Props { onBack: () => void; onNavigateToBRS: (id: string) => void; }
+interface Props { 
+    onBack: () => void; 
+    onNavigateToBRS: (id: string) => void;
+    onNavigateToProcedure: (id: number) => void;
+}
 
-export const JWGProcedure10: React.FC<Props> = ({ onBack, onNavigateToBRS }) => {
+export const JWGProcedure10: React.FC<Props> = ({ onBack, onNavigateToBRS, onNavigateToProcedure }) => {
   const getBrsAttribute = (jwgAttrName: string) => {
     const mappedName = jwgToBrsMapping[jwgAttrName];
     if (!mappedName) return null;
@@ -65,9 +101,16 @@ export const JWGProcedure10: React.FC<Props> = ({ onBack, onNavigateToBRS }) => 
 
   return (
     <div style={styles.container}>
-      <button style={styles.backButton} onClick={onBack}>← Tillbaka till listan</button>
-      <h1 style={styles.header}>Procedure 10: Termination of a contract (by SP)</h1>
-      <p style={styles.subHeader}>SP avslutar flexibilitetsavtalet.</p>
+      <div style={styles.navHeader}>
+        <button style={styles.backButton} onClick={onBack}>← Tillbaka till listan</button>
+        <div style={styles.navButtons}>
+            <button style={styles.backButton} onClick={() => onNavigateToProcedure(9)}>← Föregående</button>
+            <button style={styles.backButton} onClick={() => onNavigateToProcedure(11)}>Nästa →</button>
+        </div>
+      </div>
+
+      <h1 style={styles.header}>Procedure 10: Service contract termination by service provider</h1>
+      <p style={styles.subHeader}>Tjänsteleverantören (SP) avslutar avtalet (Uppsägning).</p>
 
       <div style={styles.brsBox}>
         <div>
@@ -80,7 +123,21 @@ export const JWGProcedure10: React.FC<Props> = ({ onBack, onNavigateToBRS }) => 
       <section><h2 style={styles.sectionHeader}>Processflöde</h2><MermaidDiagram chart={diagramCode} /></section>
 
       <section>
-        <h2 style={styles.sectionHeader}>Datainnehåll</h2>
+        <h2 style={styles.sectionHeader}>Steg i processen</h2>
+        <table style={styles.table}>
+          <thead><tr><th style={styles.th}>Steg</th><th style={styles.th}>Handling</th><th style={styles.th}>Beskrivning</th><th style={styles.th}>Avsändare</th><th style={styles.th}>Mottagare</th><th style={styles.th}>Info ID</th></tr></thead>
+          <tbody>
+            {steps.map((s, i) => (
+              <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
+                <td style={styles.td}><strong>{s.step}</strong></td><td style={styles.td}>{s.action}</td><td style={styles.td}>{s.description}</td><td style={styles.td}>{s.producer}</td><td style={styles.td}>{s.receiver}</td><td style={styles.td}><strong>{s.infoId}</strong></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2 style={styles.sectionHeader}>Datainnehåll: Info S (Request)</h2>
         <table style={styles.table}>
           <thead><tr><th style={styles.th}>JWG Attribut</th><th style={styles.th}>Motsvarighet i {brsFlex202.id}</th></tr></thead>
           <tbody>

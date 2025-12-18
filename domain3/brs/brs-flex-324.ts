@@ -4,7 +4,7 @@ import { content324Output } from '../../content-definitions';
 
 export const brsFlex324: BRSData = {
   id: "BRS-FLEX-324",
-  title: "Notifiering om nätförkvalificering",
+  title: "SP notifieras om nätförkvalificering",
   purpose: "Att informera SP om resultatet av en nätförkvalificering (Grid Qualification) som rapporterats av Nätägaren (DSO). Detta inkluderar information om eventuella villkor för godkännandet.",
   actors: [
     { role: "Initiator", description: "FIS (System)" },

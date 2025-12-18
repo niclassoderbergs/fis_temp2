@@ -13,7 +13,9 @@ const styles = {
   table: { width: '100%', borderCollapse: 'collapse' as const, boxShadow: '0 1px 3px rgba(0,0,0,0.1)', fontSize: '0.9rem', border: '1px solid #dfe1e6', marginBottom: '24px' },
   th: { backgroundColor: '#f4f5f7', color: '#172b4d', padding: '12px 16px', textAlign: 'left' as const, borderBottom: '2px solid #dfe1e6', fontWeight: 600 },
   td: { padding: '12px 16px', borderBottom: '1px solid #dfe1e6', verticalAlign: 'top' as const, color: '#172b4d', lineHeight: '1.5' },
-  backButton: { marginBottom: '20px', padding: '8px 16px', backgroundColor: '#e6effc', color: '#0052cc', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' },
+  backButton: { padding: '8px 16px', backgroundColor: '#e6effc', color: '#0052cc', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 },
+  navHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
+  navButtons: { display: 'flex', gap: '8px' },
   infoBox: { backgroundColor: '#fff7d6', padding: '16px', borderRadius: '4px', borderLeft: '4px solid #ffab00', marginBottom: '24px' },
   brsBox: { backgroundColor: '#e3fcef', padding: '16px', borderRadius: '4px', borderLeft: '4px solid #006644', marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
   brsLink: { color: '#006644', fontWeight: 700, textDecoration: 'underline', cursor: 'pointer', fontSize: '1.1rem' },
@@ -26,14 +28,18 @@ const diagramCode = `sequenceDiagram
     participant EP as Entitled Party
     participant CUMA as CU Module Administrator
 
-    EP->>CUMA: 1.1 Request for CU master data (ID: A)
+    Note over EP: 1.1 Request for CU master data
+    EP->>CUMA: Info Item A: Request
     activate CUMA
-    CUMA->>CUMA: 1.2 Validate request
+    
+    Note over CUMA: 1.2 Validate CU master data request
     
     alt Validation Failed
-        CUMA-->>EP: 1.2 Validation Result (Invalid) (ID: B)
-    else Validation OK
-        CUMA-->>EP: 1.3 Send list of CU master data (ID: C)
+        CUMA-->>EP: Info Item B: Validation Result (Invalid)
+    else Validation Passed
+        Note over CUMA: 1.3 Send list of CU master data
+        CUMA-->>EP: Info Item C: List of CU master data
+        Note over EP: 1.3 Receive list of CU master data
     end
     deactivate CUMA`;
 
@@ -69,9 +75,13 @@ const jwgToBrsMapping: Record<string, string> = {
   "Active time period": "Aktiv tidsperiod"
 };
 
-interface Props { onBack: () => void; onNavigateToBRS: (id: string) => void; }
+interface Props { 
+    onBack: () => void; 
+    onNavigateToBRS: (id: string) => void;
+    onNavigateToProcedure: (id: number) => void;
+}
 
-export const JWGProcedure1: React.FC<Props> = ({ onBack, onNavigateToBRS }) => {
+export const JWGProcedure1: React.FC<Props> = ({ onBack, onNavigateToBRS, onNavigateToProcedure }) => {
   
   // Helper to find BRS attribute from JWG name
   const getBrsAttribute = (jwgAttrName: string) => {
@@ -87,7 +97,14 @@ export const JWGProcedure1: React.FC<Props> = ({ onBack, onNavigateToBRS }) => {
 
   return (
     <div style={styles.container}>
-      <button style={styles.backButton} onClick={onBack}>← Tillbaka till listan</button>
+      <div style={styles.navHeader}>
+        <button style={styles.backButton} onClick={onBack}>← Tillbaka till listan</button>
+        <div style={styles.navButtons}>
+            <button style={{...styles.backButton, opacity: 0.5, cursor: 'default'}} disabled>← Föregående</button>
+            <button style={styles.backButton} onClick={() => onNavigateToProcedure(2)}>Nästa →</button>
+        </div>
+      </div>
+
       <h1 style={styles.header}>Procedure 1: General access to Controllable Unit master data</h1>
       <p style={styles.subHeader}>Beskrivning av informationsutbytet för åtkomst till CU-stamdata av en berättigad part.</p>
 

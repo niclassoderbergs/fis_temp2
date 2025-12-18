@@ -4,7 +4,7 @@ import { content322Output } from '../../content-definitions';
 
 export const brsFlex322: BRSData = {
   id: "BRS-FLEX-322",
-  title: "Notifiering till DSO (Nätförkvalificering)",
+  title: "DSO tar emot notifiering om nätförkvalificering",
   purpose: "Att informera Nätägaren (DSO) om att en SP har begärt nätförkvalificering för en eller flera resurser i nätområdet. Notifieringen innehåller detaljerad information om ingående enheter (CU) och deras indikativa bidrag för att DSO ska kunna utföra nätanalys.",
   actors: [
     { role: "Initiator", description: "FIS (System)" },

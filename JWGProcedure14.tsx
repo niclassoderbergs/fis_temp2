@@ -13,7 +13,9 @@ const styles = {
   table: { width: '100%', borderCollapse: 'collapse' as const, boxShadow: '0 1px 3px rgba(0,0,0,0.1)', fontSize: '0.9rem', border: '1px solid #dfe1e6', marginBottom: '24px' },
   th: { backgroundColor: '#f4f5f7', color: '#172b4d', padding: '12px 16px', textAlign: 'left' as const, borderBottom: '2px solid #dfe1e6', fontWeight: 600 },
   td: { padding: '12px 16px', borderBottom: '1px solid #dfe1e6', verticalAlign: 'top' as const, color: '#172b4d', lineHeight: '1.5' },
-  backButton: { marginBottom: '20px', padding: '8px 16px', backgroundColor: '#e6effc', color: '#0052cc', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 },
+  backButton: { padding: '8px 16px', backgroundColor: '#e6effc', color: '#0052cc', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 },
+  navHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
+  navButtons: { display: 'flex', gap: '8px' },
   brsBox: { backgroundColor: '#e3fcef', padding: '16px', borderRadius: '4px', borderLeft: '4px solid #006644', marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
   brsLink: { color: '#006644', fontWeight: 700, textDecoration: 'underline', cursor: 'pointer', fontSize: '1.1rem' },
   mappingTag: { display: 'inline-block', backgroundColor: '#e3fcef', color: '#006644', padding: '2px 6px', borderRadius: '3px', fontSize: '0.8rem', fontWeight: 600, marginBottom: '4px' },
@@ -21,34 +23,59 @@ const styles = {
 };
 
 const diagramCode = `sequenceDiagram
-    title Procedure 14: Update of critical SP information
-    participant SP as Service Provider
-    participant CUMA as CU Module Administrator
+    title Procedure 14: Update service provider critical information
+    participant SP as Service provider
+    participant SMA as SP module administrator
+    participant PSO as Procuring system operator
 
-    SP->>CUMA: 14.1 Update critical info (Name, Legal status)
-    activate CUMA
-    CUMA->>CUMA: Trigger Re-qualification check
-    CUMA-->>SP: 14.2 Acknowledge (Pending Review)
-    deactivate CUMA`;
+    Note over SP: 14.1 Request information update
+    SP->>SMA: Info Item N: Request update
+    activate SMA
+    
+    Note over SMA: 14.2 Validate update request
+    
+    alt Validation Failed
+        SMA-->>SP: Info Item B: Validation failed
+    else Validation Passed
+        Note over SMA: 14.3 Register updated information
+        
+        Note over SMA: 14.4 Send updated SP information
+        SMA->>PSO: Info Item N: Updated info
+        
+        Note over SMA: Notify update result
+        SMA-->>SP: Info Item N: Update result
+    end
+    deactivate SMA
+    
+    Note over PSO: 14.4 Receive updated SP information
+    Note over PSO: 14.5 Execute assessment`;
 
 const steps = [
-  { step: "14.1", action: "Update critical info", description: "SP updates info that affects qualification.", producer: "SP", receiver: "CUMA", infoId: "A" },
-  { step: "14.2", action: "Ack", description: "CUMA flags for review.", producer: "CUMA", receiver: "SP", infoId: "B" }
+  { step: "14.1", action: "Request information update", description: "The service provider requests to update critical profile information.", producer: "Service provider", receiver: "SP module administrator", infoId: "N" },
+  { step: "14.2", action: "Validate update request", description: "The SP module administrator validates the request.", producer: "SP module administrator", receiver: "-", infoId: "-" },
+  { step: "14.3", action: "Register updated information", description: "The SP module administrator registers the new information.", producer: "SP module administrator", receiver: "-", infoId: "-" },
+  { step: "14.4", action: "Send updated SP information", description: "The SP module administrator forwards the critical info to the procuring system operator.", producer: "SP module administrator", receiver: "Procuring system operator", infoId: "N" },
+  { step: "-", action: "Notify update result", description: "The SP module administrator confirms the update to the Service Provider.", producer: "SP module administrator", receiver: "Service provider", infoId: "N" },
+  { step: "14.5", action: "Execute assessment", description: "The procuring system operator assesses if the change requires re-qualification.", producer: "Procuring system operator", receiver: "-", infoId: "-" }
 ];
 
 const attributes = [
-  { name: "SP identifier", desc: "ID." },
-  { name: "Critical attributes", desc: "Name, OrgNr." }
+  { name: "SP identifier", desc: "Identifier of the SP." },
+  { name: "Updated attributes", desc: "Critical fields (e.g. Legal Name, VAT number)." }
 ];
 
 const jwgToBrsMapping: Record<string, string> = {
   "SP identifier": "SP-ID",
-  "Critical attributes": "Fält att ändra"
+  "Updated attributes": "Fält att ändra"
 };
 
-interface Props { onBack: () => void; onNavigateToBRS: (id: string) => void; }
+interface Props { 
+    onBack: () => void; 
+    onNavigateToBRS: (id: string) => void;
+    onNavigateToProcedure: (id: number) => void;
+}
 
-export const JWGProcedure14: React.FC<Props> = ({ onBack, onNavigateToBRS }) => {
+export const JWGProcedure14: React.FC<Props> = ({ onBack, onNavigateToBRS, onNavigateToProcedure }) => {
   const getBrsAttribute = (jwgAttrName: string) => {
     const mappedName = jwgToBrsMapping[jwgAttrName];
     if (!mappedName) return null;
@@ -61,9 +88,16 @@ export const JWGProcedure14: React.FC<Props> = ({ onBack, onNavigateToBRS }) => 
 
   return (
     <div style={styles.container}>
-      <button style={styles.backButton} onClick={onBack}>← Tillbaka till listan</button>
+      <div style={styles.navHeader}>
+        <button style={styles.backButton} onClick={onBack}>← Tillbaka till listan</button>
+        <div style={styles.navButtons}>
+            <button style={styles.backButton} onClick={() => onNavigateToProcedure(13)}>← Föregående</button>
+            <button style={styles.backButton} onClick={() => onNavigateToProcedure(15)}>Nästa →</button>
+        </div>
+      </div>
+
       <h1 style={styles.header}>Procedure 14: Update of critical SP information</h1>
-      <p style={styles.subHeader}>Uppdatering som kan kräva om-kvalificering.</p>
+      <p style={styles.subHeader}>Uppdatering av kritisk information som kan kräva ny kvalificering.</p>
 
       <div style={styles.brsBox}>
         <div>
@@ -76,7 +110,21 @@ export const JWGProcedure14: React.FC<Props> = ({ onBack, onNavigateToBRS }) => 
       <section><h2 style={styles.sectionHeader}>Processflöde</h2><MermaidDiagram chart={diagramCode} /></section>
 
       <section>
-        <h2 style={styles.sectionHeader}>Datainnehåll</h2>
+        <h2 style={styles.sectionHeader}>Steg i processen</h2>
+        <table style={styles.table}>
+          <thead><tr><th style={styles.th}>Steg</th><th style={styles.th}>Handling</th><th style={styles.th}>Beskrivning</th><th style={styles.th}>Avsändare</th><th style={styles.th}>Mottagare</th><th style={styles.th}>Info ID</th></tr></thead>
+          <tbody>
+            {steps.map((s, i) => (
+              <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
+                <td style={styles.td}><strong>{s.step}</strong></td><td style={styles.td}>{s.action}</td><td style={styles.td}>{s.description}</td><td style={styles.td}>{s.producer}</td><td style={styles.td}>{s.receiver}</td><td style={styles.td}><strong>{s.infoId}</strong></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2 style={styles.sectionHeader}>Datainnehåll: Info N (Request)</h2>
         <table style={styles.table}>
           <thead><tr><th style={styles.th}>JWG Attribut</th><th style={styles.th}>Motsvarighet i {brsFlex803.id}</th></tr></thead>
           <tbody>

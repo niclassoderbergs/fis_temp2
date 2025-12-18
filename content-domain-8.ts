@@ -61,7 +61,8 @@ export const content804Input: InfoObject = {
   title: "Från SP",
   attributes: [
     { attribute: "SP-ID", description: "Aktören som vill avsluta.", article: "-" },
-    { attribute: "Önskat Avslutsdatum", description: "När utträdet ska ske.", article: "-" }
+    { attribute: "Önskat Avslutsdatum", description: "När utträdet ska ske.", article: "-" },
+    { attribute: "Orsak", description: "Anledning till avregistrering. (Optional)", article: "-" }
   ]
 };
 
@@ -84,37 +85,77 @@ export const content810Input: InfoObject = {
 };
 
 export const content810Output: InfoObject = {
+  title: "Resultat (Internt)",
+  attributes: [
+    { attribute: "Status", description: "Ny status (Suspended).", article: "-" }
+  ]
+};
+
+// --- BRS-FLEX-813: SP notifieras om tillfällig avstängning ---
+export const content813Output: InfoObject = {
   title: "Notifiering till SP",
   attributes: [
+    { attribute: "SP-ID", description: "Aktören som stängts av.", article: "-" },
     { attribute: "Meddelande", description: "Information om avstängning.", article: "-" },
     { attribute: "Orsak", description: "Anledning till åtgärden.", article: "-" },
+    { attribute: "Startdatum", description: "När avstängningen trädde i kraft.", article: "-" },
     { attribute: "Konsekvens", description: "T.ex. 'Handel blockerad'.", article: "-" }
   ]
 };
 
 // --- BRS-FLEX-811: Tvingande avregistrering ---
-export const content811Output: InfoObject = {
-  title: "Notifiering till SP",
+export const content811Input: InfoObject = {
+  title: "Internt (Admin)",
   attributes: [
-    { attribute: "Meddelande", description: "Information om permanent avregistrering.", article: "-" },
-    { attribute: "Avslutsdatum", description: "När kontot raderades/arkiverades.", article: "-" },
-    { attribute: "Laglig grund", description: "Referens till avtalsbrott eller regelverk.", article: "-" }
+    { attribute: "SP-ID", description: "Aktör som ska avregistreras.", article: "-" },
+    { attribute: "Orsak/Laglig grund", description: "Anledning till tvingande avslut.", article: "-" },
+    { attribute: "Avslutsdatum", description: "Datum då avregistreringen träder i kraft.", article: "-" }
   ]
 };
 
-// --- BRS-FLEX-812: Återaktivering ---
+export const content811Output: InfoObject = {
+  title: "Resultat (Internt)",
+  attributes: [
+    { attribute: "Status", description: "Terminated.", article: "-" },
+    { attribute: "Avslutsdatum", description: "Verkställt datum.", article: "-" }
+  ]
+};
+
+// --- BRS-FLEX-814: SP notifieras om permanent avstängning ---
+export const content814Output: InfoObject = {
+  title: "Notifiering till SP",
+  attributes: [
+    { attribute: "SP-ID", description: "Aktören som avregistrerats.", article: "-" },
+    { attribute: "Meddelande", description: "Beslut om permanent avregistrering (Revocation).", article: "-" },
+    { attribute: "Orsak", description: "Laglig grund eller avtalsbrott.", article: "-" },
+    { attribute: "Avslutsdatum", description: "Datum då kontot stängdes.", article: "-" }
+  ]
+};
+
+// --- BRS-FLEX-812: FIS återaktiverar SP ---
 export const content812Input: InfoObject = {
   title: "Internt (Admin)",
   attributes: [
     { attribute: "SP-ID", description: "Aktör att återaktivera.", article: "-" },
-    { attribute: "Beslut", description: "Referens till administrativt beslut.", article: "-" }
+    { attribute: "Orsak", description: "Referens till administrativt beslut/orsak.", article: "-" },
+    { attribute: "Återaktiveringsdatum", description: "Datum för återaktivering.", article: "-" },
+    { attribute: "Status", description: "Ny status att sätta.", article: "-" }
   ]
 };
 
 export const content812Output: InfoObject = {
+  title: "Resultat (Internt)",
+  attributes: [
+    { attribute: "Status", description: "OK (Status uppdaterad).", article: "-" }
+  ]
+};
+
+// --- BRS-FLEX-815: SP notifieras om återaktivering ---
+export const content815Output: InfoObject = {
   title: "Notifiering till SP",
   attributes: [
     { attribute: "Status", description: "Ny status (Active).", article: "-" },
-    { attribute: "Meddelande", description: "Välkommen tillbaka / Restriktioner hävda.", article: "-" }
+    { attribute: "Orsak", description: "Välkommen tillbaka / Restriktioner hävda.", article: "-" },
+    { attribute: "Återaktiveringsdatum", description: "Tidpunkt då aktören återaktiveras.", article: "-" }
   ]
 };

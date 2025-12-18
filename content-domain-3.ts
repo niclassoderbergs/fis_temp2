@@ -168,7 +168,8 @@ export const content314Output: InfoObject = {
 export const content321Input: InfoObject = {
   title: "Från SP",
   attributes: [
-    { attribute: "SPU-ID / CU-ID", description: "Resursen/resurserna som ska nätprövas. (Mandatory)", article: "Art 49(1)" }
+    { attribute: "SPU-ID / CU-ID", description: "Resursen/resurserna som ska nätprövas. (Mandatory)", article: "Art 49(1)" },
+    { attribute: "Nätområde-ID", description: "Specifikt nätområde för kvalificering (om känt).", article: "-" }
   ]
 };
 

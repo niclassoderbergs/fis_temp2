@@ -2,80 +2,151 @@
 import React from 'react';
 import { MermaidDiagram } from './MermaidDiagram';
 import { brsFlex810 } from './domain8/brs/brs-flex-810';
-import { content810Output } from './content-domain-8';
+import { brsFlex813 } from './domain8/brs/brs-flex-813';
+import { content810Input, content813Output } from './content-domain-8';
 
 const styles = {
   container: { padding: '40px', backgroundColor: '#fff', minHeight: '100%', boxSizing: 'border-box' as const },
   header: { fontSize: '2rem', fontWeight: 700, marginBottom: '8px', color: '#172b4d' },
   subHeader: { fontSize: '1.1rem', color: '#5e6c84', marginBottom: '32px' },
   sectionHeader: { fontSize: '1.5rem', fontWeight: 600, marginTop: '48px', marginBottom: '16px', color: '#42526e', borderBottom: '2px solid #ebecf0', paddingBottom: '8px' },
+  subSectionHeader: { fontSize: '1.1rem', fontWeight: 600, marginTop: '24px', marginBottom: '12px', color: '#42526e' },
   paragraph: { fontSize: '1rem', lineHeight: '1.6', color: '#333', marginBottom: '16px' },
   table: { width: '100%', borderCollapse: 'collapse' as const, boxShadow: '0 1px 3px rgba(0,0,0,0.1)', fontSize: '0.9rem', border: '1px solid #dfe1e6', marginBottom: '24px' },
   th: { backgroundColor: '#f4f5f7', color: '#172b4d', padding: '12px 16px', textAlign: 'left' as const, borderBottom: '2px solid #dfe1e6', fontWeight: 600 },
   td: { padding: '12px 16px', borderBottom: '1px solid #dfe1e6', verticalAlign: 'top' as const, color: '#172b4d', lineHeight: '1.5' },
-  backButton: { marginBottom: '20px', padding: '8px 16px', backgroundColor: '#e6effc', color: '#0052cc', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 },
+  backButton: { padding: '8px 16px', backgroundColor: '#e6effc', color: '#0052cc', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 },
+  navHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
+  navButtons: { display: 'flex', gap: '8px' },
   brsBox: { backgroundColor: '#e3fcef', padding: '16px', borderRadius: '4px', borderLeft: '4px solid #006644', marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
-  brsLink: { color: '#006644', fontWeight: 700, textDecoration: 'underline', cursor: 'pointer', fontSize: '1.1rem' },
+  brsLink: { color: '#006644', fontWeight: 700, textDecoration: 'underline', cursor: 'pointer', fontSize: '1.1rem', display: 'block', marginBottom: '4px' },
   mappingTag: { display: 'inline-block', backgroundColor: '#e3fcef', color: '#006644', padding: '2px 6px', borderRadius: '3px', fontSize: '0.8rem', fontWeight: 600, marginBottom: '4px' },
   reverseMappingTag: { display: 'inline-block', backgroundColor: '#e6effc', color: '#0052cc', padding: '2px 6px', borderRadius: '3px', fontSize: '0.8rem', fontWeight: 600, marginBottom: '4px' }
 };
 
 const diagramCode = `sequenceDiagram
-    title Procedure 16: Suspension of SP qualification
-    participant AuthP as Authorized Party (SO)
-    participant CUMA as CU Module Administrator (FIS)
-    participant SP as Service Provider
+    title Procedure 16: Suspension of Service Provider by System Operator
+    participant SO as System Operator
+    participant SMA as SP module administrator
+    participant SP as Service provider
+    participant FC as Final customer
+    participant EP as Entitled party
 
-    AuthP->>CUMA: 16.1 Request suspension (ID: A)
-    activate CUMA
-    CUMA->>CUMA: 16.2 Validate request
-    CUMA->>CUMA: Suspend SP account
-    CUMA-->>AuthP: 16.3 Confirm suspension (ID: B)
-    CUMA->>SP: 16.4 Notify suspension (ID: C)
-    deactivate CUMA`;
+    Note over SO: 16.1 Request suspension of SP
+    SO->>SMA: Info Item AM: Request suspension
+    activate SMA
+    
+    Note over SMA: 16.2 Validate SP suspension request
+    
+    alt Validation Failed
+        SMA-->>SO: Info Item B: Validation failed
+    else Validation Passed
+        Note over SMA: 16.3 Register Suspension (BRS 810)
+        
+        Note over SMA: 16.4 Notify service provider (BRS 813)
+        SMA-->>SP: Info Item AN: Notification
+        
+        opt Notify final customer
+            Note over SMA: 16.5 (Conditional) Notify final customer
+            SMA->>FC: Info Item AN: Notification
+        end
+        
+        Note over SMA: 16.6 Notify affected parties
+        SMA->>EP: Info Item AN: Notification
+    end
+    deactivate SMA`;
 
 const steps = [
-  { step: "16.1", action: "Request suspension", description: "Authorized party requests suspension of SP due to non-compliance.", producer: "Authorized Party", receiver: "CUMA", infoId: "A" },
-  { step: "16.2", action: "Validate", description: "CUMA validates the request.", producer: "CUMA", receiver: "Internal", infoId: "-" },
-  { step: "16.3", action: "Confirm", description: "CUMA confirms suspension to requester.", producer: "CUMA", receiver: "Authorized Party", infoId: "B" },
-  { step: "16.4", action: "Notify", description: "CUMA notifies the SP.", producer: "CUMA", receiver: "SP", infoId: "C" }
+  { step: "16.1", action: "Request suspension of SP", description: "The System Operator requests suspension of a Service Provider.", producer: "System Operator", receiver: "SP module administrator", infoId: "AM" },
+  { step: "16.2", action: "Validate SP suspension request", description: "The SP module administrator validates the request.", producer: "SP module administrator", receiver: "-", infoId: "-" },
+  { step: "16.3", action: "Register Suspension", description: "The SP module administrator registers the suspension in the system.", producer: "SP module administrator", receiver: "-", infoId: "-" },
+  { step: "16.4", action: "Notify service provider", description: "The Service Provider is notified about the suspension.", producer: "SP module administrator", receiver: "Service provider", infoId: "AN" },
+  { step: "16.5", action: "Notify final customer", description: "The final customer is notified if applicable.", producer: "SP module administrator", receiver: "Final customer", infoId: "AN" },
+  { step: "16.6", action: "Notify affected parties", description: "Other entitled parties are notified.", producer: "SP module administrator", receiver: "Entitled party", infoId: "AN" }
 ];
 
 const attributes = [
-  { name: "SP identifier", desc: "SP being suspended." },
-  { name: "Reason", desc: "Why suspension occurs." },
-  { name: "Start time", desc: "Effective immediately." }
+  { name: "SP identifier", desc: "Identification of the service provider to be suspended." },
+  { name: "Reason", desc: "Reason for the suspension." },
+  { name: "Start time", desc: "Date and time when the suspension starts." }
 ];
 
 const jwgToBrsMapping: Record<string, string> = {
-  "SP identifier": "SP-ID", // Implicit i kontext
+  "SP identifier": "SP-ID",
   "Reason": "Orsak",
-  "Start time": "-" // Omedelbar verkan
+  "Start time": "Startdatum"
 };
 
-interface Props { onBack: () => void; onNavigateToBRS: (id: string) => void; }
+// Input (Request) använder Orsakskod
+const jwgToBrsMappingRequest: Record<string, string> = {
+  "SP identifier": "SP-ID",
+  "Reason": "Orsakskod", 
+  "Start time": "Startdatum"
+};
 
-export const JWGProcedure16: React.FC<Props> = ({ onBack, onNavigateToBRS }) => {
+interface Props { 
+    onBack: () => void; 
+    onNavigateToBRS: (id: string) => void;
+    onNavigateToProcedure: (id: number) => void;
+}
+
+export const JWGProcedure16: React.FC<Props> = ({ onBack, onNavigateToBRS, onNavigateToProcedure }) => {
   const getBrsAttribute = (jwgAttrName: string) => {
-    const mappedName = jwgToBrsMapping[jwgAttrName];
+    const mappedName = jwgToBrsMappingRequest[jwgAttrName];
     if (!mappedName) return null;
-    return content810Output.attributes.find(a => a.attribute === mappedName);
+    return content810Input.attributes.find(a => a.attribute === mappedName);
   };
 
   const getJwgReference = (brsAttrName: string) => {
-    return Object.keys(jwgToBrsMapping).find(key => jwgToBrsMapping[key] === brsAttrName);
+    // Check main mapping
+    let key = Object.keys(jwgToBrsMapping).find(key => jwgToBrsMapping[key] === brsAttrName);
+    if(key) return key;
+    // Check request mapping fallback
+    return Object.keys(jwgToBrsMappingRequest).find(key => jwgToBrsMappingRequest[key] === brsAttrName);
   };
+
+  const renderAttributeTable = (title: string, data: any[], showMapping = false) => (
+    <div style={{marginBottom: '20px'}}>
+      <h3 style={styles.subSectionHeader}>{title}</h3>
+      <table style={styles.table}>
+        <thead><tr><th style={styles.th}>Attribut</th><th style={styles.th}>Beskrivning</th>{showMapping && <th style={{...styles.th, backgroundColor: '#e6effc', color: '#0052cc'}}>JWG Referens</th>}</tr></thead>
+        <tbody>
+          {data.map((attr, i) => {
+            const jwgRef = showMapping ? getJwgReference(attr.attribute) : null;
+            return (
+              <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
+                <td style={styles.td}><strong>{attr.attribute}</strong></td>
+                <td style={styles.td}>{attr.description}</td>
+                {showMapping && <td style={{...styles.td, backgroundColor: i % 2 !== 0 ? '#f4f8fd' : '#fff'}}>
+                  {jwgRef ? <span style={styles.reverseMappingTag}>{jwgRef}</span> : <span style={{color: '#999', fontSize: '0.8rem', fontStyle: 'italic'}}>-</span>}
+                </td>}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
 
   return (
     <div style={styles.container}>
-      <button style={styles.backButton} onClick={onBack}>← Tillbaka till listan</button>
-      <h1 style={styles.header}>Procedure 16: Suspension of SP qualification</h1>
-      <p style={styles.subHeader}>Tillfällig avstängning av aktör.</p>
+      <div style={styles.navHeader}>
+        <button style={styles.backButton} onClick={onBack}>← Tillbaka till listan</button>
+        <div style={styles.navButtons}>
+            <button style={styles.backButton} onClick={() => onNavigateToProcedure(15)}>← Föregående</button>
+            <button style={styles.backButton} onClick={() => onNavigateToProcedure(17)}>Nästa →</button>
+        </div>
+      </div>
+
+      <h1 style={styles.header}>Procedure 16: Suspension of Service Provider by System Operator</h1>
+      <p style={styles.subHeader}>Avstängning av tjänsteleverantör initierad av systemoperatör.</p>
 
       <div style={styles.brsBox}>
         <div>
             <div style={{fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: '4px', opacity: 0.8}}>Implementerad via</div>
-            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex810.id)}>{brsFlex810.id}: {brsFlex810.title}</div>
+            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex810.id)}>{brsFlex810.id}: {brsFlex810.title} (Begäran)</div>
+            <div style={{marginTop: '8px', fontSize: '0.9rem', fontStyle: 'italic'}}>Notifiering:</div>
+            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex813.id)}>{brsFlex813.id}: {brsFlex813.title}</div>
         </div>
         <div style={{fontSize: '2rem', opacity: 0.2}}>🔗</div>
       </div>
@@ -83,7 +154,21 @@ export const JWGProcedure16: React.FC<Props> = ({ onBack, onNavigateToBRS }) => 
       <section><h2 style={styles.sectionHeader}>Processflöde</h2><MermaidDiagram chart={diagramCode} /></section>
 
       <section>
-        <h2 style={styles.sectionHeader}>Datainnehåll: Notification (Info C)</h2>
+        <h2 style={styles.sectionHeader}>Steg i processen</h2>
+        <table style={styles.table}>
+          <thead><tr><th style={styles.th}>Steg</th><th style={styles.th}>Handling</th><th style={styles.th}>Beskrivning</th><th style={styles.th}>Avsändare</th><th style={styles.th}>Mottagare</th><th style={styles.th}>Info ID</th></tr></thead>
+          <tbody>
+            {steps.map((s, i) => (
+              <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
+                <td style={styles.td}><strong>{s.step}</strong></td><td style={styles.td}>{s.action}</td><td style={styles.td}>{s.description}</td><td style={styles.td}>{s.producer}</td><td style={styles.td}>{s.receiver}</td><td style={styles.td}><strong>{s.infoId}</strong></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2 style={styles.sectionHeader}>Datainnehåll: Info AM (Request)</h2>
         <table style={styles.table}>
           <thead><tr><th style={styles.th}>JWG Attribut</th><th style={styles.th}>Motsvarighet i {brsFlex810.id}</th></tr></thead>
           <tbody>
@@ -102,28 +187,18 @@ export const JWGProcedure16: React.FC<Props> = ({ onBack, onNavigateToBRS }) => 
 
       <section>
         <h2 style={styles.sectionHeader}>Datainnehåll BRS</h2>
-        <p style={styles.paragraph}>Följande attribut ingår i specifikationen för {brsFlex810.id} (InfoObject: {content810Output.title}). Här visas vilka JWG-krav som attributet uppfyller.</p>
-        <table style={styles.table}>
-          <thead><tr><th style={styles.th}>Attribut</th><th style={styles.th}>Beskrivning</th><th style={{...styles.th, backgroundColor: '#e6effc', color: '#0052cc', borderBottom: '2px solid #b3d4ff'}}>JWG Referens</th></tr></thead>
-          <tbody>
-            {content810Output.attributes.map((attr, i) => {
-              const jwgRef = getJwgReference(attr.attribute);
-              return (
-                <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
-                  <td style={styles.td}><strong>{attr.attribute}</strong></td>
-                  <td style={styles.td}>{attr.description}</td>
-                  <td style={{...styles.td, backgroundColor: i % 2 !== 0 ? '#f4f8fd' : '#fff'}}>
-                    {jwgRef ? (
-                        <span style={styles.reverseMappingTag}>{jwgRef}</span>
-                    ) : (
-                        <span style={{color: '#999', fontStyle: 'italic', fontSize: '0.8rem'}}>- (Specifikt för BRS)</span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <p style={styles.paragraph}>Nedan specificeras datainnehållet för samtliga involverade BRS-transaktioner i denna procedur.</p>
+        
+        {/* 1. Begäran (810) */}
+        {renderAttributeTable(`${brsFlex810.id} Input: ${content810Input.title}`, content810Input.attributes, true)}
+
+        {/* 2. Notifiering (813) */}
+        <h3 style={{...styles.subSectionHeader, color: '#0052cc'}}>Notifiering till SP</h3>
+        <p style={{fontSize:'0.9rem', color: '#666', marginBottom:'12px'}}>
+            Systemgenererad notifiering till SP (Info Item AN).
+        </p>
+        {renderAttributeTable(`${brsFlex813.id} Output: ${content813Output.title}`, content813Output.attributes, true)}
+
       </section>
     </div>
   );

@@ -78,14 +78,14 @@ export const content204Output: InfoObject = {
   ]
 };
 
-// --- BRS-FLEX-205: FIS notifierar om avslutat Flexavtal ---
+// --- BRS-FLEX-205: SP notifieras om avslutat flexavtal (Notification) ---
 export const content205Output: InfoObject = {
   title: "Notifiering till SP",
   attributes: [
-    { attribute: "CU-ID", description: "Identifierare för den berörda resursen.", article: "-" },
     { attribute: "Flexibilitetsavtals-ID", description: "ID på avtalet som avslutats.", article: "-" },
+    { attribute: "CU-ID", description: "Identifierare för den berörda resursen.", article: "-" },
     { attribute: "Slutdatum", description: "Sista giltighetsdag för avtalet.", article: "-" },
-    { attribute: "Orsakskod", description: "Switch (Ny leverantör) eller MoveOut (Utflytt).", article: "-" }
+    { attribute: "Orsak", description: "Anledning (t.ex. 'Customer Move-out' eller 'Switch').", article: "-" }
   ]
 };
 
@@ -106,6 +106,44 @@ export const content206Output: InfoObject = {
     { attribute: "Startdatum", description: "Avtalets startdatum.", article: "Art 22" },
     { attribute: "Slutdatum", description: "Avtalets slutdatum (om satt).", article: "Art 22" },
     { attribute: "Status", description: "Active/Inactive/Terminated.", article: "-" }
+  ]
+};
+
+// --- BRS-FLEX-207: SP häver flexavtal ---
+export const content207Input: InfoObject = {
+  title: "Från SP",
+  attributes: [
+    { attribute: "Flexibilitetsavtals-ID", description: "ID på avtalet som ska hävas (makuleras). (Mandatory)", article: "-" },
+    { attribute: "CU-ID", description: "ID på resursen (för verifiering).", article: "-" },
+    { attribute: "Hävningsdatum", description: "Datum då hävningen begärs (normalt dagens datum).", article: "-" },
+    { attribute: "Orsak", description: "Anledning till hävningen (t.ex. 'Felaktig registrering'). (Optional)", article: "-" }
+  ]
+};
+
+export const content207Output: InfoObject = {
+  title: "Till SP",
+  attributes: [
+    { attribute: "Flexibilitetsavtals-ID", description: "ID på det hävda avtalet.", article: "-" },
+    { attribute: "Status", description: "Ny status (Cancelled).", article: "-" },
+    { attribute: "Registrerat Hävningsdatum", description: "Tidsstämpel för när hävningen registrerades.", article: "-" }
+  ]
+};
+
+// --- BRS-FLEX-208: Slutkund avslutar flexavtal (via DHV) ---
+export const content208Input: InfoObject = {
+  title: "Från DHV",
+  attributes: [
+    { attribute: "Anläggnings-ID", description: "Anläggningen där avtalet finns.", article: "-" },
+    { attribute: "Kund-ID", description: "Verifiering av kundens identitet (SSN/OrgNr).", article: "-" },
+    { attribute: "Slutdatum", description: "Önskat datum för avslut.", article: "-" },
+    { attribute: "Händelse", description: "CustomerTermination (Avslut via Mina Sidor).", article: "-" }
+  ]
+};
+
+export const content208Output: InfoObject = {
+  title: "Svar till DHV",
+  attributes: [
+    { attribute: "Status", description: "OK/Error", article: "-" }
   ]
 };
 

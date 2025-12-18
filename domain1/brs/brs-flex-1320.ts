@@ -26,7 +26,8 @@ export const brsFlex1320: BRSData = {
     { id: "BRSFLEX1320-1", description: "SP har avslutat ett flexibilitetsavtal (via BRS-FLEX-202) för en CU som är med i en SPU." },
     { id: "BRSFLEX1320-2", description: "FIS har avslutat ett flexibilitetsavtal (via BRS-FLEX-2040) för en CU som är med i en SPU." },
     { id: "BRSFLEX1320-3", description: "SP har kopplat en CU till en SPU (via BRS-FLEX-130) som tidigare var kopplad till annan SPU." },
-    { id: "BRSFLEX1320-4", description: "SP har kopplat en CU till en SPG (via BRS-FLEX-140) som tidigare var kopplad till SPU." }
+    { id: "BRSFLEX1320-4", description: "SP har kopplat en CU till en SPG (via BRS-FLEX-140) som tidigare var kopplad till SPU." },
+    { id: "BRSFLEX1320-PRE-804", description: "SP har begärt avregistrering (via BRS-FLEX-804), vilket kräver att alla resurser kopplas loss." }
   ],
   postConditions: {
     accepted: [

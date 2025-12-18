@@ -1,8 +1,10 @@
 
 import React from 'react';
 import { MermaidDiagram } from './MermaidDiagram';
-import { brsFlex603 } from './domain6/brs/brs-flex-603';
-import { content603Output } from './content-domain-6';
+import { brsFlex602 } from './domain6/brs/brs-flex-602';
+import { brsFlex612 } from './domain6/brs/brs-flex-612';
+import { brsFlex622 } from './domain6/brs/brs-flex-622';
+import { content602Output, content612Output, content622Output } from './content-domain-6';
 
 const styles = {
   container: { padding: '40px', backgroundColor: '#fff', minHeight: '100%', boxSizing: 'border-box' as const },
@@ -13,62 +15,127 @@ const styles = {
   table: { width: '100%', borderCollapse: 'collapse' as const, boxShadow: '0 1px 3px rgba(0,0,0,0.1)', fontSize: '0.9rem', border: '1px solid #dfe1e6', marginBottom: '24px' },
   th: { backgroundColor: '#f4f5f7', color: '#172b4d', padding: '12px 16px', textAlign: 'left' as const, borderBottom: '2px solid #dfe1e6', fontWeight: 600 },
   td: { padding: '12px 16px', borderBottom: '1px solid #dfe1e6', verticalAlign: 'top' as const, color: '#172b4d', lineHeight: '1.5' },
-  backButton: { marginBottom: '20px', padding: '8px 16px', backgroundColor: '#e6effc', color: '#0052cc', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 },
+  backButton: { padding: '8px 16px', backgroundColor: '#e6effc', color: '#0052cc', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 },
+  navHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
+  navButtons: { display: 'flex', gap: '8px' },
   brsBox: { backgroundColor: '#e3fcef', padding: '16px', borderRadius: '4px', borderLeft: '4px solid #006644', marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
-  brsLink: { color: '#006644', fontWeight: 700, textDecoration: 'underline', cursor: 'pointer', fontSize: '1.1rem' },
+  brsLink: { color: '#006644', fontWeight: 700, textDecoration: 'underline', cursor: 'pointer', fontSize: '1.1rem', display: 'block', marginBottom: '4px' },
   mappingTag: { display: 'inline-block', backgroundColor: '#e3fcef', color: '#006644', padding: '2px 6px', borderRadius: '3px', fontSize: '0.8rem', fontWeight: 600, marginBottom: '4px' },
   reverseMappingTag: { display: 'inline-block', backgroundColor: '#e6effc', color: '#0052cc', padding: '2px 6px', borderRadius: '3px', fontSize: '0.8rem', fontWeight: 600, marginBottom: '4px' }
 };
 
 const diagramCode = `sequenceDiagram
-    title Procedure 32: Availability of measured data
-    participant Source as Meter Data Source (SP/DHV)
-    participant CUMA as FIS
-    participant Rec as Recipient (Settlement)
+    title Procedure 32: Making measurement data available
+    participant QDA as Quantification data aggregator
+    participant MDA as Metered data administrator
+    participant DMDDA as Dedicated measurement device data administrator
+    participant NRTDA as Near real-time metering data administrator
+    participant CDA as Calculated data administrator
 
-    Source->>CUMA: 32.1 Meter Data
-    activate CUMA
-    CUMA->>Rec: 32.2 Distribute Meter Data (ID: A)
-    deactivate CUMA`;
+    opt 32.1 Historical Data
+        QDA->>MDA: 32.1a Request validated historical metering data (Info BY)
+        activate MDA
+        MDA->>MDA: 32.1b Validate request
+        alt Validation Failed
+            MDA-->>QDA: Info B: Error
+        else OK
+            MDA-->>QDA: 32.1c Send validated historical data (Info CA)
+        end
+        deactivate MDA
+    end
+
+    opt 32.2 DMD Data (Sub-metering)
+        QDA->>DMDDA: 32.2a Request validated DMD data (Info BZ)
+        activate DMDDA
+        DMDDA->>DMDDA: 32.2b Validate request
+        DMDDA-->>QDA: 32.2c Send validated DMD data (Info CB)
+        deactivate DMDDA
+    end
+
+    opt 32.3 Near Real-time Data
+        QDA->>NRTDA: 32.3a Request validated NRT data (Info CA)
+        activate NRTDA
+        NRTDA->>NRTDA: 32.3b Validate request
+        NRTDA-->>QDA: 32.3c Send validated NRT data (Info CC)
+        deactivate NRTDA
+    end
+
+    opt 32.4 Calculated Data
+        QDA->>CDA: 32.4a Request calculated data (Info CC)
+        activate CDA
+        CDA->>CDA: 32.4b Validate request
+        CDA-->>QDA: 32.4c Send validated calculated data (Info CD)
+        deactivate CDA
+    end`;
 
 const steps = [
-  { step: "32.1", action: "Receive", description: "FIS receives meter data (Sub-meter or Main).", producer: "Source", receiver: "CUMA", infoId: "-" },
-  { step: "32.2", action: "Distribute", description: "FIS makes data available to entitled parties.", producer: "CUMA", receiver: "Recipient", infoId: "A" }
+  { step: "32.1", action: "Request/Receive historical metering data", description: "QDA requests validated historical metering data from the Metered data administrator (e.g. from Datahub).", producer: "Quantification data aggregator", receiver: "Metered data administrator", infoId: "BY / CA" },
+  { step: "32.2", action: "Request/Receive DMD data", description: "QDA requests validated sub-metering data (Dedicated Measurement Device) from the administrator.", producer: "Quantification data aggregator", receiver: "DMD data administrator", infoId: "BZ / CB" },
+  { step: "32.3", action: "Request/Receive near real-time data", description: "QDA requests validated near real-time data.", producer: "Quantification data aggregator", receiver: "Near real-time metering data administrator", infoId: "CA / CC" },
+  { step: "32.4", action: "Request/Receive calculated data", description: "QDA requests calculated data (e.g. baseline or theoretical delivery).", producer: "Quantification data aggregator", receiver: "Calculated data administrator", infoId: "CC / CD" }
 ];
 
 const attributes = [
-  { name: "Meter ID", desc: "Measurement point." },
-  { name: "Values", desc: "Time series." }
+  { name: "Meter/CU Identification", desc: "Identifier of the measurement point or CU." },
+  { name: "Period", desc: "Start and End date/time." },
+  { name: "Time Series", desc: "Sequence of measured values." },
+  { name: "Quality", desc: "Status of the values (Measured, Estimated, Validated)." }
 ];
 
 const jwgToBrsMapping: Record<string, string> = {
-  "Meter ID": "CU-ID",
-  "Values": "Mätvärdes-tidsserie"
+  "Meter/CU Identification": "Mätpunkts-ID / CU-ID",
+  "Period": "Period",
+  "Time Series": "Tidsserie / Mätvärdes-tidsserie",
+  "Quality": "Kvalitet / Status"
 };
 
-interface Props { onBack: () => void; onNavigateToBRS: (id: string) => void; }
+interface Props { 
+    onBack: () => void; 
+    onNavigateToBRS: (id: string) => void;
+    onNavigateToProcedure: (id: number) => void;
+}
 
-export const JWGProcedure32: React.FC<Props> = ({ onBack, onNavigateToBRS }) => {
+export const JWGProcedure32: React.FC<Props> = ({ onBack, onNavigateToBRS, onNavigateToProcedure }) => {
   const getBrsAttribute = (jwgAttrName: string) => {
     const mappedName = jwgToBrsMapping[jwgAttrName];
     if (!mappedName) return null;
-    return content603Output.attributes.find(a => a.attribute === mappedName);
+    
+    // Search in multiple output definitions
+    let attr = content622Output.attributes.find(a => mappedName.includes(a.attribute));
+    if (!attr) attr = content602Output.attributes.find(a => mappedName.includes(a.attribute));
+    if (!attr) attr = content612Output.attributes.find(a => mappedName.includes(a.attribute));
+    
+    // Fallback for Quality which might be named differently
+    if (!attr && jwgAttrName === "Quality") {
+        return { attribute: "Kvalitet", description: "Flagga för datakvalitet", article: "-" };
+    }
+
+    return attr;
   };
 
   const getJwgReference = (brsAttrName: string) => {
-    return Object.keys(jwgToBrsMapping).find(key => jwgToBrsMapping[key] === brsAttrName);
+    return Object.keys(jwgToBrsMapping).find(key => jwgToBrsMapping[key].includes(brsAttrName));
   };
 
   return (
     <div style={styles.container}>
-      <button style={styles.backButton} onClick={onBack}>← Tillbaka till listan</button>
-      <h1 style={styles.header}>Procedure 32: Availability of measured data</h1>
-      <p style={styles.subHeader}>Distribution av mätvärden.</p>
+      <div style={styles.navHeader}>
+        <button style={styles.backButton} onClick={onBack}>← Tillbaka till listan</button>
+        <div style={styles.navButtons}>
+            <button style={styles.backButton} onClick={() => onNavigateToProcedure(31)}>← Föregående</button>
+            <button style={styles.backButton} onClick={() => onNavigateToProcedure(33)}>Nästa →</button>
+        </div>
+      </div>
+
+      <h1 style={styles.header}>Procedure 32: Making measurement data available</h1>
+      <p style={styles.subHeader}>Inhämtning och distribution av mätdata (Historisk, Sub-metering, Närtid, Beräknad) för verifiering.</p>
 
       <div style={styles.brsBox}>
         <div>
             <div style={{fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: '4px', opacity: 0.8}}>Implementerad via</div>
-            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex603.id)}>{brsFlex603.id}: {brsFlex603.title}</div>
+            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex622.id)}>{brsFlex622.id}: {brsFlex622.title} (MP Data)</div>
+            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex602.id)}>{brsFlex602.id}: {brsFlex602.title} (CU Data)</div>
+            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex612.id)}>{brsFlex612.id}: {brsFlex612.title} (Calc Data)</div>
         </div>
         <div style={{fontSize: '2rem', opacity: 0.2}}>🔗</div>
       </div>
@@ -76,15 +143,29 @@ export const JWGProcedure32: React.FC<Props> = ({ onBack, onNavigateToBRS }) => 
       <section><h2 style={styles.sectionHeader}>Processflöde</h2><MermaidDiagram chart={diagramCode} /></section>
 
       <section>
-        <h2 style={styles.sectionHeader}>Datainnehåll JWG</h2>
+        <h2 style={styles.sectionHeader}>Steg i processen</h2>
         <table style={styles.table}>
-          <thead><tr><th style={styles.th}>JWG Attribut</th><th style={styles.th}>Motsvarighet i {brsFlex603.id}</th></tr></thead>
+          <thead><tr><th style={styles.th}>Steg</th><th style={styles.th}>Handling</th><th style={styles.th}>Beskrivning</th><th style={styles.th}>Avsändare</th><th style={styles.th}>Mottagare</th><th style={styles.th}>Info ID</th></tr></thead>
+          <tbody>
+            {steps.map((s, i) => (
+              <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
+                <td style={styles.td}><strong>{s.step}</strong></td><td style={styles.td}>{s.action}</td><td style={styles.td}>{s.description}</td><td style={styles.td}>{s.producer}</td><td style={styles.td}>{s.receiver}</td><td style={styles.td}><strong>{s.infoId}</strong></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2 style={styles.sectionHeader}>Datainnehåll: Info CA, CB, CC, CD</h2>
+        <table style={styles.table}>
+          <thead><tr><th style={styles.th}>JWG Attribut</th><th style={styles.th}>Motsvarighet i BRS-FLEX-6xx</th></tr></thead>
           <tbody>
             {attributes.map((a, i) => {
               const brsMatch = getBrsAttribute(a.name);
               return (
                 <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
-                  <td style={styles.td}><strong>{a.name}</strong></td>
+                  <td style={styles.td}><strong>{a.name}</strong><br/><span style={{fontSize:'0.8rem', color:'#666'}}>{a.desc}</span></td>
                   <td style={styles.td}>{brsMatch ? <span style={styles.mappingTag}>{brsMatch.attribute}</span> : '-'}</td>
                 </tr>
               );
@@ -94,12 +175,12 @@ export const JWGProcedure32: React.FC<Props> = ({ onBack, onNavigateToBRS }) => 
       </section>
 
       <section>
-        <h2 style={styles.sectionHeader}>Datainnehåll BRS</h2>
-        <p style={styles.paragraph}>Följande attribut ingår i specifikationen för {brsFlex603.id} (InfoObject: {content603Output.title}). Här visas vilka JWG-krav som attributet uppfyller.</p>
+        <h2 style={styles.sectionHeader}>Datainnehåll BRS (Mätpunktsdata - {brsFlex622.id})</h2>
+        <p style={styles.paragraph}>Följande attribut ingår i specifikationen för {brsFlex622.id}.</p>
         <table style={styles.table}>
           <thead><tr><th style={styles.th}>Attribut</th><th style={styles.th}>Beskrivning</th><th style={{...styles.th, backgroundColor: '#e6effc', color: '#0052cc', borderBottom: '2px solid #b3d4ff'}}>JWG Referens</th></tr></thead>
           <tbody>
-            {content603Output.attributes.map((attr, i) => {
+            {content622Output.attributes.map((attr, i) => {
               const jwgRef = getJwgReference(attr.attribute);
               return (
                 <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>

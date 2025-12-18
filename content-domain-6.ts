@@ -79,7 +79,7 @@ export const content6110Input: InfoObject = {
 };
 
 export const content6110Output: InfoObject = {
-  title: "Notifiering till SP",
+  title: "Beräknad Volym (Internt)",
   attributes: [
     { attribute: "Meddelande", description: "Info om att leveransvolym registrerats av systemet.", article: "-" },
     { attribute: "Aktiverings-ID", description: "Referens.", article: "-" },

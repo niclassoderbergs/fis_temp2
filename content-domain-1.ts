@@ -102,7 +102,7 @@ export const content104Output: InfoObject = {
 export const content1040Input: InfoObject = {
   title: "Triggerdata (Internt)",
   attributes: [
-    { attribute: "CU-ID / Mätpunkts-ID", description: "Resursen som påverkas.", article: "-" },
+    { attribute: "CU-ID", description: "Resursen som påverkas.", article: "-" },
     { attribute: "Händelsetyp", description: "T.ex. 'GridConstraintRegistered' eller 'MeterPointStatusChange'.", article: "-" },
     { attribute: "Nya Attributvärden", description: "T.ex. tillfälligt effekttak eller statusändring.", article: "-" }
   ]
@@ -118,12 +118,48 @@ export const content1040Output: InfoObject = {
   ]
 };
 
+// --- BRS-FLEX-105: SP begär återaktivering av CU ---
+export const content105Input: InfoObject = {
+  title: "Från SP",
+  attributes: [
+    { attribute: "CU-ID", description: "ID på resursen som ska återaktiveras.", article: "-" },
+    { attribute: "Kommentar", description: "Beskrivning av hur orsaken till suspendering har åtgärdats.", article: "-" }
+  ]
+};
+
+export const content105Output: InfoObject = {
+  title: "Till SP",
+  attributes: [
+    { attribute: "Status", description: "Mottaget / Pending Review.", article: "-" }
+  ]
+};
+
+// --- BRS-FLEX-106: FIS återaktiverar CU ---
+export const content106Input: InfoObject = {
+  title: "Internt (Admin)",
+  attributes: [
+    { attribute: "CU-ID", description: "Resurs som ska återaktiveras.", article: "-" },
+    { attribute: "Beslut", description: "Referens till godkännande.", article: "-" }
+  ]
+};
+
+// --- BRS-FLEX-107: SP notifieras om uppdaterad CU (Återaktivering) ---
+export const content107Output: InfoObject = {
+  title: "Notifiering till SP",
+  attributes: [
+    { attribute: "CU-ID", description: "Resursen som uppdaterats.", article: "-" },
+    { attribute: "Status", description: "Ny status (Active).", article: "-" },
+    { attribute: "Meddelande", description: "Bekräftelse på återaktivering.", article: "-" },
+    { attribute: "Giltig från", description: "Tidpunkt då resursen åter är aktiv.", article: "-" }
+  ]
+};
+
 // --- BRS-FLEX-110: SP registrerar SPU ---
 export const content110Input: InfoObject = {
   title: "Från SP",
   attributes: [
     { attribute: "Namn", description: "Ett läsbart namn för enheten. (Optional)", article: "-" },
-    { attribute: "Elområde-ID", description: "Vilket elområde SPU:n tillhör. (Mandatory)", article: "Art 2(22)" }
+    { attribute: "Nätområde-ID", description: "Vilket nätområde SPU:n tillhör. (Mandatory)", article: "Art 2(22)" }
   ]
 };
 
@@ -132,7 +168,7 @@ export const content110Output: InfoObject = {
   attributes: [
     { attribute: "SPU-ID", description: "Unikt ID för aggregeringsenheten.", article: "Art 27(a)" },
     { attribute: "Namn", description: "Registrerat namn på enheten.", article: "-" },
-    { attribute: "Elområde-ID", description: "Elområde enheten tillhör.", article: "-" },
+    { attribute: "Nätområde-ID", description: "Nätområde enheten tillhör.", article: "-" },
     { attribute: "Status", description: "Sätts till 'Available' (väntar på koppling).", article: "-" }
   ]
 };

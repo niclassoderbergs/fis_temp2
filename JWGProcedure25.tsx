@@ -2,7 +2,8 @@
 import React from 'react';
 import { MermaidDiagram } from './MermaidDiagram';
 import { brsFlex311 } from './domain3/brs/brs-flex-311';
-import { content311Input } from './content-domain-3';
+import { brsFlex314 } from './domain3/brs/brs-flex-314';
+import { content311Input, content311Output, content314Output } from './content-domain-3';
 
 const styles = {
   container: { padding: '40px', backgroundColor: '#fff', minHeight: '100%', boxSizing: 'border-box' as const },
@@ -13,46 +14,92 @@ const styles = {
   table: { width: '100%', borderCollapse: 'collapse' as const, boxShadow: '0 1px 3px rgba(0,0,0,0.1)', fontSize: '0.9rem', border: '1px solid #dfe1e6', marginBottom: '24px' },
   th: { backgroundColor: '#f4f5f7', color: '#172b4d', padding: '12px 16px', textAlign: 'left' as const, borderBottom: '2px solid #dfe1e6', fontWeight: 600 },
   td: { padding: '12px 16px', borderBottom: '1px solid #dfe1e6', verticalAlign: 'top' as const, color: '#172b4d', lineHeight: '1.5' },
-  backButton: { marginBottom: '20px', padding: '8px 16px', backgroundColor: '#e6effc', color: '#0052cc', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 },
+  backButton: { padding: '8px 16px', backgroundColor: '#e6effc', color: '#0052cc', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 },
+  navHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
+  navButtons: { display: 'flex', gap: '8px' },
   brsBox: { backgroundColor: '#e3fcef', padding: '16px', borderRadius: '4px', borderLeft: '4px solid #006644', marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
-  brsLink: { color: '#006644', fontWeight: 700, textDecoration: 'underline', cursor: 'pointer', fontSize: '1.1rem' },
+  brsLink: { color: '#006644', fontWeight: 700, textDecoration: 'underline', cursor: 'pointer', fontSize: '1.1rem', display: 'block', marginBottom: '4px' },
   mappingTag: { display: 'inline-block', backgroundColor: '#e3fcef', color: '#006644', padding: '2px 6px', borderRadius: '3px', fontSize: '0.8rem', fontWeight: 600, marginBottom: '4px' },
   reverseMappingTag: { display: 'inline-block', backgroundColor: '#e6effc', color: '#0052cc', padding: '2px 6px', borderRadius: '3px', fontSize: '0.8rem', fontWeight: 600, marginBottom: '4px' }
 };
 
 const diagramCode = `sequenceDiagram
-    title Procedure 25: Application for product pre-qualification
-    participant SP as SP
-    participant CUMA as FIS
+    title Procedure 25: SPU or SPG application
+    participant SP as Service provider
+    participant SMA as SP Module administrator
+    participant PSO as Procuring system operator
+    participant EP as Entitled parties
 
-    SP->>CUMA: 25.1 Submit Application (ID: A)
-    activate CUMA
-    CUMA->>CUMA: Register Application
-    CUMA-->>SP: 25.2 Confirm Receipt (ID: B)
-    deactivate CUMA`;
+    Note over SP: 25.1 Request for product application
+    SP->>SMA: Info Item BK: Product application
+    activate SMA
+    
+    Note over SMA: 25.2 Validate product application request
+    
+    alt Validation Failed
+        SMA-->>SP: Info Item B: Error notification
+    else Validation Passed
+        Note over SMA: 25.3 Register product application
+        
+        Note over SMA: 25.4 Send product application
+        SMA->>PSO: Info Item BK: Product application
+        activate PSO
+        
+        Note over PSO: 25.5 Validate product application for completeness
+        PSO-->>SMA: Acknowledge (Implicit)
+        deactivate PSO
+        
+        Note over SMA: 25.6 Register product application confirmation
+        
+        Note over SMA: 25.7 Notify about complete product application to SP
+        SMA-->>SP: Info Item BL: Application confirmation
+        
+        Note over SMA: 25.8 Notify about complete product application to EP
+        SMA->>EP: Info Item BM: Application notification
+    end
+    deactivate SMA`;
 
 const steps = [
-  { step: "25.1", action: "Submit", description: "SP applies for qualification.", producer: "SP", receiver: "CUMA", infoId: "A" },
-  { step: "25.2", action: "Confirm", description: "Ack.", producer: "CUMA", receiver: "SP", infoId: "B" }
+  { step: "25.1", action: "Request for product application", description: "The Service provider requests product qualification for an SPU or SPG.", producer: "Service provider", receiver: "SP Module administrator", infoId: "BK" },
+  { step: "25.2", action: "Validate product application request", description: "The SP Module administrator validates the request.", producer: "SP Module administrator", receiver: "-", infoId: "-" },
+  { step: "25.3", action: "Register product application", description: "The SP Module administrator registers the application.", producer: "SP Module administrator", receiver: "-", infoId: "-" },
+  { step: "25.4", action: "Send product application", description: "The SP Module administrator forwards the application to the Procuring System Operator (TSO).", producer: "SP Module administrator", receiver: "Procuring system operator", infoId: "BK" },
+  { step: "25.5", action: "Validate product application for completeness", description: "The Procuring system operator validates that all necessary data is present.", producer: "Procuring system operator", receiver: "-", infoId: "-" },
+  { step: "25.6", action: "Register product application confirmation", description: "The SP Module administrator registers that the application is complete/sent.", producer: "SP Module administrator", receiver: "-", infoId: "-" },
+  { step: "25.7", action: "Notify about complete product application to service provider", description: "Confirmation to the SP that the application is processed.", producer: "SP Module administrator", receiver: "Service provider", infoId: "BL" },
+  { step: "25.8", action: "Notify about complete product application to entitled parties", description: "Notification to other relevant parties.", producer: "SP Module administrator", receiver: "Entitled parties", infoId: "BM" }
 ];
 
 const attributes = [
-  { name: "SPU/SPG identifier", desc: "Resource." },
-  { name: "Product", desc: "Market." }
+  { name: "SPU/SPG identifier", desc: "The resource applying for qualification." },
+  { name: "Product", desc: "The market product (e.g. mFRR, FCR)." },
+  { name: "Technical data", desc: "Capacity, ramp rates, etc. required for the product." }
 ];
 
 const jwgToBrsMapping: Record<string, string> = {
   "SPU/SPG identifier": "SPU-ID / SPG-ID",
-  "Product": "Produkt-ID"
+  "Product": "Produkt-ID",
+  "Technical data": "Maximal budbar effekt" // Representativt för teknisk data
 };
 
-interface Props { onBack: () => void; onNavigateToBRS: (id: string) => void; }
+interface Props { 
+    onBack: () => void; 
+    onNavigateToBRS: (id: string) => void;
+    onNavigateToProcedure: (id: number) => void;
+}
 
-export const JWGProcedure25: React.FC<Props> = ({ onBack, onNavigateToBRS }) => {
+export const JWGProcedure25: React.FC<Props> = ({ onBack, onNavigateToBRS, onNavigateToProcedure }) => {
   const getBrsAttribute = (jwgAttrName: string) => {
     const mappedName = jwgToBrsMapping[jwgAttrName];
     if (!mappedName) return null;
-    return content311Input.attributes.find(a => a.attribute === mappedName);
+    
+    // Check 311 (Request)
+    let attr = content311Input.attributes.find(a => a.attribute === mappedName);
+    if (!attr && mappedName === "Maximal budbar effekt") {
+         attr = content311Input.attributes.find(a => a.attribute === "Maximal budbar effekt");
+    }
+    
+    return attr;
   };
 
   const getJwgReference = (brsAttrName: string) => {
@@ -61,14 +108,22 @@ export const JWGProcedure25: React.FC<Props> = ({ onBack, onNavigateToBRS }) => 
 
   return (
     <div style={styles.container}>
-      <button style={styles.backButton} onClick={onBack}>← Tillbaka till listan</button>
-      <h1 style={styles.header}>Procedure 25: Application for product pre-qualification</h1>
-      <p style={styles.subHeader}>Ansökan om kvalificering.</p>
+      <div style={styles.navHeader}>
+        <button style={styles.backButton} onClick={onBack}>← Tillbaka till listan</button>
+        <div style={styles.navButtons}>
+            <button style={styles.backButton} onClick={() => onNavigateToProcedure(24)}>← Föregående</button>
+            <button style={styles.backButton} onClick={() => onNavigateToProcedure(26)}>Nästa →</button>
+        </div>
+      </div>
+
+      <h1 style={styles.header}>Procedure 25: SPU or SPG application</h1>
+      <p style={styles.subHeader}>Ansökan om produktförkvalificering.</p>
 
       <div style={styles.brsBox}>
         <div>
             <div style={{fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: '4px', opacity: 0.8}}>Implementerad via</div>
             <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex311.id)}>{brsFlex311.id}: {brsFlex311.title}</div>
+            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex314.id)}>{brsFlex314.id}: {brsFlex314.title}</div>
         </div>
         <div style={{fontSize: '2rem', opacity: 0.2}}>🔗</div>
       </div>
@@ -76,7 +131,21 @@ export const JWGProcedure25: React.FC<Props> = ({ onBack, onNavigateToBRS }) => 
       <section><h2 style={styles.sectionHeader}>Processflöde</h2><MermaidDiagram chart={diagramCode} /></section>
 
       <section>
-        <h2 style={styles.sectionHeader}>Datainnehåll</h2>
+        <h2 style={styles.sectionHeader}>Steg i processen</h2>
+        <table style={styles.table}>
+          <thead><tr><th style={styles.th}>Steg</th><th style={styles.th}>Handling</th><th style={styles.th}>Beskrivning</th><th style={styles.th}>Avsändare</th><th style={styles.th}>Mottagare</th><th style={styles.th}>Info ID</th></tr></thead>
+          <tbody>
+            {steps.map((s, i) => (
+              <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
+                <td style={styles.td}><strong>{s.step}</strong></td><td style={styles.td}>{s.action}</td><td style={styles.td}>{s.description}</td><td style={styles.td}>{s.producer}</td><td style={styles.td}>{s.receiver}</td><td style={styles.td}><strong>{s.infoId}</strong></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2 style={styles.sectionHeader}>Datainnehåll: Info BK (Request)</h2>
         <table style={styles.table}>
           <thead><tr><th style={styles.th}>JWG Attribut</th><th style={styles.th}>Motsvarighet i {brsFlex311.id}</th></tr></thead>
           <tbody>
@@ -84,7 +153,7 @@ export const JWGProcedure25: React.FC<Props> = ({ onBack, onNavigateToBRS }) => 
               const brsMatch = getBrsAttribute(a.name);
               return (
                 <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
-                  <td style={styles.td}><strong>{a.name}</strong></td>
+                  <td style={styles.td}><strong>{a.name}</strong><br/><span style={{fontSize:'0.8rem', color:'#666'}}>{a.desc}</span></td>
                   <td style={styles.td}>{brsMatch ? <span style={styles.mappingTag}>{brsMatch.attribute}</span> : '-'}</td>
                 </tr>
               );
@@ -94,8 +163,8 @@ export const JWGProcedure25: React.FC<Props> = ({ onBack, onNavigateToBRS }) => 
       </section>
 
       <section>
-        <h2 style={styles.sectionHeader}>Datainnehåll BRS</h2>
-        <p style={styles.paragraph}>Följande attribut ingår i specifikationen för {brsFlex311.id} (InfoObject: {content311Input.title}). Här visas vilka JWG-krav som attributet uppfyller.</p>
+        <h2 style={styles.sectionHeader}>Datainnehåll BRS (Ansökan - {brsFlex311.id})</h2>
+        <p style={styles.paragraph}>Följande attribut ingår i specifikationen för {brsFlex311.id}.</p>
         <table style={styles.table}>
           <thead><tr><th style={styles.th}>Attribut</th><th style={styles.th}>Beskrivning</th><th style={{...styles.th, backgroundColor: '#e6effc', color: '#0052cc', borderBottom: '2px solid #b3d4ff'}}>JWG Referens</th></tr></thead>
           <tbody>

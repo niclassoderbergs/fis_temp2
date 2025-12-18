@@ -15,13 +15,13 @@ export const brsFlex110: BRSData = {
     participant SP as SP
     participant FIS as FIS
 
-    SP->>FIS: RegisterSPU (Namn, Elområde)
+    SP->>FIS: RegisterSPU (Namn, Nätområde-ID)
     activate FIS
     FIS->>FIS: Validera affärsregler
 
     alt Validering OK
         FIS->>FIS: Skapa SPU-objekt (Status: Available)
-        FIS-->>SP: RegisterSPUAcknowledgement (SPU-ID, Namn, Elområde)
+        FIS-->>SP: RegisterSPUAcknowledgement (SPU-ID, Namn, Nätområde-ID)
     else Validering Fel
         FIS-->>SP: Error (Validation Failed)
     end
@@ -39,7 +39,7 @@ export const brsFlex110: BRSData = {
     ]
   },
   businessRules: [
-    { id: "BRSFLEX110-5", description: "Elområde måste vara giltigt (t.ex. SE3).", errorCode: "E_110_INVALID_ZONE" },
+    { id: "BRSFLEX110-5", description: "Nätområde måste vara giltigt (t.ex. SE3).", errorCode: "E_110_INVALID_ZONE" },
     { id: "BRSFLEX110-6", description: "Namnet på SPU måste vara unikt inom SP:s portfölj.", errorCode: "E_110_DUPLICATE_NAME" }
   ],
   process: [

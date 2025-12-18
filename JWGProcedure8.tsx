@@ -2,7 +2,7 @@
 import React from 'react';
 import { MermaidDiagram } from './MermaidDiagram';
 import { brsFlex802 } from './domain8/brs/brs-flex-802';
-import { content802Input } from './content-domain-8';
+import { content802Input, content802Output } from './content-domain-8';
 
 const styles = {
   container: { padding: '40px', backgroundColor: '#fff', minHeight: '100%', boxSizing: 'border-box' as const },
@@ -13,7 +13,9 @@ const styles = {
   table: { width: '100%', borderCollapse: 'collapse' as const, boxShadow: '0 1px 3px rgba(0,0,0,0.1)', fontSize: '0.9rem', border: '1px solid #dfe1e6', marginBottom: '24px' },
   th: { backgroundColor: '#f4f5f7', color: '#172b4d', padding: '12px 16px', textAlign: 'left' as const, borderBottom: '2px solid #dfe1e6', fontWeight: 600 },
   td: { padding: '12px 16px', borderBottom: '1px solid #dfe1e6', verticalAlign: 'top' as const, color: '#172b4d', lineHeight: '1.5' },
-  backButton: { marginBottom: '20px', padding: '8px 16px', backgroundColor: '#e6effc', color: '#0052cc', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 },
+  backButton: { padding: '8px 16px', backgroundColor: '#e6effc', color: '#0052cc', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 },
+  navHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
+  navButtons: { display: 'flex', gap: '8px' },
   brsBox: { backgroundColor: '#e3fcef', padding: '16px', borderRadius: '4px', borderLeft: '4px solid #006644', marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
   brsLink: { color: '#006644', fontWeight: 700, textDecoration: 'underline', cursor: 'pointer', fontSize: '1.1rem' },
   mappingTag: { display: 'inline-block', backgroundColor: '#e3fcef', color: '#006644', padding: '2px 6px', borderRadius: '3px', fontSize: '0.8rem', fontWeight: 600, marginBottom: '4px' },
@@ -21,46 +23,87 @@ const styles = {
 };
 
 const diagramCode = `sequenceDiagram
-    title Procedure 8: Qualification of a Service Provider
-    participant SP as Service Provider
-    participant CUMA as CU Module Administrator
+    title Procedure 8: Service Provider application for qualification
+    participant SP as Service provider
+    participant SPMO as SP Module Operator
+    participant PSO as Procuring system operator
 
-    SP->>CUMA: 8.1 Request qualification (ID: A)
-    activate CUMA
-    CUMA->>CUMA: 8.2 Verify compliance (Financial/Technical)
+    Note over SP: 8.1 Request service provider qualification
+    SP->>SPMO: Info Item P: Request
+    activate SPMO
     
-    alt Approved
-        CUMA-->>SP: 8.3 Confirm qualification (ID: B)
-    else Rejected
-        CUMA-->>SP: Error
+    Note over SPMO: 8.2 Validate qualification request
+    
+    alt Request validation failed
+        SPMO-->>SP: Info Item B: Request rejected
+    else Request validation passed
+        Note over SPMO: 8.3 Register service provider qualification request
+        
+        Note over SPMO: 8.4 Request to process service provider application for qualification
+        SPMO->>PSO: Info Item P: Request
+        activate PSO
+        
+        Note over PSO: 8.5 Execute service provider qualifications
+        
+        Note over PSO: 8.6 Update status when changed
+        PSO->>SPMO: Info Item Q: Status update
+        deactivate PSO
+        
+        Note over SPMO: 8.7 Acknowledge the updated status
+        SPMO-->>PSO: Info Item B: Acknowledgement
+        
+        Note over SPMO: 8.8 Register updated status
+        
+        Note over SPMO: 8.9 Notify qualification status
+        SPMO->>SP: Info Item Q: Status notification
     end
-    deactivate CUMA`;
+    deactivate SPMO`;
 
 const steps = [
-  { step: "8.1", action: "Request qualification", description: "SP requests to be qualified for a market.", producer: "SP", receiver: "CUMA", infoId: "A" },
-  { step: "8.2", action: "Verify compliance", description: "CUMA performs checks.", producer: "CUMA", receiver: "SP", infoId: "B" },
-  { step: "8.3", action: "Confirm qualification", description: "SP is now Active.", producer: "CUMA", receiver: "SP", infoId: "B" }
+  { step: "8.1", action: "Request service provider qualification", description: "The service provider requests qualification.", producer: "Service provider", receiver: "SP Module Operator", infoId: "P" },
+  { step: "8.2", action: "Validate qualification request", description: "The SP Module Operator validates the request.", producer: "SP Module Operator", receiver: "-", infoId: "-" },
+  { step: "8.3", action: "Register service provider qualification request", description: "The SP Module Operator registers the request.", producer: "SP Module Operator", receiver: "-", infoId: "-" },
+  { step: "8.4", action: "Request to process service provider application for qualification", description: "The SP Module Operator forwards the request to the Procuring System Operator.", producer: "SP Module Operator", receiver: "Procuring system operator", infoId: "P" },
+  { step: "8.5", action: "Execute service provider qualifications", description: "The Procuring System Operator performs the qualification.", producer: "Procuring system operator", receiver: "-", infoId: "-" },
+  { step: "8.6", action: "Update status when changed", description: "The Procuring System Operator updates the qualification status.", producer: "Procuring system operator", receiver: "SP Module Operator", infoId: "Q" },
+  { step: "8.7", action: "Acknowledge the updated status", description: "The SP Module Operator acknowledges the update.", producer: "SP Module Operator", receiver: "Procuring system operator", infoId: "B" },
+  { step: "8.8", action: "Register updated status", description: "The SP Module Operator registers the new status.", producer: "SP Module Operator", receiver: "-", infoId: "-" },
+  { step: "8.9", action: "Notify qualification status", description: "The SP Module Operator notifies the Service Provider about the status.", producer: "SP Module Operator", receiver: "Service provider", infoId: "Q" }
 ];
 
 const attributes = [
   { name: "Service provider", desc: "ID of SP." },
   { name: "Qualification type", desc: "Type of qualification." },
-  { name: "Documents", desc: "Proof of compliance." }
+  { name: "Documents", desc: "Proof of compliance." },
+  { name: "Qualification status", desc: "Result (Qualified/Rejected)." },
+  { name: "Validity period", desc: "If applicable." }
 ];
 
 const jwgToBrsMapping: Record<string, string> = {
   "Service provider": "SP-ID",
   "Qualification type": "Kvalificeringstyp",
-  "Documents": "Dokumentation"
+  "Documents": "Dokumentation",
+  "Qualification status": "Status",
+  "Validity period": "Giltighetsperiod"
 };
 
-interface Props { onBack: () => void; onNavigateToBRS: (id: string) => void; }
+interface Props { 
+    onBack: () => void; 
+    onNavigateToBRS: (id: string) => void;
+    onNavigateToProcedure: (id: number) => void;
+}
 
-export const JWGProcedure8: React.FC<Props> = ({ onBack, onNavigateToBRS }) => {
+export const JWGProcedure8: React.FC<Props> = ({ onBack, onNavigateToBRS, onNavigateToProcedure }) => {
   const getBrsAttribute = (jwgAttrName: string) => {
     const mappedName = jwgToBrsMapping[jwgAttrName];
     if (!mappedName) return null;
-    return content802Input.attributes.find(a => a.attribute === mappedName);
+    
+    // Check Input first
+    let attr = content802Input.attributes.find(a => a.attribute === mappedName);
+    if (attr) return attr;
+
+    // Check Output
+    return content802Output.attributes.find(a => a.attribute === mappedName);
   };
 
   const getJwgReference = (brsAttrName: string) => {
@@ -69,9 +112,16 @@ export const JWGProcedure8: React.FC<Props> = ({ onBack, onNavigateToBRS }) => {
 
   return (
     <div style={styles.container}>
-      <button style={styles.backButton} onClick={onBack}>← Tillbaka till listan</button>
-      <h1 style={styles.header}>Procedure 8: Qualification of a Service Provider</h1>
-      <p style={styles.subHeader}>Kvalificering av SP för att bli Aktiv.</p>
+      <div style={styles.navHeader}>
+        <button style={styles.backButton} onClick={onBack}>← Tillbaka till listan</button>
+        <div style={styles.navButtons}>
+            <button style={styles.backButton} onClick={() => onNavigateToProcedure(7)}>← Föregående</button>
+            <button style={styles.backButton} onClick={() => onNavigateToProcedure(9)}>Nästa →</button>
+        </div>
+      </div>
+
+      <h1 style={styles.header}>Procedure 8: Service Provider application for qualification</h1>
+      <p style={styles.subHeader}>Ansökan om kvalificering för SP.</p>
 
       <div style={styles.brsBox}>
         <div>
@@ -86,11 +136,11 @@ export const JWGProcedure8: React.FC<Props> = ({ onBack, onNavigateToBRS }) => {
       <section>
         <h2 style={styles.sectionHeader}>Steg i processen</h2>
         <table style={styles.table}>
-          <thead><tr><th style={styles.th}>Steg</th><th style={styles.th}>Handling</th><th style={styles.th}>Beskrivning</th></tr></thead>
+          <thead><tr><th style={styles.th}>Steg</th><th style={styles.th}>Handling</th><th style={styles.th}>Beskrivning</th><th style={styles.th}>Avsändare</th><th style={styles.th}>Mottagare</th><th style={styles.th}>Info ID</th></tr></thead>
           <tbody>
             {steps.map((s, i) => (
               <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
-                <td style={styles.td}><strong>{s.step}</strong></td><td style={styles.td}>{s.action}</td><td style={styles.td}>{s.description}</td>
+                <td style={styles.td}><strong>{s.step}</strong></td><td style={styles.td}>{s.action}</td><td style={styles.td}>{s.description}</td><td style={styles.td}>{s.producer}</td><td style={styles.td}>{s.receiver}</td><td style={styles.td}><strong>{s.infoId}</strong></td>
               </tr>
             ))}
           </tbody>
@@ -98,7 +148,7 @@ export const JWGProcedure8: React.FC<Props> = ({ onBack, onNavigateToBRS }) => {
       </section>
 
       <section>
-        <h2 style={styles.sectionHeader}>Datainnehåll</h2>
+        <h2 style={styles.sectionHeader}>Datainnehåll: Info P (Request) & Q (Status)</h2>
         <table style={styles.table}>
           <thead><tr><th style={styles.th}>JWG Attribut</th><th style={styles.th}>Motsvarighet i {brsFlex802.id}</th></tr></thead>
           <tbody>

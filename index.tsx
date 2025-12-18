@@ -755,6 +755,10 @@ function App() {
     setViewMode('conditions');
   };
 
+  const handleNavigateProcedure = (id: number) => {
+    setViewMode(`jwg-procedure-${id}` as ViewMode);
+  };
+
   // Data preps
   const startConditionsData = normalizeArray(activeBRS.preConditions, `${activeBRS.id}-PRE`);
   const acceptedData = normalizeArray(
@@ -858,49 +862,47 @@ function App() {
                 <div style={styles.paper}>
                   <ProceduresPage 
                     onNavigateToBRS={handleSelectBRS} 
-                    onNavigateToProcedure={(id) => {
-                      if (id >= 1 && id <= 34) setViewMode(`jwg-procedure-${id}` as ViewMode);
-                    }}
+                    onNavigateToProcedure={handleNavigateProcedure}
                   />
                 </div>
               </div>
             )}
 
             {/* JWG Procedures 1-34 */}
-            {viewMode === 'jwg-procedure-1' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure1 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-2' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure2 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-3' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure3 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-4' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure4 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-5' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure5 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-6' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure6 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-7' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure7 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-8' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure8 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-9' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure9 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-10' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure10 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-11' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure11 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-12' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure12 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-13' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure13 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-14' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure14 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-15' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure15 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-16' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure16 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-17' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure17 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-18' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure18 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-19' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure19 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-20' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure20 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-21' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure21 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-22' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure22 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-23' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure23 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-24' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure24 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-25' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure25 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-26' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure26 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-27' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure27 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-28' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure28 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-29' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure29 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-30' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure30 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-31' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure31 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-32' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure32 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-33' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure33 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
-            {viewMode === 'jwg-procedure-34' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure34 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} /></div></div>}
+            {viewMode === 'jwg-procedure-1' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure1 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-2' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure2 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-3' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure3 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-4' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure4 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-5' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure5 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-6' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure6 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-7' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure7 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-8' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure8 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-9' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure9 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-10' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure10 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-11' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure11 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-12' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure12 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-13' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure13 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-14' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure14 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-15' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure15 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-16' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure16 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-17' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure17 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-18' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure18 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-19' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure19 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-20' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure20 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-21' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure21 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-22' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure22 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-23' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure23 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-24' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure24 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-25' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure25 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-26' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure26 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-27' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure27 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-28' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure28 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-29' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure29 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-30' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure30 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-31' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure31 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-32' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure32 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-33' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure33 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
+            {viewMode === 'jwg-procedure-34' && <div style={styles.mainScroll}><div style={styles.paper}><JWGProcedure34 onBack={() => setViewMode('procedures')} onNavigateToBRS={handleSelectBRS} onNavigateToProcedure={handleNavigateProcedure} /></div></div>}
 
             {viewMode === 'conditions' && (
               <div style={styles.mainScroll}>

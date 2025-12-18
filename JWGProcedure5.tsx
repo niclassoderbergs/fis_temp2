@@ -2,7 +2,7 @@
 import React from 'react';
 import { MermaidDiagram } from './MermaidDiagram';
 import { brsFlex104 } from './domain1/brs/brs-flex-104';
-import { content104Output } from './content-domain-1';
+import { content104Input, content104Output } from './content-domain-1';
 
 const styles = {
   container: { padding: '40px', backgroundColor: '#fff', minHeight: '100%', boxSizing: 'border-box' as const },
@@ -13,7 +13,9 @@ const styles = {
   table: { width: '100%', borderCollapse: 'collapse' as const, boxShadow: '0 1px 3px rgba(0,0,0,0.1)', fontSize: '0.9rem', border: '1px solid #dfe1e6', marginBottom: '24px' },
   th: { backgroundColor: '#f4f5f7', color: '#172b4d', padding: '12px 16px', textAlign: 'left' as const, borderBottom: '2px solid #dfe1e6', fontWeight: 600 },
   td: { padding: '12px 16px', borderBottom: '1px solid #dfe1e6', verticalAlign: 'top' as const, color: '#172b4d', lineHeight: '1.5' },
-  backButton: { marginBottom: '20px', padding: '8px 16px', backgroundColor: '#e6effc', color: '#0052cc', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 },
+  backButton: { padding: '8px 16px', backgroundColor: '#e6effc', color: '#0052cc', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 },
+  navHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
+  navButtons: { display: 'flex', gap: '8px' },
   brsBox: { backgroundColor: '#e3fcef', padding: '16px', borderRadius: '4px', borderLeft: '4px solid #006644', marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
   brsLink: { color: '#006644', fontWeight: 700, textDecoration: 'underline', cursor: 'pointer', fontSize: '1.1rem' },
   mappingTag: { display: 'inline-block', backgroundColor: '#e3fcef', color: '#006644', padding: '2px 6px', borderRadius: '3px', fontSize: '0.8rem', fontWeight: 600, marginBottom: '4px' },
@@ -21,49 +23,73 @@ const styles = {
 };
 
 const diagramCode = `sequenceDiagram
-    title Procedure 5: Suspension of a Controllable Unit
-    participant AuthP as Authorized Party (SO)
+    title Procedure 5: Suspension of CU by an entity party
+    participant EP as Entitled Party
     participant CUMA as CU Module Administrator
-    participant SP as Service Provider
+    participant SP as Service provider
+    participant FC as Final customer
 
-    AuthP->>CUMA: 5.1 Request to suspend CU (ID: A)
+    Note over EP: 5.1 Request suspension of CU
+    EP->>CUMA: Info Item H: Request
     activate CUMA
-    CUMA->>CUMA: 5.2 Validate request
     
-    alt Validation OK
-        CUMA->>CUMA: Suspend CU
-        CUMA-->>AuthP: 5.3 Confirm suspension (ID: B)
-        CUMA->>SP: 5.4 Notify suspension (ID: C)
-    else Validation Failed
-        CUMA-->>AuthP: Error
+    Note over CUMA: 5.2 Validate CU suspension request
+    
+    alt Validation Failed
+        CUMA-->>EP: Info Item B: Request rejected
+    else Validation Passed
+        Note over CUMA: 5.3 Suspend CU
+        
+        Note over CUMA: 5.4 Notify about updated CU module data
+        CUMA-->>EP: Info Item I: Updated CU data
+        
+        opt Notify final customer
+            Note over CUMA: 5.5 (Conditional) Notify about suspended CU
+            CUMA->>FC: Info Item I: Notification
+        end
+        
+        Note over CUMA: 5.6 Notify other parties about CU suspension
+        CUMA->>SP: Info Item I: Notification
     end
     deactivate CUMA`;
 
 const steps = [
-  { step: "5.1", action: "Request to suspend CU", description: "An authorized party (e.g. DSO/TSO) requests to suspend a CU due to technical/compliance reasons.", producer: "Authorized party", receiver: "CU module administrator", infoId: "A" },
-  { step: "5.2", action: "Validate request", description: "Validate the authority of the requester.", producer: "CU module administrator", receiver: "Authorized party", infoId: "B" },
-  { step: "5.3", action: "Confirm suspension", description: "Confirm execution to requester.", producer: "CU module administrator", receiver: "Authorized party", infoId: "B" },
-  { step: "5.4", action: "Notify suspension", description: "Notify the Service Provider that the CU has been suspended.", producer: "CU module administrator", receiver: "Service provider", infoId: "C" }
+  { step: "5.1", action: "Request suspension of CU", description: "An entitled party requests the suspension of a Controllable Unit.", producer: "Entitled party", receiver: "CU module administrator", infoId: "H" },
+  { step: "5.2", action: "Validate CU suspension request", description: "The CU module administrator validates the request.", producer: "CU module administrator", receiver: "-", infoId: "-" },
+  { step: "5.3", action: "Suspend CU", description: "The CU module administrator suspends the CU in the system.", producer: "CU module administrator", receiver: "-", infoId: "-" },
+  { step: "5.4", action: "Notify about updated CU module data", description: "The CU module administrator notifies the requesting entitled party.", producer: "CU module administrator", receiver: "Entitled party", infoId: "I" },
+  { step: "5.5", action: "Notify about suspended CU", description: "The CU module administrator notifies the final customer (if applicable).", producer: "CU module administrator", receiver: "Final customer", infoId: "I" },
+  { step: "5.6", action: "Notify other parties about CU suspension", description: "The CU module administrator notifies other parties (e.g. Service Provider).", producer: "CU module administrator", receiver: "Service provider", infoId: "I" }
 ];
 
 const attributes = [
-  { name: "CU identification", desc: "The suspended unit." },
-  { name: "Reason for suspension", desc: "Why the unit was suspended." },
-  { name: "Start time", desc: "When suspension begins." }
+  { name: "CU identification", desc: "The unit to suspend." },
+  { name: "Reason for suspension", desc: "Why the unit is being suspended." },
+  { name: "Suspension start date", desc: "When the suspension begins." }
 ];
 
 const jwgToBrsMapping: Record<string, string> = {
   "CU identification": "CU-ID",
-  "Reason for suspension": "Meddelande", // Mappas mot Orsak/Meddelande i outputen
-  "Start time": "Starttid" // Mappad till Starttid
+  "Reason for suspension": "Orsak",
+  "Suspension start date": "Starttid" // Finns i BRS Output, inte Input
 };
 
-interface Props { onBack: () => void; onNavigateToBRS: (id: string) => void; }
+interface Props { 
+    onBack: () => void; 
+    onNavigateToBRS: (id: string) => void;
+    onNavigateToProcedure: (id: number) => void;
+}
 
-export const JWGProcedure5: React.FC<Props> = ({ onBack, onNavigateToBRS }) => {
+export const JWGProcedure5: React.FC<Props> = ({ onBack, onNavigateToBRS, onNavigateToProcedure }) => {
   const getBrsAttribute = (jwgAttrName: string) => {
     const mappedName = jwgToBrsMapping[jwgAttrName];
     if (!mappedName) return null;
+    
+    // Check input object first
+    let attr = content104Input.attributes.find(a => a.attribute === mappedName);
+    if (attr) return attr;
+
+    // Check output object
     return content104Output.attributes.find(a => a.attribute === mappedName);
   };
 
@@ -73,9 +99,16 @@ export const JWGProcedure5: React.FC<Props> = ({ onBack, onNavigateToBRS }) => {
 
   return (
     <div style={styles.container}>
-      <button style={styles.backButton} onClick={onBack}>← Tillbaka till listan</button>
-      <h1 style={styles.header}>Procedure 5: Suspension of a Controllable Unit</h1>
-      <p style={styles.subHeader}>Tvingande avstängning av en resurs initierad av system eller behörig part.</p>
+      <div style={styles.navHeader}>
+        <button style={styles.backButton} onClick={onBack}>← Tillbaka till listan</button>
+        <div style={styles.navButtons}>
+            <button style={styles.backButton} onClick={() => onNavigateToProcedure(4)}>← Föregående</button>
+            <button style={styles.backButton} onClick={() => onNavigateToProcedure(6)}>Nästa →</button>
+        </div>
+      </div>
+
+      <h1 style={styles.header}>Procedure 5: Suspension of CU by an entity party</h1>
+      <p style={styles.subHeader}>Tvingande avstängning av en resurs initierad av en behörig part.</p>
 
       <div style={styles.brsBox}>
         <div>
@@ -88,13 +121,13 @@ export const JWGProcedure5: React.FC<Props> = ({ onBack, onNavigateToBRS }) => {
       <section><h2 style={styles.sectionHeader}>Processflöde</h2><MermaidDiagram chart={diagramCode} /></section>
 
       <section>
-        <h2 style={styles.sectionHeader}>Steg i processen</h2>
+        <h2 style={styles.sectionHeader}>Steg i processen (Table III.5)</h2>
         <table style={styles.table}>
-          <thead><tr><th style={styles.th}>Steg</th><th style={styles.th}>Handling</th><th style={styles.th}>Beskrivning</th></tr></thead>
+          <thead><tr><th style={styles.th}>Steg</th><th style={styles.th}>Handling</th><th style={styles.th}>Beskrivning</th><th style={styles.th}>Avsändare</th><th style={styles.th}>Mottagare</th><th style={styles.th}>Info ID</th></tr></thead>
           <tbody>
             {steps.map((s, i) => (
               <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
-                <td style={styles.td}><strong>{s.step}</strong></td><td style={styles.td}>{s.action}</td><td style={styles.td}>{s.description}</td>
+                <td style={styles.td}><strong>{s.step}</strong></td><td style={styles.td}>{s.action}</td><td style={styles.td}>{s.description}</td><td style={styles.td}>{s.producer}</td><td style={styles.td}>{s.receiver}</td><td style={styles.td}><strong>{s.infoId}</strong></td>
               </tr>
             ))}
           </tbody>
@@ -102,7 +135,7 @@ export const JWGProcedure5: React.FC<Props> = ({ onBack, onNavigateToBRS }) => {
       </section>
 
       <section>
-        <h2 style={styles.sectionHeader}>Datainnehåll: Notification (Info C)</h2>
+        <h2 style={styles.sectionHeader}>Datainnehåll JWG: Info Item H</h2>
         <table style={styles.table}>
           <thead><tr><th style={styles.th}>JWG Attribut</th><th style={styles.th}>Motsvarighet i {brsFlex104.id}</th></tr></thead>
           <tbody>
@@ -121,11 +154,11 @@ export const JWGProcedure5: React.FC<Props> = ({ onBack, onNavigateToBRS }) => {
 
       <section>
         <h2 style={styles.sectionHeader}>Datainnehåll BRS</h2>
-        <p style={styles.paragraph}>Följande attribut ingår i specifikationen för {brsFlex104.id} (InfoObject: {content104Output.title}). Här visas vilka JWG-krav som attributet uppfyller.</p>
+        <p style={styles.paragraph}>Följande attribut ingår i specifikationen för {brsFlex104.id} (InfoObject: {content104Input.title}). Här visas vilka JWG-krav som attributet uppfyller.</p>
         <table style={styles.table}>
           <thead><tr><th style={styles.th}>Attribut</th><th style={styles.th}>Beskrivning</th><th style={{...styles.th, backgroundColor: '#e6effc', color: '#0052cc', borderBottom: '2px solid #b3d4ff'}}>JWG Referens</th></tr></thead>
           <tbody>
-            {content104Output.attributes.map((attr, i) => {
+            {content104Input.attributes.map((attr, i) => {
               const jwgRef = getJwgReference(attr.attribute);
               return (
                 <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
