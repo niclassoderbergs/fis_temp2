@@ -3,7 +3,8 @@ import { BRSData } from '../../types';
 import { content803Input, content803Output } from '../../content-definitions';
 
 export const brsFlex803: BRSData = {
-  id: "BRS-FLEX-803",
+  id: "BRS-FLEX-802", // Updated from 803
+  previousId: "BRS-FLEX-803",
   title: "SP uppdaterar profilinformation",
   purpose: "Möjliggör för SP att underhålla sina kontaktuppgifter och administrativa data.",
   actors: [
@@ -11,7 +12,7 @@ export const brsFlex803: BRSData = {
     { role: "Mottagare", description: "FIS" }
   ],
   diagramCode: `sequenceDiagram
-    title BRS-FLEX-803: SP uppdaterar profil
+    title BRS-FLEX-802: SP uppdaterar profil
     participant SP as SP
     participant FIS as FIS
 
@@ -22,22 +23,22 @@ export const brsFlex803: BRSData = {
     FIS-->>SP: Ack
     deactivate FIS`,
   preConditions: [
-    { id: "BRSFLEX803-1", description: "SP är inloggad och aktiv." }
+    { id: "BRSFLEX802-1", description: "En SP har registrerat ny aktörsinformation" }
   ],
   postConditions: {
     accepted: [
-      { id: "BRSFLEX803-2", description: "FIS har uppdaterat aktörsinformationen." }
+      { id: "BRSFLEX802-2", description: "FIS har uppdaterat aktörsinformationen." }
     ],
     rejected: [
-      { id: "BRSFLEX803-3", description: "Inga ändringar sparade." }
+      { id: "BRSFLEX802-3", description: "Inga ändringar sparade." }
     ]
   },
   businessRules: [
-    { id: "BRSFLEX803-4", description: "Vissa fält (t.ex. OrgNr) får inte ändras via denna process.", errorCode: "E_803_IMMUTABLE_FIELD" }
+    { id: "BRSFLEX802-4", description: "Vissa fält (t.ex. OrgNr) får inte ändras via denna process.", errorCode: "E_802_IMMUTABLE_FIELD" }
   ],
   process: [
-    { id: "BRSFLEX803-5", description: "SP begär uppdatering av profil." },
-    { id: "BRSFLEX803-6", description: "FIS sparar ändringarna." }
+    { id: "BRSFLEX802-5", description: "SP begär uppdatering av profil." },
+    { id: "BRSFLEX802-6", description: "FIS sparar ändringarna." }
   ],
   infoObjects: [content803Input, content803Output]
 };

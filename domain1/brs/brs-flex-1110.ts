@@ -18,7 +18,6 @@ export const brsFlex1110: BRSData = {
     Admin->>FIS: CreateSPU (SP-ID, Namn, Elområde)
     activate FIS
     FIS->>FIS: Skapa SPU-objekt
-    FIS->>FIS: Trigger BRS-FLEX-111 (Notify SP)
     FIS-->>Admin: OK
     deactivate FIS`,
   preConditions: [
@@ -34,8 +33,7 @@ export const brsFlex1110: BRSData = {
   },
   businessRules: [],
   process: [
-    { id: "BRSFLEX1110-5", description: "FIS registrerar en SPU administrativt." },
-    { id: "BRSFLEX1110-6", description: "FIS initierar notifiering till SP (via separat process)." }
+    { id: "BRSFLEX1110-5", description: "FIS registrerar en SPU administrativt." }
   ],
   infoObjects: [content1110Input, content1110Output]
 };

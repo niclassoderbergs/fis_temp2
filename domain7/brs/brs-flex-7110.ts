@@ -3,7 +3,8 @@ import { BRSData } from '../../types';
 import { content7110Input, content7110Output } from '../../content-definitions';
 
 export const brsFlex7110: BRSData = {
-  id: "BRS-FLEX-7110",
+  id: "BRS-FLEX-7320", // Updated from 7110
+  previousId: "BRS-FLEX-7110",
   title: "FIS verifierar aktiverat energibud",
   purpose: "Att fastställa det officiella utfallet av en flexibilitetsaktivering för att möjliggöra korrekt ekonomisk avräkning. Detta inkluderar att validera leveransen genom att jämföra rapporterad data mot systemberäknade kontrollvärden (baseline) för att identifiera avvikelser.",
   actors: [
@@ -11,7 +12,7 @@ export const brsFlex7110: BRSData = {
     { role: "Utförare", description: "FIS" }
   ],
   diagramCode: `sequenceDiagram
-    title BRS-FLEX-7110: FIS verifierar aktiverat energibud
+    title BRS-FLEX-7320: FIS verifierar aktiverat energibud
     participant FIS as FIS
 
     Note over FIS: Trigger: BRS-FLEX-6110 (System Volume) klar
@@ -31,21 +32,21 @@ export const brsFlex7110: BRSData = {
     FIS->>FIS: Spara Resultat (Status, Diffar, Antal CUs)
     deactivate FIS`,
   preConditions: [
-    { id: "BRSFLEX7110-5", description: "BRS-FLEX-6110 (System Calculated Volume) har exekverats." }
+    { id: "BRSFLEX7320-5", description: "BRS-FLEX-6110 (System Calculated Volume) har exekverats." }
   ],
   postConditions: {
     accepted: [
-      { id: "BRSFLEX7110-6", description: "FIS har beräknat och lagrat verifieringsresultat." },
-      { id: "BRSFLEX7110-7", description: "FIS har skapat underlag för avräkning." }
+      { id: "BRSFLEX7320-6", description: "FIS har beräknat och lagrat verifieringsresultat." },
+      { id: "BRSFLEX7320-7", description: "FIS har skapat underlag för avräkning." }
     ],
     rejected: [
-      { id: "BRSFLEX7110-8", description: "Verifiering kunde ej genomföras (t.ex. systemfel)." }
+      { id: "BRSFLEX7320-8", description: "Verifiering kunde ej genomföras (t.ex. systemfel)." }
     ]
   },
   businessRules: [],
   process: [
-    { id: "BRSFLEX7110-9", description: "FIS jämför leveransdata mot budad volym och fastställer verifieringsresultat (systemprocess)." },
-    { id: "BRSFLEX7110-10", description: "FIS lagrar resultatet." }
+    { id: "BRSFLEX7320-9", description: "FIS jämför leveransdata mot budad volym och fastställer verifieringsresultat (systemprocess)." },
+    { id: "BRSFLEX7320-10", description: "FIS lagrar resultatet." }
   ],
   infoObjects: [content7110Input, content7110Output]
 };

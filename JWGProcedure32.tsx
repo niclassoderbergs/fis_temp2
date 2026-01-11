@@ -11,6 +11,7 @@ const styles = {
   header: { fontSize: '2rem', fontWeight: 700, marginBottom: '8px', color: '#172b4d' },
   subHeader: { fontSize: '1.1rem', color: '#5e6c84', marginBottom: '32px' },
   sectionHeader: { fontSize: '1.5rem', fontWeight: 600, marginTop: '48px', marginBottom: '16px', color: '#42526e', borderBottom: '2px solid #ebecf0', paddingBottom: '8px' },
+  subSectionHeader: { fontSize: '1.1rem', fontWeight: 600, marginTop: '24px', marginBottom: '12px', color: '#42526e' },
   paragraph: { fontSize: '1rem', lineHeight: '1.6', color: '#333', marginBottom: '16px' },
   table: { width: '100%', borderCollapse: 'collapse' as const, boxShadow: '0 1px 3px rgba(0,0,0,0.1)', fontSize: '0.9rem', border: '1px solid #dfe1e6', marginBottom: '24px' },
   th: { backgroundColor: '#f4f5f7', color: '#172b4d', padding: '12px 16px', textAlign: 'left' as const, borderBottom: '2px solid #dfe1e6', fontWeight: 600 },
@@ -21,7 +22,8 @@ const styles = {
   brsBox: { backgroundColor: '#e3fcef', padding: '16px', borderRadius: '4px', borderLeft: '4px solid #006644', marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
   brsLink: { color: '#006644', fontWeight: 700, textDecoration: 'underline', cursor: 'pointer', fontSize: '1.1rem', display: 'block', marginBottom: '4px' },
   mappingTag: { display: 'inline-block', backgroundColor: '#e3fcef', color: '#006644', padding: '2px 6px', borderRadius: '3px', fontSize: '0.8rem', fontWeight: 600, marginBottom: '4px' },
-  reverseMappingTag: { display: 'inline-block', backgroundColor: '#e6effc', color: '#0052cc', padding: '2px 6px', borderRadius: '3px', fontSize: '0.8rem', fontWeight: 600, marginBottom: '4px' }
+  reverseMappingTag: { display: 'inline-block', backgroundColor: '#e6effc', color: '#0052cc', padding: '2px 6px', borderRadius: '3px', fontSize: '0.8rem', fontWeight: 600, marginBottom: '4px' },
+  noteBox: { backgroundColor: '#fff3cd', border: '1px solid #ffeeba', padding: '12px', borderRadius: '4px', marginBottom: '24px', color: '#856404', fontSize: '0.95rem' }
 };
 
 const diagramCode = `sequenceDiagram
@@ -39,7 +41,7 @@ const diagramCode = `sequenceDiagram
         alt Validation Failed
             MDA-->>QDA: Info B: Error
         else OK
-            MDA-->>QDA: 32.1c Send validated historical data (Info CA)
+            MDA-->>QDA: 32.1c Send validated historical data (Info CA -> BA1)
         end
         deactivate MDA
     end
@@ -48,7 +50,7 @@ const diagramCode = `sequenceDiagram
         QDA->>DMDDA: 32.2a Request validated DMD data (Info BZ)
         activate DMDDA
         DMDDA->>DMDDA: 32.2b Validate request
-        DMDDA-->>QDA: 32.2c Send validated DMD data (Info CB)
+        DMDDA-->>QDA: 32.2c Send validated DMD data (Info CB -> CA1)
         deactivate DMDDA
     end
 
@@ -56,7 +58,7 @@ const diagramCode = `sequenceDiagram
         QDA->>NRTDA: 32.3a Request validated NRT data (Info CA)
         activate NRTDA
         NRTDA->>NRTDA: 32.3b Validate request
-        NRTDA-->>QDA: 32.3c Send validated NRT data (Info CC)
+        NRTDA-->>QDA: 32.3c Send validated NRT data (Info CC -> CB1)
         deactivate NRTDA
     end
 
@@ -64,7 +66,7 @@ const diagramCode = `sequenceDiagram
         QDA->>CDA: 32.4a Request calculated data (Info CC)
         activate CDA
         CDA->>CDA: 32.4b Validate request
-        CDA-->>QDA: 32.4c Send validated calculated data (Info CD)
+        CDA-->>QDA: 32.4c Send validated calculated data (Info CD -> CC1)
         deactivate CDA
     end`;
 
@@ -80,6 +82,14 @@ const attributes = [
   { name: "Period", desc: "Start and End date/time." },
   { name: "Time Series", desc: "Sequence of measured values." },
   { name: "Quality", desc: "Status of the values (Measured, Estimated, Validated)." }
+];
+
+// Data Specification Objects (Referenced in CA, CB, CC, CD)
+const attributesDataSpec = [
+  { name: "Start timestamp", desc: "Start of the time interval covered." },
+  { name: "End timestamp", desc: "End of the time interval covered." },
+  { name: "Direction", desc: "Flow direction (Production, Consumption, Combined)." },
+  { name: "Energy product", desc: "Type of energy (e.g. Active energy, Reactive energy)." }
 ];
 
 const jwgToBrsMapping: Record<string, string> = {
@@ -117,6 +127,29 @@ export const JWGProcedure32: React.FC<Props> = ({ onBack, onNavigateToBRS, onNav
     return Object.keys(jwgToBrsMapping).find(key => jwgToBrsMapping[key].includes(brsAttrName));
   };
 
+  const renderAttributeTable = (title: string, data: any[], showMapping = false, mappingFn?: (name: string) => string | undefined) => (
+    <div style={{marginBottom: '20px'}}>
+      <h3 style={styles.subSectionHeader}>{title}</h3>
+      <table style={styles.table}>
+        <thead><tr><th style={styles.th}>Attribut</th><th style={styles.th}>Beskrivning</th>{showMapping && <th style={{...styles.th, backgroundColor: '#e6effc', color: '#0052cc'}}>JWG Referens</th>}</tr></thead>
+        <tbody>
+          {data.map((attr, i) => {
+            const jwgRef = showMapping ? (mappingFn ? mappingFn(attr.attribute) : getJwgReference(attr.attribute)) : null;
+            return (
+              <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
+                <td style={styles.td}><strong>{attr.attribute}</strong></td>
+                <td style={styles.td}>{attr.description}</td>
+                {showMapping && <td style={{...styles.td, backgroundColor: i % 2 !== 0 ? '#f4f8fd' : '#fff'}}>
+                  {jwgRef ? <span style={styles.reverseMappingTag}>{jwgRef}</span> : <span style={{color: '#999', fontSize: '0.8rem', fontStyle: 'italic'}}>-</span>}
+                </td>}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+
   return (
     <div style={styles.container}>
       <div style={styles.navHeader}>
@@ -129,6 +162,10 @@ export const JWGProcedure32: React.FC<Props> = ({ onBack, onNavigateToBRS, onNav
 
       <h1 style={styles.header}>Procedure 32: Making measurement data available</h1>
       <p style={styles.subHeader}>Inhämtning och distribution av mätdata (Historisk, Sub-metering, Närtid, Beräknad) för verifiering.</p>
+
+      <div style={styles.noteBox}>
+        <strong>Arkitekturell notering:</strong> JWG specificerar fyra olika dataflöden (Info Items CA, CB, CC, CD). Dessa refererar till underliggande "Data Specification Objects" (BA1, CA1, CB1, CC1) som definierar tekniska detaljer.
+      </div>
 
       <div style={styles.brsBox}>
         <div>
@@ -170,6 +207,22 @@ export const JWGProcedure32: React.FC<Props> = ({ onBack, onNavigateToBRS, onNav
                 </tr>
               );
             })}
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h3 style={styles.subSectionHeader}>Referenced Data Specifications (BA1, CA1, CB1, CC1)</h3>
+        <p style={styles.paragraph}>Dessa objekt inkluderas i svaret och definierar tidsintervall och energityp.</p>
+        <table style={styles.table}>
+          <thead><tr><th style={styles.th}>Attribut</th><th style={styles.th}>Beskrivning</th></tr></thead>
+          <tbody>
+            {attributesDataSpec.map((a, i) => (
+              <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
+                <td style={styles.td}><strong>{a.name}</strong></td>
+                <td style={styles.td}>{a.desc}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </section>

@@ -3,7 +3,8 @@ import { BRSData } from '../../types';
 import { content111Output } from '../../content-definitions';
 
 export const brsFlex111: BRSData = {
-  id: "BRS-FLEX-111",
+  id: "BRS-FLEX-119", // Updated from 111
+  previousId: "BRS-FLEX-111",
   title: "SP notifieras om administrativt registrerad SPU",
   purpose: "Att informera SP om att en SPU har skapats åt dem administrativt av systemet eller en administratör.",
   actors: [
@@ -11,7 +12,7 @@ export const brsFlex111: BRSData = {
     { role: "Mottagare", description: "SP" }
   ],
   diagramCode: `sequenceDiagram
-    title BRS-FLEX-111: Notifiering om ny SPU (Admin)
+    title BRS-FLEX-119: Notifiering om ny SPU (Admin)
     participant FIS as FIS
     participant SP as SP
 
@@ -21,20 +22,20 @@ export const brsFlex111: BRSData = {
     FIS->>SP: NotifySPUCreated (SPU-ID, Namn, Elområde, Orsak)
     deactivate FIS`,
   preConditions: [
-    { id: "BRSFLEX111-1", description: "En SPU har registrerats administrativt (via BRS-FLEX-1110)." }
+    { id: "BRSFLEX119-1", description: "En SPU har registrerats administrativt (via BRS-FLEX-1110)." }
   ],
   postConditions: {
     accepted: [
-      { id: "BRSFLEX111-2", description: "SP har mottagit information om den nya SPU:n." }
+      { id: "BRSFLEX119-2", description: "SP har mottagit information om den nya SPU:n." }
     ],
     rejected: [
-      { id: "BRSFLEX111-3", description: "Notifiering misslyckades." }
+      { id: "BRSFLEX119-3", description: "Notifiering misslyckades." }
     ]
   },
   businessRules: [],
   process: [
-    { id: "BRSFLEX111-4", description: "FIS skickar notifiering om den nya SPU:n." },
-    { id: "BRSFLEX111-5", description: "SP tar emot informationen." }
+    { id: "BRSFLEX119-4", description: "FIS skickar notifiering om den nya SPU:n." },
+    { id: "BRSFLEX119-5", description: "SP tar emot informationen." }
   ],
   infoObjects: [content111Output]
 };

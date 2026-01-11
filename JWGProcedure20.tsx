@@ -1,10 +1,13 @@
 
 import React from 'react';
 import { MermaidDiagram } from './MermaidDiagram';
-import { brsFlex311 } from './domain3/brs/brs-flex-311';
+import { brsFlex315 } from './domain3/brs/brs-flex-315';
+import { brsFlex330 } from './domain3/brs/brs-flex-330';
+import { brsFlex317 } from './domain3/brs/brs-flex-317';
+import { brsFlex318 } from './domain3/brs/brs-flex-318';
 import { brsFlex312 } from './domain3/brs/brs-flex-312';
 import { brsFlex313 } from './domain3/brs/brs-flex-313';
-import { content311Input, content312Input, content313Output } from './content-domain-3';
+import { content315Input, content330Output, content317Input, content318Input, content312Input, content313Output } from './content-domain-3';
 
 const styles = {
   container: { padding: '40px', backgroundColor: '#fff', minHeight: '100%', boxSizing: 'border-box' as const },
@@ -28,49 +31,67 @@ const styles = {
 
 const diagramCode = `sequenceDiagram
     title Procedure 20: SPG or SPU product pre-qualification
-    participant AR as Activation responsible (TSO)
+    participant TSO as Activation responsible (TSO)
     participant SP as Service provider
-    participant PPQR as Product PQ responsible (FIS)
+    participant FIS as Product PQ responsible (FIS)
     participant EP as Entitled parties
 
-    Note over PPQR: 20.1 Send info about start
-    PPQR->>SP: Info Item AU: Start notification
+    Note over FIS: 20.1 Send info about start
+    FIS->>SP: Info Item AU: Start notification (BRS 330)
     
     opt Additional Data
         Note over SP: 20.2 Send technical data
-        SP->>PPQR: Info Item AV: Technical data
+        SP->>FIS: Info Item AV: Technical data (BRS 317)
     end
     
-    Note over PPQR: 20.3 Execute product pre-qualification
+    Note over FIS: 20.3 Execute product pre-qualification
     
     opt Activation Test
-        Note over PPQR: 20.4a Request activation test
-        PPQR->>AR: Info Item AW: Request test
+        Note over FIS: 20.4a Request activation test
+        FIS->>TSO: Info Item AW: Request test (BRS 315)
         
-        Note over AR: 20.4b Execute activation test
+        Note over TSO: 20.4b Execute activation test (BRS 318)
         
-        Note over AR: 20.4c Send activation test result
-        AR-->>PPQR: Info Item B: Test result
+        Note over TSO: 20.4c Send activation test result
+        TSO-->>FIS: Info Item B: Test result (BRS 312)
     end
     
-    Note over PPQR: 20.5 Execute SPU/SPG confirmation
+    Note over FIS: 20.5 Execute SPU/SPG confirmation
     
-    Note over PPQR: 20.6 Notification of result
-    PPQR->>EP: Info Item AY: Qualification result
-    PPQR->>SP: Info Item AY: Qualification result`;
+    Note over FIS: 20.6 Notification of result
+    FIS->>EP: Info Item AY: Qualification result
+    FIS->>SP: Info Item AY: Qualification result (BRS 313)`;
 
 const steps = [
-  { step: "20.1", action: "Send/Receive information about start", description: "The Product PQ responsible informs the SP that the qualification process has started.", producer: "Product PQ responsible", receiver: "Service provider", infoId: "AU" },
-  { step: "20.2", action: "Send technical data", description: "(Conditional) The SP provides specific technical data required for the test.", producer: "Service provider", receiver: "Product PQ responsible", infoId: "AV" },
-  { step: "20.3", action: "Execute product pre-qualification", description: "Internal processing and validation of data against product requirements.", producer: "Product PQ responsible", receiver: "-", infoId: "-" },
-  { step: "20.4a", action: "Request activation test", description: "(Conditional) The Product PQ responsible requests the Activation Responsible (TSO) to perform a physical test.", producer: "Product PQ responsible", receiver: "Activation responsible", infoId: "AW" },
-  { step: "20.4b", action: "Execute activation test", description: "The Activation Responsible carries out the test (e.g. ramp response).", producer: "Activation responsible", receiver: "-", infoId: "-" },
-  { step: "20.4c", action: "Send activation test result", description: "The Activation Responsible reports the test result (Pass/Fail).", producer: "Activation responsible", receiver: "Product PQ responsible", infoId: "B" },
-  { step: "20.5", action: "Execute SPU or SPG confirmation", description: "Final assessment and status update.", producer: "Product PQ responsible", receiver: "-", infoId: "-" },
-  { step: "20.6", action: "Notification of the result", description: "The result of the product pre-qualification is sent to entitled parties.", producer: "Product PQ responsible", receiver: "Entitled parties", infoId: "AY" }
+  { step: "20.1", action: "Send/Receive information about start", description: "System notifies SP that technical phase has started.", producer: "FIS", receiver: "Service provider", infoId: "AU" },
+  { step: "20.2", action: "Send technical data", description: "SP provides parameters for the test.", producer: "Service provider", receiver: "FIS", infoId: "AV" },
+  { step: "20.3", action: "Execute product pre-qualification", description: "System validates data.", producer: "FIS", receiver: "-", infoId: "-" },
+  { step: "20.4a", action: "Request activation test", description: "TSO initiates the test phase.", producer: "FIS/TSO", receiver: "Activation responsible", infoId: "AW" },
+  { step: "20.4b", action: "Execute activation test", description: "The physical test is performed.", producer: "Activation responsible", receiver: "-", infoId: "-" },
+  { step: "20.4c", action: "Send activation test result", description: "TSO reports the outcome.", producer: "Activation responsible", receiver: "FIS", infoId: "B" },
+  { step: "20.5", action: "Execute SPU or SPG confirmation", description: "Final assessment.", producer: "FIS", receiver: "-", infoId: "-" },
+  { step: "20.6", action: "Notification of the result", description: "Final result sent to SP.", producer: "FIS", receiver: "Service Provider", infoId: "AY" }
 ];
 
-const attributes = [
+// Definition of JWG Info Items
+const attributesAU = [
+  { name: "Qualification Process ID", desc: "Unique identifier for the qualification case." },
+  { name: "Start Status", desc: "Indication that the technical phase has begun." },
+  { name: "Instruction", desc: "Request for technical data/test plan." }
+];
+
+const attributesAV = [
+  { name: "Qualification Process ID", desc: "Reference to the case." },
+  { name: "Technical Characteristics", desc: "Ramp rates, duration, recovery time, etc." },
+  { name: "Test Plan", desc: "Proposal for physical activation test." }
+];
+
+const attributesAW = [
+  { name: "Qualification Process ID", desc: "Reference to the case." },
+  { name: "Action", desc: "Trigger to start the physical test phase." }
+];
+
+const attributesAY = [
   { name: "SPU/SPG identifier", desc: "Resource tested." },
   { name: "Product", desc: "E.g. mFRR." },
   { name: "Qualification status", desc: "Result (Qualified/Rejected)." },
@@ -78,8 +99,23 @@ const attributes = [
 ];
 
 const jwgToBrsMapping: Record<string, string> = {
-  "SPU/SPG identifier": "SPU-ID / SPG-ID",
-  "Product": "Produkt-ID",
+  // Common
+  "Qualification Process ID": "Kvalificerings-ID",
+  
+  // AU
+  "Start Status": "Status",
+  "Instruction": "Meddelande",
+
+  // AV
+  "Technical Characteristics": "Tekniska parametrar",
+  "Test Plan": "Testplan",
+
+  // AW
+  "Action": "Handling",
+
+  // AY
+  "SPU/SPG identifier": "Kvalificerings-ID", // Referens till resurs via ID
+  "Product": "Kvalificerings-ID", // Referens till produkt via ID
   "Qualification status": "Status",
   "Validity period": "Giltig till"
 };
@@ -95,16 +131,30 @@ export const JWGProcedure20: React.FC<Props> = ({ onBack, onNavigateToBRS, onNav
     const mappedName = jwgToBrsMapping[jwgAttrName];
     if (!mappedName) return null;
     
-    // Search in all relevant info objects
-    let attr = content311Input.attributes.find(a => a.attribute === mappedName);
-    if (!attr) attr = content312Input.attributes.find(a => a.attribute === mappedName);
-    if (!attr) attr = content313Output.attributes.find(a => a.attribute === mappedName);
-    
-    return attr;
+    // Sök i alla relevanta objekt för denna procedur
+    const searchList = [
+        ...content330Output.attributes, // AU
+        ...content317Input.attributes,  // AV
+        ...content315Input.attributes,  // AW
+        ...content313Output.attributes  // AY
+    ];
+
+    return searchList.find(a => a.attribute === mappedName);
   };
 
   const getJwgReference = (brsAttrName: string) => {
-    return Object.keys(jwgToBrsMapping).find(key => jwgToBrsMapping[key] === brsAttrName);
+    switch (brsAttrName) {
+        case "Status": return "Qualification status / Start Status";
+        case "Slutresultat": return "Qualification status";
+        case "Kvalificerings-ID": return "Qualification Process ID";
+        case "Test-ID": return "Test Identifier (Internal trace)";
+        case "Testdatum": return "Test execution date";
+        case "Resultatdata": return "Test result data";
+        case "Kommentar": return "Additional info / Notes";
+        case "Transaktions-ID": return "Transaction ID (Internal)";
+        default:
+            return Object.keys(jwgToBrsMapping).find(key => jwgToBrsMapping[key] === brsAttrName);
+    }
   };
 
   const renderAttributeTable = (title: string, data: any[], showMapping = false) => (
@@ -130,6 +180,26 @@ export const JWGProcedure20: React.FC<Props> = ({ onBack, onNavigateToBRS, onNav
     </div>
   );
 
+  const renderJwgTable = (title: string, data: any[], brsId: string) => (
+    <div style={{marginBottom: '24px'}}>
+        <h3 style={styles.subSectionHeader}>{title} (Kopplat till {brsId})</h3>
+        <table style={styles.table}>
+          <thead><tr><th style={styles.th}>JWG Attribut</th><th style={styles.th}>Motsvarighet i BRS</th></tr></thead>
+          <tbody>
+            {data.map((a, i) => {
+              const brsMatch = getBrsAttribute(a.name);
+              return (
+                <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
+                  <td style={styles.td}><strong>{a.name}</strong><br/><span style={{fontSize:'0.8rem', color:'#666'}}>{a.desc}</span></td>
+                  <td style={styles.td}>{brsMatch ? <span style={styles.mappingTag}>{brsMatch.attribute}</span> : '-'}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+    </div>
+  );
+
   return (
     <div style={styles.container}>
       <div style={styles.navHeader}>
@@ -141,20 +211,17 @@ export const JWGProcedure20: React.FC<Props> = ({ onBack, onNavigateToBRS, onNav
       </div>
 
       <h1 style={styles.header}>Procedure 20: SPG or SPU product pre-qualification</h1>
-      <p style={styles.subHeader}>Genomförande av tester och resultatrapportering för produktförkvalificering.</p>
-
-      <div style={styles.noteBox}>
-        <strong>Implementation Note:</strong> JWG-diagrammet ovan visar att "Product PQ responsible" (FIS) initierar processen (Step 20.1). 
-        I FIS-implementationen är det dock <strong>SP</strong> som initierar processen genom att skicka en ansökan (BRS-FLEX-311). 
-        FIS (Product PQ responsible) hanterar sedan flödet mot TSO (Activation Responsible) och notifierar slutligen SP om resultatet.
-      </div>
+      <p style={styles.subHeader}>Genomförande av teknisk fas (test och verifiering).</p>
 
       <div style={styles.brsBox}>
         <div>
             <div style={{fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: '4px', opacity: 0.8}}>Implementerad via</div>
-            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex311.id)}>{brsFlex311.id}: {brsFlex311.title} (Application)</div>
-            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex312.id)}>{brsFlex312.id}: {brsFlex312.title} (TSO report)</div>
-            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex313.id)}>{brsFlex313.id}: {brsFlex313.title} (Result)</div>
+            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex315.id)}>{brsFlex315.id}: {brsFlex315.title} (Starta Fas)</div>
+            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex330.id)}>{brsFlex330.id}: {brsFlex330.title} (Notify SP)</div>
+            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex317.id)}>{brsFlex317.id}: {brsFlex317.title} (Test Data)</div>
+            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex318.id)}>{brsFlex318.id}: {brsFlex318.title} (Execute Test)</div>
+            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex312.id)}>{brsFlex312.id}: {brsFlex312.title} (Report Result)</div>
+            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex313.id)}>{brsFlex313.id}: {brsFlex313.title} (Final Notify)</div>
         </div>
         <div style={{fontSize: '2rem', opacity: 0.2}}>🔗</div>
       </div>
@@ -176,34 +243,33 @@ export const JWGProcedure20: React.FC<Props> = ({ onBack, onNavigateToBRS, onNav
       </section>
 
       <section>
-        <h2 style={styles.sectionHeader}>Datainnehåll: Info AY (Result)</h2>
-        <table style={styles.table}>
-          <thead><tr><th style={styles.th}>JWG Attribut</th><th style={styles.th}>Motsvarighet i BRS</th></tr></thead>
-          <tbody>
-            {attributes.map((a, i) => {
-              const brsMatch = getBrsAttribute(a.name);
-              return (
-                <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
-                  <td style={styles.td}><strong>{a.name}</strong><br/><span style={{fontSize:'0.8rem', color:'#666'}}>{a.desc}</span></td>
-                  <td style={styles.td}>{brsMatch ? <span style={styles.mappingTag}>{brsMatch.attribute}</span> : '-'}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <h2 style={styles.sectionHeader}>Datainnehåll JWG</h2>
+        {renderJwgTable("Info Item AU (Start Notification)", attributesAU, brsFlex330.id)}
+        {renderJwgTable("Info Item AV (Technical Data)", attributesAV, brsFlex317.id)}
+        {renderJwgTable("Info Item AW (Request Activation Test)", attributesAW, brsFlex315.id)}
+        {renderJwgTable("Info Item AY (Qualification Result)", attributesAY, brsFlex313.id)}
       </section>
 
       <section>
         <h2 style={styles.sectionHeader}>Datainnehåll BRS</h2>
-        <p style={styles.paragraph}>Nedan visas datainnehållet för de tre huvudstegen i den implementerade processen.</p>
+        <p style={styles.paragraph}>Nedan visas datainnehållet för stegen i den tekniska kvalificeringsfasen.</p>
         
-        {/* 1. Ansökan (311) */}
-        {renderAttributeTable(`${brsFlex311.id} Input: ${content311Input.title}`, content311Input.attributes, true)}
+        {/* 1. Start (315/330) */}
+        <h3 style={{...styles.subSectionHeader, color: '#0052cc'}}>1. Starta teknisk fas</h3>
+        {renderAttributeTable(`${brsFlex315.id} Input: ${content315Input.title}`, content315Input.attributes, true)}
+        {renderAttributeTable(`${brsFlex330.id} Output: ${content330Output.title}`, content330Output.attributes, true)}
 
-        {/* 2. TSO Rapportering (312) */}
+        {/* 2. Testdata (317) */}
+        <h3 style={{...styles.subSectionHeader, color: '#0052cc'}}>2. Tekniska data</h3>
+        {renderAttributeTable(`${brsFlex317.id} Input: ${content317Input.title}`, content317Input.attributes, true)}
+
+        {/* 3. Testgenomförande (318) */}
+        <h3 style={{...styles.subSectionHeader, color: '#0052cc'}}>3. Aktiveringstest</h3>
+        {renderAttributeTable(`${brsFlex318.id} Input: ${content318Input.title}`, content318Input.attributes, true)}
+
+        {/* 4. Resultat (312/313) */}
+        <h3 style={{...styles.subSectionHeader, color: '#0052cc'}}>4. Rapportering & Beslut</h3>
         {renderAttributeTable(`${brsFlex312.id} Input: ${content312Input.title}`, content312Input.attributes, true)}
-
-        {/* 3. Resultat (313) */}
         {renderAttributeTable(`${brsFlex313.id} Output: ${content313Output.title}`, content313Output.attributes, true)}
 
       </section>

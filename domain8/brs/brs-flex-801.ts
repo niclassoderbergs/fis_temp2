@@ -28,7 +28,7 @@ export const brsFlex801: BRSData = {
     end
     deactivate FIS`,
   preConditions: [
-    { id: "BRSFLEX801-1", description: "En extern part har initierat registrering." }
+    { id: "BRSFLEX801-1", description: "En extern part har initierat registrering för att bli en SP." }
   ],
   postConditions: {
     accepted: [

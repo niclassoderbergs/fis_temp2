@@ -3,18 +3,19 @@ import { BRSData } from '../../types';
 import { content7120Input, content7120Output } from '../../content-definitions';
 
 export const brsFlex7120: BRSData = {
-  id: "BRS-FLEX-7120",
+  id: "BRS-FLEX-7610", // Updated from 7120
+  previousId: "BRS-FLEX-7120",
   title: "FIS allokerar verifierad volym per BRP",
   purpose: "En intern systemprocess för att fördela (allokera) den verifierade flexibilitetsvolymen på berörda Balansansvariga (BRP). Syftet är att skapa underlag för obalansjustering (Imbalance Adjustment) så att BRP inte drabbas ekonomiskt för obalanser orsakade av flexibilitetsaktiveringar som de inte själva initierat.",
   actors: [
-    { role: "Initiator", description: "System (Triggered by 7110)" },
+    { role: "Initiator", description: "System (Triggered by 7320)" },
     { role: "Utförare", description: "FIS" }
   ],
   diagramCode: `sequenceDiagram
-    title BRS-FLEX-7120: Allokering för Obalansjustering (BRP)
+    title BRS-FLEX-7610: Allokering för Obalansjustering (BRP)
     participant FIS as FIS
 
-    Note over FIS: Trigger: BRS-FLEX-7110 (Resultat klart)
+    Note over FIS: Trigger: BRS-FLEX-7320 (Resultat klart)
     activate FIS
     FIS->>FIS: Hämta Verifierat Resultat (CUs & Volymer)
     
@@ -27,21 +28,21 @@ export const brsFlex7120: BRSData = {
     FIS->>FIS: Spara Obalansunderlag (BRP-ID, Summa Volym)
     deactivate FIS`,
   preConditions: [
-    { id: "BRSFLEX7120-1", description: "Verifiering av energibud är slutförd (via BRS-FLEX-7110)." }
+    { id: "BRSFLEX7610-1", description: "Verifiering av energibud är slutförd (via BRS-FLEX-7320)." }
   ],
   postConditions: {
     accepted: [
-      { id: "BRSFLEX7120-2", description: "FIS har allokerat verifierad volym per BRP och elleverantör." },
-      { id: "BRSFLEX7120-3", description: "FIS har lagrat underlag för obalansjustering av BRP." }
+      { id: "BRSFLEX7610-2", description: "FIS har allokerat verifierad volym per BRP och elleverantör." },
+      { id: "BRSFLEX7610-3", description: "FIS har lagrat underlag för obalansjustering av BRP." }
     ],
     rejected: [
-      { id: "BRSFLEX7120-4", description: "Allokering misslyckades." }
+      { id: "BRSFLEX7610-4", description: "Allokering misslyckades." }
     ]
   },
   businessRules: [],
   process: [
-    { id: "BRSFLEX7120-5", description: "FIS fördelar (allokerar) verifierad volym per Balansansvarig (BRP) (systemprocess)." },
-    { id: "BRSFLEX7120-6", description: "FIS lagrar underlag för obalansjustering." }
+    { id: "BRSFLEX7610-5", description: "FIS fördelar (allokerar) verifierad volym per Balansansvarig (BRP) (systemprocess)." },
+    { id: "BRSFLEX7610-6", description: "FIS lagrar underlag för obalansjustering." }
   ],
   infoObjects: [content7120Input, content7120Output]
 };

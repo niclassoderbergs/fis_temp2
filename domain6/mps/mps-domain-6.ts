@@ -3,133 +3,196 @@ import { MPSData } from '../../types';
 
 export const mpsFlex600: MPSData = {
   id: "MPS-FLEX-600",
-  title: "Hantering av Mätdata och Verifieringsunderlag",
+  title: "Hantering av mätvärden",
   domain: "Domän 6: Mätvärden",
-  purpose: "Att hantera insamling, validering och distribution av mätvärden som krävs för verifiering och avräkning.",
-  trigger: "Leveransperiod avslutad eller behov av verifiering.",
+  purpose: "Att hantera insamling, validering och distribution av rådata (mätvärden) från mätpunkter och styrenheter.",
+  trigger: "Periodisk insamling eller behov av analysdata.",
   scenarios: [
     {
-      id: "MPS-FLEX-600-Sc1",
-      title: "Inrapportering av CU-mätvärden (Sub-metering)",
-      description: "SP rapporterar uppmätta värden från enheten för att möjliggöra verifiering.",
+      id: "MPS-FLEX-600-Sc1a",
+      title: "Mätvärdesflöde balansmarknad (TSO)",
+      description: "Hantering av mätvärden för balansprodukter. SP rapporterar data som distribueras till TSO och BRP.",
       diagramCode: `sequenceDiagram
-    title MPS-FLEX-600-Sc1: Inrapportering av Sub-metering
+    title MPS-FLEX-600-Sc1a: Mätvärdesflöde TSO
     participant SP as SP
     participant FIS as FIS
-    participant SO as Marknadens Parter
+    participant TSO as TSO
+    participant BRP as BRP
 
-    Note over SP: Händelse: Ny mätdata från resurser tillgänglig
     SP->>FIS: Rapportera mätvärden (BRS-FLEX-601)
     activate FIS
     FIS->>FIS: Lagra tidsserier
-    FIS-->>SP: Bekräftat
+    FIS-->>SP: Kvittens (BRS-FLEX-601)
     
-    Note over FIS: Systemtrigger: Data ska distribueras
-    FIS->>SO: Distribuera mätdata till berörda (BRS-FLEX-603)
+    Note over FIS: Trigger: TSO-bud finns (609-2)
+    FIS->>TSO: Distribuera mätdata (BRS-FLEX-609)
+    FIS->>BRP: Distribuera mätdata
     deactivate FIS`,
       steps: [
         { 
-          stepId: "MPS-FLEX-600-Sc1.1", role: "SP", action: "Rapportera Mätvärden", 
-          description: "SP har registrerat mätvärden för en styrbar enhet.", 
+          stepId: "MPS-FLEX-600-Sc1a.1", role: "SP", action: "Rapportera Mätvärden", 
+          description: "SP rapporterar mätvärden för en resurs.", 
           refBRS: "BRS-FLEX-601", refRule: "BRSFLEX601-1" 
         },
         { 
-          stepId: "MPS-FLEX-600-Sc1.2", role: "FIS", action: "Spara Data", 
-          description: "FIS har lagrat mottagna CU-mätvärden.", 
+          stepId: "MPS-FLEX-600-Sc1a.2", role: "FIS", action: "Spara Data", 
+          description: "FIS lagrar mätvärden.", 
           refBRS: "BRS-FLEX-601", refRule: "BRSFLEX601-2" 
         },
         { 
-          stepId: "MPS-FLEX-600-Sc1.3", role: "FIS", action: "Kvittens", 
-          description: "SP har mottagit kvittens på lagringen.", 
+          stepId: "MPS-FLEX-600-Sc1a.3", role: "FIS", action: "Kvittens", 
+          description: "SP mottar kvittens på rapporteringen.", 
           refBRS: "BRS-FLEX-601", refRule: "BRSFLEX601-3" 
         },
         { 
-          stepId: "MPS-FLEX-600-Sc1.4", role: "System", action: "Trigger Distribution", 
-          description: "Mätvärden har inkommit och ska distribueras.", 
-          refBRS: "BRS-FLEX-603", refRule: "BRSFLEX603-1" 
+          stepId: "MPS-FLEX-600-Sc1a.4", role: "System", action: "Check TSO-bud", 
+          description: "Kontroll om TSO har registrerat energibud (Trigger).", 
+          refBRS: "BRS-FLEX-609", refRule: "BRSFLEX609-2" 
         },
         { 
-          stepId: "MPS-FLEX-600-Sc1.5", role: "TSO", action: "Ta emot Data", 
-          description: "Systemoperatören har mottagit CU-mätvärden.", 
-          refBRS: "BRS-FLEX-603", refRule: "BRSFLEX603-5" 
+          stepId: "MPS-FLEX-600-Sc1a.5", role: "FIS", action: "Distribuera TSO", 
+          description: "FIS skickar mätdata till TSO.", 
+          refBRS: "BRS-FLEX-609", refRule: "BRSFLEX609-5" 
         },
         { 
-          stepId: "MPS-FLEX-600-Sc1.6", role: "DSO", action: "Ta emot Data", 
-          description: "Nätägaren har mottagit CU-mätvärden.", 
-          refBRS: "BRS-FLEX-603", refRule: "BRSFLEX603-6" 
-        },
-        { 
-          stepId: "MPS-FLEX-600-Sc1.7", role: "BRP", action: "Ta emot Data", 
-          description: "Balansansvarig har mottagit CU-mätvärden.", 
-          refBRS: "BRS-FLEX-603", refRule: "BRSFLEX603-7" 
-        },
-        { 
-          stepId: "MPS-FLEX-600-Sc1.8", role: "Elleverantör", action: "Ta emot Data", 
-          description: "Elleverantör har mottagit CU-mätvärden.", 
-          refBRS: "BRS-FLEX-603", refRule: "BRSFLEX603-8" 
+          stepId: "MPS-FLEX-600-Sc1a.6", role: "FIS", action: "Distribuera BRP", 
+          description: "FIS skickar mätdata till BRP.", 
+          refBRS: "BRS-FLEX-609", refRule: "BRSFLEX609-7" 
         }
       ]
     },
     {
-      id: "MPS-FLEX-600-Sc4",
-      title: "Rapportering av Aktiverad Volym (SP)",
-      description: "SP skickar in beräknad levererad volym för en specifik aktivering.",
+      id: "MPS-FLEX-600-Sc1b",
+      title: "Mätvärdesflöde lokalmarknad (DSO)",
+      description: "Hantering av mätvärden för lokala produkter. Data distribueras till DSO och Elleverantör.",
       diagramCode: `sequenceDiagram
-    title MPS-FLEX-600-Sc4: Rapportering av leveransbevis
+    title MPS-FLEX-600-Sc1b: Mätvärdesflöde DSO
     participant SP as SP
     participant FIS as FIS
-    participant SO as Marknadens Parter
+    participant DSO as DSO
+    participant Lev as Elleverantör
 
-    Note over SP: Beslut: Leverans för avrop är beräknad
-    SP->>FIS: Rapportera levererad volym (BRS-FLEX-611)
+    SP->>FIS: Rapportera mätvärden (BRS-FLEX-601)
     activate FIS
-    FIS->>FIS: Lagra bevis för verifiering
-    FIS-->>SP: Bekräftat
+    FIS->>FIS: Lagra tidsserier
+    FIS-->>SP: Kvittens (BRS-FLEX-601)
     
-    Note over FIS: Systemtrigger: Volym ska distribueras
-    FIS->>SO: Notifiera om fastställd volym (BRS-FLEX-613)
+    Note over FIS: Trigger: DSO-bud finns (609-3)
+    FIS->>DSO: Distribuera mätdata (BRS-FLEX-609)
+    FIS->>Lev: Distribuera mätdata
     deactivate FIS`,
       steps: [
         { 
-          stepId: "MPS-FLEX-600-Sc4.1", role: "SP", action: "Rapportera Volym", 
-          description: "En SP har registrerat leveransdata för en aktivering.", 
-          refBRS: "BRS-FLEX-611", refRule: "BRSFLEX611-1" 
+          stepId: "MPS-FLEX-600-Sc1b.1", role: "SP", action: "Rapportera Mätvärden", 
+          description: "SP rapporterar mätvärden.", 
+          refBRS: "BRS-FLEX-601", refRule: "BRSFLEX601-1" 
         },
         { 
-          stepId: "MPS-FLEX-600-Sc4.2", role: "FIS", action: "Spara Data", 
-          description: "FIS har lagrat leveransdata kopplad till aktiveringen.", 
-          refBRS: "BRS-FLEX-611", refRule: "BRSFLEX611-2" 
+          stepId: "MPS-FLEX-600-Sc1b.2", role: "FIS", action: "Spara Data", 
+          description: "FIS lagrar mätvärden.", 
+          refBRS: "BRS-FLEX-601", refRule: "BRSFLEX601-2" 
         },
         { 
-          stepId: "MPS-FLEX-600-Sc4.3", role: "FIS", action: "Kvittens", 
-          description: "SP har mottagit kvittens på lagringen.", 
-          refBRS: "BRS-FLEX-611", refRule: "BRSFLEX611-3" 
+          stepId: "MPS-FLEX-600-Sc1b.3", role: "FIS", action: "Kvittens", 
+          description: "SP mottar kvittens på rapporteringen.", 
+          refBRS: "BRS-FLEX-601", refRule: "BRSFLEX601-3" 
         },
         { 
-          stepId: "MPS-FLEX-600-Sc4.4", role: "System", action: "Trigger Distribution", 
-          description: "Beräknad leveransvolym har registrerats av SP.", 
-          refBRS: "BRS-FLEX-613", refRule: "BRSFLEX613-1" 
+          stepId: "MPS-FLEX-600-Sc1b.4", role: "System", action: "Check DSO-bud", 
+          description: "Kontroll om DSO har registrerat energibud (Trigger).", 
+          refBRS: "BRS-FLEX-609", refRule: "BRSFLEX609-3" 
         },
         { 
-          stepId: "MPS-FLEX-600-Sc4.5", role: "TSO", action: "Ta emot Volym", 
-          description: "Systemoperatören har mottagit flexibilitetsvolym.", 
-          refBRS: "BRS-FLEX-613", refRule: "BRSFLEX613-3" 
+          stepId: "MPS-FLEX-600-Sc1b.5", role: "FIS", action: "Distribuera DSO", 
+          description: "FIS skickar mätdata till DSO.", 
+          refBRS: "BRS-FLEX-609", refRule: "BRSFLEX609-6" 
         },
         { 
-          stepId: "MPS-FLEX-600-Sc4.6", role: "DSO", action: "Ta emot Volym", 
-          description: "Nätägaren har mottagit flexibilitetsvolym.", 
-          refBRS: "BRS-FLEX-613", refRule: "BRSFLEX613-4" 
-        },
-        { 
-          stepId: "MPS-FLEX-600-Sc4.7", role: "BRP", action: "Ta emot Volym", 
-          description: "BRP har mottagit flexibilitetsvolym.", 
-          refBRS: "BRS-FLEX-613", refRule: "BRSFLEX613-6" 
-        },
-        { 
-          stepId: "MPS-FLEX-600-Sc4.8", role: "Elleverantör", action: "Ta emot Volym", 
-          description: "Elleverantör har mottagit flexibilitetsvolym.", 
-          refBRS: "BRS-FLEX-613", refRule: "BRSFLEX613-7" 
+          stepId: "MPS-FLEX-600-Sc1b.6", role: "FIS", action: "Distribuera Lev", 
+          description: "FIS skickar mätdata till Elleverantör.", 
+          refBRS: "BRS-FLEX-609", refRule: "BRSFLEX609-8" 
         }
+      ]
+    },
+    {
+      id: "MPS-FLEX-600-Sc1c",
+      title: "Mätvärdesflöde grossistmarknad (NEMO)",
+      description: "Distribution av mätvärden kopplade till DA/ID-handel.",
+      steps: [
+        { 
+          stepId: "MPS-FLEX-600-Sc1c.1", role: "SP", action: "Rapportera Mätvärden", 
+          description: "SP rapporterar mätvärden.", 
+          refBRS: "BRS-FLEX-601", refRule: "BRSFLEX601-1" 
+        },
+        { 
+          stepId: "MPS-FLEX-600-Sc1c.2", role: "FIS", action: "Spara Data", 
+          description: "FIS lagrar mätvärden.", 
+          refBRS: "BRS-FLEX-601", refRule: "BRSFLEX601-2" 
+        },
+        { 
+          stepId: "MPS-FLEX-600-Sc1c.3", role: "FIS", action: "Kvittens", 
+          description: "SP mottar kvittens på rapporteringen.", 
+          refBRS: "BRS-FLEX-601", refRule: "BRSFLEX601-3" 
+        },
+        { 
+          stepId: "MPS-FLEX-600-Sc1c.4", role: "System", action: "Check NEMO-bud", 
+          description: "Kontroll om NEMO-handel finns (Trigger).", 
+          refBRS: "BRS-FLEX-609", refRule: "BRSFLEX609-4" 
+        },
+        { 
+          stepId: "MPS-FLEX-600-Sc1c.5", role: "FIS", action: "Distribuera", 
+          description: "FIS skickar mätdata till berörda parter.", 
+          refBRS: "BRS-FLEX-609", refRule: "BRSFLEX609-1" 
+        }
+      ]
+    },
+    {
+      id: "MPS-FLEX-600-Sc2",
+      title: "Uthämtning av CU-mätvärden (query)",
+      description: "SP eller systemfunktion begär ut lagrade tidsserier (sub-metering) för en CU.",
+      steps: [
+        { 
+          stepId: "MPS-FLEX-600-Sc2.1", role: "Berättigad Aktör", action: "Begär Data", 
+          description: "En berättigad aktör (SP, TSO, DSO) har begärt mätvärden för en styrbar enhet (CU).", 
+          refBRS: "BRS-FLEX-604", refRule: "BRSFLEX604-1" 
+        },
+        { 
+          stepId: "MPS-FLEX-600-Sc2.2", role: "FIS", action: "Leverera Data", 
+          description: "FIS har returnerat efterfrågade mätvärden.", 
+          refBRS: "BRS-FLEX-604", refRule: "BRSFLEX604-2" 
+        }
+      ]
+    },
+    {
+      id: "MPS-FLEX-600-Sc3",
+      title: "Uthämtning av mätpunktsdata (från DHV)",
+      description: "Olika aktörer begär officiella mätvärden. FIS agerar proxy mot Datahubben.",
+      diagramCode: `sequenceDiagram
+    title MPS-FLEX-600-Sc3: Uthämtning av Mätpunktsdata
+    participant Req as Aktör
+    participant FIS as FIS
+    participant DHV as Datahubben
+
+    Req->>FIS: Begär MP-data (BRS-FLEX-624)
+    activate FIS
+    FIS->>DHV: Hämta
+    DHV-->>FIS: Data
+    FIS-->>Req: Returnera Data
+    deactivate FIS`,
+      steps: [
+        { stepId: "MPS-FLEX-600-Sc3.1a", role: "SP", action: "Begär Data", description: "En SP har begärt mätvärden.", refBRS: "BRS-FLEX-624", refRule: "BRSFLEX624-1" },
+        { stepId: "MPS-FLEX-600-Sc3.1b", role: "TSO", action: "Begär Data", description: "En TSO har begärt mätvärden.", refBRS: "BRS-FLEX-624", refRule: "BRSFLEX624-2" },
+        { stepId: "MPS-FLEX-600-Sc3.1c", role: "DSO", action: "Begär Data", description: "En DSO har begärt mätvärden.", refBRS: "BRS-FLEX-624", refRule: "BRSFLEX624-3" },
+        { stepId: "MPS-FLEX-600-Sc3.1d", role: "BRP", action: "Begär Data", description: "En BRP har begärt mätvärden.", refBRS: "BRS-FLEX-624", refRule: "BRSFLEX624-4" },
+        { stepId: "MPS-FLEX-600-Sc3.1e", role: "Elleverantör", action: "Begär Data", description: "En elleverantör har begärt mätvärden.", refBRS: "BRS-FLEX-624", refRule: "BRSFLEX624-5" },
+        
+        { stepId: "MPS-FLEX-600-Sc3.2", role: "FIS", action: "Hämta (DHV)", description: "FIS har hämtat officiella mätvärden från DHV.", refBRS: "BRS-FLEX-624", refRule: "BRSFLEX624-6" },
+        
+        { stepId: "MPS-FLEX-600-Sc3.3a", role: "FIS", action: "Leverera SP", description: "FIS har levererat data till SP.", refBRS: "BRS-FLEX-624", refRule: "BRSFLEX624-7" },
+        { stepId: "MPS-FLEX-600-Sc3.3b", role: "FIS", action: "Leverera TSO", description: "FIS har levererat data till TSO.", refBRS: "BRS-FLEX-624", refRule: "BRSFLEX624-8" },
+        { stepId: "MPS-FLEX-600-Sc3.3c", role: "FIS", action: "Leverera DSO", description: "FIS har levererat data till DSO.", refBRS: "BRS-FLEX-624", refRule: "BRSFLEX624-9" },
+        { stepId: "MPS-FLEX-600-Sc3.3d", role: "FIS", action: "Leverera BRP", description: "FIS har levererat data till BRP.", refBRS: "BRS-FLEX-624", refRule: "BRSFLEX624-10" },
+        { stepId: "MPS-FLEX-600-Sc3.3e", role: "FIS", action: "Leverera Lev", description: "FIS har levererat data till elleverantör.", refBRS: "BRS-FLEX-624", refRule: "BRSFLEX624-11" }
       ]
     }
   ]

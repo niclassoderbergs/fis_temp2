@@ -39,6 +39,7 @@ export interface InfoObject {
 
 export interface BRSData {
   id: string;
+  previousId?: string; // Used for migration/renumbering traceability
   title: string;
   purpose: string;
   actors: { role: string; description: string }[];
@@ -72,6 +73,7 @@ export interface Scenario {
   description: string;
   steps: ProcessStepLink[];
   diagramCode?: string;  // Ny: Möjliggör diagram per scenario
+  refJWG?: string;       // Ny: Referens till JWG Procedure (t.ex. "Proc 20")
 }
 
 export interface MPSData {

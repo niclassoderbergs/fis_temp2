@@ -74,7 +74,7 @@ const diagramCode = `sequenceDiagram
         
         Note over CUMA: 11.11 Send SP on CU registration result
         CUMA->>NewSP: Info Item B: Result (Success)
-        CUMA->>OldSP: Info Item B: Result (Termination via BRS 205)
+        CUMA->>OldSP: Info Item B: Result (Termination via BRS 209)
         
         Note over NewSP: 11.12 Notify about SP on CU registration result
         NewSP->>FC: Info Item Z: Notification
@@ -225,7 +225,7 @@ export const JWGProcedure11: React.FC<Props> = ({ onBack, onNavigateToBRS, onNav
       </section>
 
       <section>
-        <h2 style={styles.sectionHeader}>Datainnehåll BRS-FLEX-205 (Notifiering till Gammal SP)</h2>
+        <h2 style={styles.sectionHeader}>Datainnehåll BRS-FLEX-209 (Notifiering till Gammal SP)</h2>
         <p style={styles.paragraph}>När den nya leverantören registreras (Switch), avslutas den gamla leverantörens avtal via {brsFlex2040.id} och en notifiering skickas enligt {brsFlex205.id}.</p>
         <table style={styles.table}>
           <thead><tr><th style={styles.th}>Attribut</th><th style={styles.th}>Beskrivning</th><th style={{...styles.th, backgroundColor: '#e6effc', color: '#0052cc', borderBottom: '2px solid #b3d4ff'}}>Typ</th></tr></thead>

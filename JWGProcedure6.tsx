@@ -32,7 +32,7 @@ const diagramCode = `sequenceDiagram
     participant AP as Affected party
 
     Note over EP: 6.1 Request re-activation of CU
-    EP->>CUMA: Info Item J: Request
+    EP->>CUMA: Info Item J: Request (BRS 107)
     activate CUMA
     
     Note over CUMA: 6.2 Validate CU re-activation request
@@ -97,16 +97,16 @@ interface Props {
 }
 
 export const JWGProcedure6: React.FC<Props> = ({ onBack, onNavigateToBRS, onNavigateToProcedure }) => {
-  // Logic to find attributes in BRS-FLEX-105 (Input) and BRS-FLEX-107 (Notification Output)
+  // Logic to find attributes in BRS-FLEX-107 (Input) and BRS-FLEX-109 (Notification Output)
   const getBrsAttribute = (jwgAttrName: string) => {
     const mappedName = jwgToBrsMapping[jwgAttrName];
     if (!mappedName) return null;
     
-    // Look in Request first
+    // Look in Request first (107)
     let found = content105Input.attributes.find(a => a.attribute === mappedName);
     if (found) return found;
 
-    // Look in Notification
+    // Look in Notification (109)
     return content107Output.attributes.find(a => a.attribute === mappedName);
   };
 
@@ -131,7 +131,7 @@ export const JWGProcedure6: React.FC<Props> = ({ onBack, onNavigateToBRS, onNavi
         <div>
             <div style={{fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: '4px', opacity: 0.8}}>Implementerad via</div>
             <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex105.id)}>{brsFlex105.id}: {brsFlex105.title}</div>
-            <div style={{fontSize:'0.8rem', marginTop: '4px'}}>Samt BRS-FLEX-106 (System) och BRS-FLEX-107 (SP notifieras om uppdaterad CU).</div>
+            <div style={{fontSize:'0.8rem', marginTop: '4px'}}>Samt BRS-FLEX-106 (System) och BRS-FLEX-109 (SP notifieras om uppdaterad CU).</div>
         </div>
         <div style={{fontSize: '2rem', opacity: 0.2}}>🔗</div>
       </div>
@@ -155,7 +155,7 @@ export const JWGProcedure6: React.FC<Props> = ({ onBack, onNavigateToBRS, onNavi
       <section>
         <h2 style={styles.sectionHeader}>Datainnehåll JWG: Info Item J & K</h2>
         <table style={styles.table}>
-          <thead><tr><th style={styles.th}>JWG Attribut</th><th style={styles.th}>Motsvarighet i {brsFlex105.id} / 107</th></tr></thead>
+          <thead><tr><th style={styles.th}>JWG Attribut</th><th style={styles.th}>Motsvarighet i {brsFlex105.id} / 109</th></tr></thead>
           <tbody>
             {attributes.map((a, i) => {
               const brsMatch = getBrsAttribute(a.name);
@@ -171,7 +171,7 @@ export const JWGProcedure6: React.FC<Props> = ({ onBack, onNavigateToBRS, onNavi
       </section>
 
       <section>
-        <h2 style={styles.sectionHeader}>Datainnehåll BRS-FLEX-105 (Request)</h2>
+        <h2 style={styles.sectionHeader}>Datainnehåll BRS-FLEX-107 (Request)</h2>
         <p style={styles.paragraph}>Följande attribut ingår i specifikationen för {brsFlex105.id} (InfoObject: {content105Input.title}). Här visas vilka JWG-krav som attributet uppfyller.</p>
         <table style={styles.table}>
           <thead><tr><th style={styles.th}>Attribut</th><th style={styles.th}>Beskrivning</th><th style={{...styles.th, backgroundColor: '#e6effc', color: '#0052cc', borderBottom: '2px solid #b3d4ff'}}>JWG Referens</th></tr></thead>
@@ -197,7 +197,7 @@ export const JWGProcedure6: React.FC<Props> = ({ onBack, onNavigateToBRS, onNavi
       </section>
 
       <section>
-        <h2 style={styles.sectionHeader}>Datainnehåll BRS-FLEX-107 (SP notifieras om uppdaterad CU)</h2>
+        <h2 style={styles.sectionHeader}>Datainnehåll BRS-FLEX-109 (SP notifieras om uppdaterad CU)</h2>
         <p style={styles.paragraph}>Följande attribut ingår i notifieringen {content107Output.title}.</p>
         <table style={styles.table}>
           <thead><tr><th style={styles.th}>Attribut</th><th style={styles.th}>Beskrivning</th><th style={{...styles.th, backgroundColor: '#e6effc', color: '#0052cc', borderBottom: '2px solid #b3d4ff'}}>JWG Referens</th></tr></thead>

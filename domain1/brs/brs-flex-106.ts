@@ -8,7 +8,7 @@ export const brsFlex106: BRSData = {
   purpose: "Administrativ process för att återställa en CU till aktiv status efter granskning eller beslut.",
   actors: [
     { role: "Initiator", description: "FIS (Admin)" },
-    { role: "Mottagare", description: "System / SP (via notif)" }
+    { role: "Mottagare", description: "System (Internal)" }
   ],
   diagramCode: `sequenceDiagram
     title BRS-FLEX-106: FIS återaktiverar CU
@@ -18,7 +18,6 @@ export const brsFlex106: BRSData = {
     Admin->>FIS: ApproveReactivation (CU-ID)
     activate FIS
     FIS->>FIS: Sätt status 'Active'
-    FIS->>FIS: Trigger BRS-FLEX-107 (SP notifieras om uppdaterad CU)
     FIS-->>Admin: OK
     deactivate FIS`,
   preConditions: [
@@ -34,8 +33,7 @@ export const brsFlex106: BRSData = {
   },
   businessRules: [],
   process: [
-    { id: "BRSFLEX106-4", description: "Admin verkställer återaktivering i systemet." },
-    { id: "BRSFLEX106-5", description: "Systemet initierar notifiering till SP." }
+    { id: "BRSFLEX106-4", description: "Admin verkställer återaktivering i systemet." }
   ],
   infoObjects: [content106Input]
 };

@@ -79,7 +79,7 @@ export const content103Output: InfoObject = {
   ]
 };
 
-// --- BRS-FLEX-104: FIS stänger tillfälligt av CU ---
+// --- BRS-FLEX-105: FIS stänger tillfälligt av CU ---
 export const content104Input: InfoObject = {
   title: "Från FIS (Admin)",
   attributes: [
@@ -89,6 +89,15 @@ export const content104Input: InfoObject = {
 };
 
 export const content104Output: InfoObject = {
+  title: "Resultat (Internt)",
+  attributes: [
+    { attribute: "Status", description: "Ny status (Suspended).", article: "-" },
+    { attribute: "Starttid", description: "Tidpunkt då suspenderingen träder i kraft.", article: "-" }
+  ]
+};
+
+// --- BRS-FLEX-108: Notifiering om suspenderad CU ---
+export const content108Output: InfoObject = {
   title: "Notifiering till SP",
   attributes: [
     { attribute: "CU-ID", description: "Resursen som stängts av.", article: "-" },
@@ -98,7 +107,7 @@ export const content104Output: InfoObject = {
   ]
 };
 
-// --- BRS-FLEX-1040 (System): FIS uppdaterar CU (Generell) ---
+// --- BRS-FLEX-1020 (System): FIS uppdaterar CU (Generell) ---
 export const content1040Input: InfoObject = {
   title: "Triggerdata (Internt)",
   attributes: [
@@ -118,7 +127,7 @@ export const content1040Output: InfoObject = {
   ]
 };
 
-// --- BRS-FLEX-105: SP begär återaktivering av CU ---
+// --- BRS-FLEX-107: SP begär återaktivering av CU ---
 export const content105Input: InfoObject = {
   title: "Från SP",
   attributes: [
@@ -143,7 +152,7 @@ export const content106Input: InfoObject = {
   ]
 };
 
-// --- BRS-FLEX-107: SP notifieras om uppdaterad CU (Återaktivering) ---
+// --- BRS-FLEX-109: SP notifieras om uppdaterad CU (Återaktivering) ---
 export const content107Output: InfoObject = {
   title: "Notifiering till SP",
   attributes: [
@@ -216,6 +225,14 @@ export const content114Input: InfoObject = {
 };
 
 export const content114Output: InfoObject = {
+  title: "Resultat (Internt)",
+  attributes: [
+    { attribute: "Status", description: "Ny status (Suspended).", article: "-" }
+  ]
+};
+
+// --- BRS-FLEX-117: Notifiering om avstängd SPU ---
+export const content117Output: InfoObject = {
   title: "Notifiering till SP",
   attributes: [
     { attribute: "SPU-ID", description: "Enheten som stängts av.", article: "-" },
@@ -233,6 +250,14 @@ export const content115Input: InfoObject = {
 };
 
 export const content115Output: InfoObject = {
+  title: "Resultat (Internt)",
+  attributes: [
+    { attribute: "Status", description: "Ny status (Active/Available).", article: "-" }
+  ]
+};
+
+// --- BRS-FLEX-118: Notifiering om återaktiverad SPU (ny) ---
+export const content118Output: InfoObject = {
   title: "Notifiering till SP",
   attributes: [
     { attribute: "SPU-ID", description: "Enheten som aktiverats.", article: "-" },
@@ -322,6 +347,14 @@ export const content124Input: InfoObject = {
 };
 
 export const content124Output: InfoObject = {
+  title: "Resultat (Internt)",
+  attributes: [
+    { attribute: "Status", description: "Ny status (Suspended).", article: "-" }
+  ]
+};
+
+// --- BRS-FLEX-127: Notifiering om avstängd SPG ---
+export const content127Output: InfoObject = {
   title: "Notifiering till SP",
   attributes: [
     { attribute: "SPG-ID", description: "Gruppen som stängts av.", article: "-" },
@@ -339,6 +372,14 @@ export const content125Input: InfoObject = {
 };
 
 export const content125Output: InfoObject = {
+  title: "Resultat (Internt)",
+  attributes: [
+    { attribute: "Status", description: "Ny status (Active/Available).", article: "-" }
+  ]
+};
+
+// --- BRS-FLEX-128: Notifiering om återaktiverad SPG (ny) ---
+export const content128Output: InfoObject = {
   title: "Notifiering till SP",
   attributes: [
     { attribute: "SPG-ID", description: "Gruppen som aktiverats.", article: "-" },
@@ -567,7 +608,7 @@ export const content1110Output: InfoObject = {
   ]
 };
 
-// --- BRS-FLEX-111: Notifiering om registrerad SPU (ny) ---
+// --- BRS-FLEX-111: Notifiering om registrerad SPU ---
 export const content111Output: InfoObject = {
   title: "Notifiering till SP",
   attributes: [
@@ -597,7 +638,7 @@ export const content1210Output: InfoObject = {
   ]
 };
 
-// --- BRS-FLEX-121: Notifiering om registrerad SPG (ny) ---
+// --- BRS-FLEX-121: Notifiering om registrerad SPG ---
 export const content121Output: InfoObject = {
   title: "Notifiering till SP",
   attributes: [

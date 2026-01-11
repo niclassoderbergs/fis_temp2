@@ -3,16 +3,17 @@ import { BRSData } from '../../types';
 import { content303Input, content303Output } from '../../content-definitions';
 
 export const brsFlex303: BRSData = {
-  id: "BRS-FLEX-303",
+  id: "BRS-FLEX-305", // Updated from 303
+  previousId: "BRS-FLEX-303",
   title: "Begär detaljerad produktinfo",
   purpose: "Att hämta fullständig teknisk specifikation och attribut för en specifik produkt baserat på Produkt-ID.",
   actors: [
-    { role: "Initiator", description: "SP eller FIS" },
+    { role: "Initiator", description: "SP / TSO" },
     { role: "Mottagare", description: "Flexibilitetsregistret (FIS)" }
   ],
   diagramCode: `sequenceDiagram
-    title BRS-FLEX-303: Begär detaljerad produktinfo
-    participant Requester as SP/FIS
+    title BRS-FLEX-305: Begär detaljerad produktinfo
+    participant Requester as SP/TSO
     participant FIS as FIS
 
     Requester->>FIS: GetProductDetails (Produkt-ID)
@@ -27,25 +28,26 @@ export const brsFlex303: BRSData = {
     end
     deactivate FIS`,
   preConditions: [
-    { id: "BRSFLEX303-1", description: "En aktör har begärt detaljerad information om en marknadsprodukt." }
+    { id: "BRSFLEX305-1", description: "En SP har begärt detaljerad information om en marknadsprodukt." },
+    { id: "BRSFLEX305-2", description: "En TSO har begärt detaljerad information om en marknadsprodukt." }
   ],
   postConditions: {
     accepted: [
-      { id: "BRSFLEX303-2", description: "FIS har returnerat detaljerad information om marknadsprodukten." }
+      { id: "BRSFLEX305-3", description: "FIS har returnerat detaljerad information om marknadsprodukten." }
     ],
     rejected: [
-      { id: "BRSFLEX303-3", description: "Produkt ej hittad eller behörighet saknas." }
+      { id: "BRSFLEX305-4", description: "Produkt ej hittad eller behörighet saknas." }
     ]
   },
   businessRules: [
-    { id: "BRSFLEX303-4", description: "Angivet Produkt-ID måste existera.", errorCode: "E_303_NOT_FOUND" }
+    { id: "BRSFLEX305-5", description: "Angivet Produkt-ID måste existera.", errorCode: "E_305_NOT_FOUND" }
   ],
   process: [
-    { id: "BRSFLEX303-5", description: "Aktör begär detaljerad information om en specifik marknadsprodukt." },
-    { id: "BRSFLEX303-6", description: "Flexibilitetsregistret skickar produktinformationen till aktören." }
+    { id: "BRSFLEX305-6", description: "Aktör begär detaljerad information om en specifik marknadsprodukt." },
+    { id: "BRSFLEX305-7", description: "Flexibilitetsregistret skickar produktinformationen till aktören." }
   ],
   exceptionFlow: [
-    { id: "BRSFLEX303-7", description: "Flexibilitetsregistret returnerar ett felmeddelande enligt affärsregel.", implemented: "Yes" }
+    { id: "BRSFLEX305-8", description: "Flexibilitetsregistret returnerar ett felmeddelande enligt affärsregel.", implemented: "Yes" }
   ],
   infoObjects: [content303Input, content303Output]
 };

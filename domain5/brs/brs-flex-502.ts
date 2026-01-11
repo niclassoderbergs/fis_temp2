@@ -3,41 +3,44 @@ import { BRSData } from '../../types';
 import { content502Input, content502Output } from '../../content-definitions';
 
 export const brsFlex502: BRSData = {
-  id: "BRS-FLEX-502",
+  id: "BRS-FLEX-504", // Updated from 502
+  previousId: "BRS-FLEX-502",
   title: "Lista godkända baselinemetoder",
-  purpose: "Möjliggör för SP att se vilka baselinemetoder som finns tillgängliga att välja för deras resurser.",
+  purpose: "Möjliggör för aktörer (SP, TSO, DSO) att se vilka baselinemetoder som finns tillgängliga att välja för resurser.",
   actors: [
-    { role: "Initiator", description: "SP" },
-    { role: "Mottagare", description: "FIS" }
+    { role: "Initiator", description: "SP / TSO / DSO" },
+    { role: "Mottagare", description: "Flexibilitetsregistret (FIS)" }
   ],
   diagramCode: `sequenceDiagram
-    title BRS-FLEX-502: Lista godkända baselinemetoder
-    participant SP as SP
+    title BRS-FLEX-504: Lista godkända baselinemetoder
+    participant Requester as SP/TSO/DSO
     participant FIS as FIS
 
-    SP->>FIS: ListBaselineMethods (Filter)
+    Requester->>FIS: ListBaselineMethods (Filter)
     activate FIS
     FIS->>FIS: Hämta aktiva metoder
-    FIS-->>SP: BaselineMethodList (ID, Namn)
+    FIS-->>Requester: BaselineMethodList (ID, Namn)
     deactivate FIS`,
   preConditions: [
-    { id: "BRSFLEX502-1", description: "En SP har begärt en lista över tillgängliga baselinemetoder." }
+    { id: "BRSFLEX504-1", description: "En SP har begärt en lista över tillgängliga baselinemetoder." },
+    { id: "BRSFLEX504-2", description: "En TSO har begärt en lista över tillgängliga baselinemetoder." },
+    { id: "BRSFLEX504-3", description: "En DSO har begärt en lista över tillgängliga baselinemetoder." }
   ],
   postConditions: {
     accepted: [
-      { id: "BRSFLEX502-2", description: "FIS har returnerat listan över godkända metoder." }
+      { id: "BRSFLEX504-4", description: "FIS har returnerat listan över godkända metoder." }
     ],
     rejected: [
-      { id: "BRSFLEX502-3", description: "Ingen data." }
+      { id: "BRSFLEX504-5", description: "Ingen data returnerad." }
     ]
   },
   businessRules: [],
   process: [
-    { id: "BRSFLEX502-4", description: "SP begär en lista över tillgängliga baselinemetoder." },
-    { id: "BRSFLEX502-5", description: "FIS skickar listan till SP." }
+    { id: "BRSFLEX504-6", description: "Aktör begär en lista över tillgängliga baselinemetoder." },
+    { id: "BRSFLEX504-7", description: "Flexibilitetsregistret skickar listan till aktören." }
   ],
   exceptionFlow: [
-    { id: "BRSFLEX502-6", description: "FIS returnerar ett felmeddelande enligt affärsregel." }
+    { id: "BRSFLEX504-8", description: "Flexibilitetsregistret returnerar ett felmeddelande enligt affärsregel." }
   ],
   infoObjects: [content502Input, content502Output]
 };

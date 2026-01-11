@@ -3,43 +3,42 @@ import { BRSData } from '../../types';
 import { content115Input, content115Output } from '../../content-definitions';
 
 export const brsFlex115: BRSData = {
-  id: "BRS-FLEX-115",
+  id: "BRS-FLEX-116", // Updated from 115
+  previousId: "BRS-FLEX-115",
   title: "FIS återaktiverar SPU",
   purpose: "Att återställa en SPU till normal driftstatus efter en tillfällig avstängning.",
   actors: [
     { role: "Initiator", description: "FIS (System/Admin)" },
-    { role: "Mottagare", description: "SP - via notifiering" }
+    { role: "Mottagare", description: "System (Internal)" }
   ],
   diagramCode: `sequenceDiagram
-    title BRS-FLEX-115: FIS återaktiverar SPU
+    title BRS-FLEX-116: FIS återaktiverar SPU (Admin)
     participant Admin as FIS Admin
     participant FIS as FIS
-    participant SP as SP
 
     Admin->>FIS: ReactivateSPU (SPU-ID)
     activate FIS
     FIS->>FIS: Validera status (Suspended)
     FIS->>FIS: Sätt status 'Active' (eller 'Available')
-    FIS->>SP: NotifySPUReactivated (SPU-ID)
+    FIS-->>Admin: OK
     deactivate FIS`,
   preConditions: [
-    { id: "BRSFLEX115-1", description: "En SPU är avstängd och beslut om återaktivering finns." }
+    { id: "BRSFLEX116-1", description: "En SPU är avstängd och beslut om återaktivering finns." }
   ],
   postConditions: {
     accepted: [
-      { id: "BRSFLEX115-2", description: "SPU-status är återställd." },
-      { id: "BRSFLEX115-3", description: "SP har notifierats." }
+      { id: "BRSFLEX116-2", description: "SPU-status är återställd." }
     ],
     rejected: [
-      { id: "BRSFLEX115-4", description: "SPU var inte i tillstånd att återaktiveras." }
+      { id: "BRSFLEX116-4", description: "SPU var inte i tillstånd att återaktiveras." }
     ]
   },
   businessRules: [
-    { id: "BRSFLEX115-5", description: "Endast 'Suspended' SPU kan återaktiveras.", errorCode: "E_115_INVALID_STATE" }
+    { id: "BRSFLEX116-5", description: "Endast 'Suspended' SPU kan återaktiveras.", errorCode: "E_116_INVALID_STATE" }
   ],
   process: [
-    { id: "BRSFLEX115-6", description: "FIS administrerar återaktivering av en SPU." },
-    { id: "BRSFLEX115-7", description: "FIS notifierar SP." }
+    { id: "BRSFLEX116-6", description: "FIS administrerar återaktivering av en SPU." },
+    { id: "BRSFLEX116-7", description: "Systemet exekverar statusändringen." }
   ],
-  infoObjects: [content115Input, content115Output]
+  infoObjects: [content115Input]
 };

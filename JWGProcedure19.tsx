@@ -1,11 +1,11 @@
 
 import React from 'react';
 import { MermaidDiagram } from './MermaidDiagram';
-import { brsFlex321 } from './domain3/brs/brs-flex-321';
-import { brsFlex322 } from './domain3/brs/brs-flex-322';
-import { brsFlex323 } from './domain3/brs/brs-flex-323';
-import { brsFlex324 } from './domain3/brs/brs-flex-324';
-import { content321Input, content324Output, content322Output, content323Input } from './content-domain-3';
+import { brsFlex321 } from './domain3/brs/brs-flex-321'; // ID: BRS-FLEX-331
+import { brsFlex322 } from './domain3/brs/brs-flex-322'; // ID: BRS-FLEX-339
+import { brsFlex323 } from './domain3/brs/brs-flex-323'; // ID: BRS-FLEX-332
+import { brsFlex324 } from './domain3/brs/brs-flex-324'; // ID: BRS-FLEX-338
+import { content321Input, content324Output } from './content-domain-3';
 
 const styles = {
   container: { padding: '40px', backgroundColor: '#fff', minHeight: '100%', boxSizing: 'border-box' as const },
@@ -23,30 +23,36 @@ const styles = {
   brsBox: { backgroundColor: '#e3fcef', padding: '16px', borderRadius: '4px', borderLeft: '4px solid #006644', marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
   brsLink: { color: '#006644', fontWeight: 700, textDecoration: 'underline', cursor: 'pointer', fontSize: '1.1rem', display: 'block', marginBottom: '4px' },
   mappingTag: { display: 'inline-block', backgroundColor: '#e3fcef', color: '#006644', padding: '2px 6px', borderRadius: '3px', fontSize: '0.8rem', fontWeight: 600, marginBottom: '4px' },
-  reverseMappingTag: { display: 'inline-block', backgroundColor: '#e6effc', color: '#0052cc', padding: '2px 6px', borderRadius: '3px', fontSize: '0.8rem', fontWeight: 600, marginBottom: '4px' }
+  reverseMappingTag: { display: 'inline-block', backgroundColor: '#e6effc', color: '#0052cc', padding: '2px 6px', borderRadius: '3px', fontSize: '0.8rem', fontWeight: 600, marginBottom: '4px' },
+  noteBox: { backgroundColor: '#fff3cd', border: '1px solid #ffeeba', padding: '12px', borderRadius: '4px', marginBottom: '24px', color: '#856404', fontSize: '0.95rem' }
 };
 
 const diagramCode = `sequenceDiagram
     title Procedure 19: SPU or SPG grid pre-qualification
-    participant EP as Entitled party
-    participant GPQC as Grid PQ coordinator
+    participant EP as Entitled party (SP)
+    participant FIS as FIS
+    participant GPQC as Grid PQ coordinator (DSO)
 
     Note over EP: 19.1 Request grid prequalification
-    EP->>GPQC: Info Item AS: Request
+    EP->>FIS: Info Item AS: Request (BRS 331)
+    activate FIS
+    
+    FIS->>GPQC: Notify Grid PQ Request (BRS 339)
     activate GPQC
     
     Note over GPQC: 19.2 Execute grid pre-qualification coordination
     
-    Note over GPQC: 19.3 Send grid pre-qualification results
-    GPQC-->>EP: Info Item AT: Result
+    GPQC->>FIS: Report Result (BRS 332)
+    deactivate GPQC
     
-    Note over EP: 19.3 Receive grid pre-qualification results
-    deactivate GPQC`;
+    Note over FIS: 19.3 Send grid pre-qualification results
+    FIS-->>EP: Info Item AT: Result (BRS 338)
+    deactivate FIS`;
 
 const steps = [
-  { step: "19.1", action: "Request grid prequalification", description: "The entitled party requests a grid pre-qualification for an SPU or SPG.", producer: "Entitled party", receiver: "Grid PQ coordinator", infoId: "AS" },
-  { step: "19.2", action: "Execute grid pre-qualification coordination", description: "The Grid PQ coordinator (DSO) performs the analysis.", producer: "Grid PQ coordinator", receiver: "-", infoId: "-" },
-  { step: "19.3", action: "Send/Receive grid pre-qualification results", description: "The Grid PQ coordinator sends the result to the entitled party.", producer: "Grid PQ coordinator", receiver: "Entitled party", infoId: "AT" }
+  { step: "19.1", action: "Request grid prequalification", description: "The entitled party requests a grid pre-qualification for an SPU or SPG.", producer: "Entitled party", receiver: "FIS", infoId: "AS" },
+  { step: "19.2", action: "Execute grid pre-qualification coordination", description: "The Grid PQ coordinator (DSO) performs the analysis based on data from FIS.", producer: "Grid PQ coordinator", receiver: "-", infoId: "-" },
+  { step: "19.3", action: "Send/Receive grid pre-qualification results", description: "FIS sends the result to the entitled party.", producer: "FIS", receiver: "Entitled party", infoId: "AT" }
 ];
 
 const attributes = [
@@ -56,7 +62,7 @@ const attributes = [
 ];
 
 const jwgToBrsMapping: Record<string, string> = {
-  "SPU/SPG identifier": "SPU-ID / CU-ID", // Matchar attribut i 321 och 322 (aggregerat eller CU)
+  "SPU/SPG identifier": "SPU-ID / CU-ID", // Matchar attribut i BRS-FLEX-331
   "Grid area": "Nätområde-ID",
   "Status": "Status"
 };
@@ -72,18 +78,17 @@ export const JWGProcedure19: React.FC<Props> = ({ onBack, onNavigateToBRS, onNav
     const mappedName = jwgToBrsMapping[jwgAttrName];
     if (!mappedName) return null;
     
-    // Check request
+    // Check request (BRS 331 / Input 321)
     let attr = content321Input.attributes.find(a => a.attribute === mappedName);
     if (attr) return attr;
 
-    // Check result notification
+    // Check result notification (BRS 338 / Output 324)
     return content324Output.attributes.find(a => a.attribute === mappedName);
   };
 
   const getJwgReference = (brsAttrName: string) => {
-    // Special handling for 322 mapping
-    if (brsAttrName === "SPU-ID / SPG-ID") return "SPU/SPG identifier";
-    
+    // Special handling for mapping
+    if (brsAttrName === "SPU-ID / CU-ID") return "SPU/SPG identifier";
     return Object.keys(jwgToBrsMapping).find(key => jwgToBrsMapping[key] === brsAttrName);
   };
 
@@ -121,15 +126,24 @@ export const JWGProcedure19: React.FC<Props> = ({ onBack, onNavigateToBRS, onNav
       </div>
 
       <h1 style={styles.header}>Procedure 19: SPU or SPG grid pre-qualification</h1>
-      <p style={styles.subHeader}>Kontroll hos nätägare för att säkerställa att resursen kan användas utan att orsaka nätstörningar.</p>
+      <p style={styles.subHeader}>Nätförkvalificering av resurser (Grid PQ).</p>
+
+      <div style={styles.noteBox}>
+        <strong>Implementation Mapping:</strong>
+        <ul style={{margin: '8px 0 0 16px', padding: 0}}>
+            <li><strong>Steg 19.1 (Request):</strong> Motsvarar <strong>{brsFlex321.id}</strong> (SP begär).</li>
+            <li><strong>Steg 19.2 (Coordination):</strong> Hanteras via <strong>{brsFlex322.id}</strong> (Notify DSO) och <strong>{brsFlex323.id}</strong> (DSO svarar).</li>
+            <li><strong>Steg 19.3 (Result):</strong> Motsvarar <strong>{brsFlex324.id}</strong> (FIS notifierar SP).</li>
+        </ul>
+      </div>
 
       <div style={styles.brsBox}>
         <div>
             <div style={{fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: '4px', opacity: 0.8}}>Implementerad via</div>
-            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex321.id)}>{brsFlex321.id}: {brsFlex321.title} (Request)</div>
-            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex322.id)}>{brsFlex322.id}: {brsFlex322.title} (DSO Notification)</div>
-            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex323.id)}>{brsFlex323.id}: {brsFlex323.title} (DSO Response)</div>
-            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex324.id)}>{brsFlex324.id}: {brsFlex324.title} (Result)</div>
+            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex321.id)}>{brsFlex321.id}: {brsFlex321.title}</div>
+            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex322.id)}>{brsFlex322.id}: {brsFlex322.title}</div>
+            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex323.id)}>{brsFlex323.id}: {brsFlex323.title}</div>
+            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex324.id)}>{brsFlex324.id}: {brsFlex324.title}</div>
         </div>
         <div style={{fontSize: '2rem', opacity: 0.2}}>🔗</div>
       </div>
@@ -153,13 +167,13 @@ export const JWGProcedure19: React.FC<Props> = ({ onBack, onNavigateToBRS, onNav
       <section>
         <h2 style={styles.sectionHeader}>Datainnehåll: Info AS (Request) & AT (Result)</h2>
         <table style={styles.table}>
-          <thead><tr><th style={styles.th}>JWG Attribut</th><th style={styles.th}>Motsvarighet i {brsFlex321.id}</th></tr></thead>
+          <thead><tr><th style={styles.th}>JWG Attribut</th><th style={styles.th}>Motsvarighet i BRS</th></tr></thead>
           <tbody>
             {attributes.map((a, i) => {
               const brsMatch = getBrsAttribute(a.name);
               return (
                 <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
-                  <td style={styles.td}><strong>{a.name}</strong><br/><span style={{fontSize:'0.8rem', color:'#666'}}>{a.desc}</span></td>
+                  <td style={styles.td}><strong>{a.name}</strong></td>
                   <td style={styles.td}>{brsMatch ? <span style={styles.mappingTag}>{brsMatch.attribute}</span> : '-'}</td>
                 </tr>
               );
@@ -170,31 +184,12 @@ export const JWGProcedure19: React.FC<Props> = ({ onBack, onNavigateToBRS, onNav
 
       <section>
         <h2 style={styles.sectionHeader}>Datainnehåll BRS</h2>
-        <p style={styles.paragraph}>Nedan specificeras datainnehållet för samtliga involverade BRS-transaktioner i denna procedur.</p>
         
-        {/* 1. Begäran från SP (321) */}
-        {renderAttributeTable(`${brsFlex321.id} Input: ${content321Input.title}`, content321Input.attributes, true)}
+        {/* Request */}
+        {renderAttributeTable(`${brsFlex321.id} Input (Request)`, content321Input.attributes, true)}
 
-        {/* 2. Notifiering till DSO (322) */}
-        <h3 style={{...styles.subSectionHeader, color: '#0052cc'}}>Underlag till DSO</h3>
-        <p style={{fontSize:'0.9rem', color: '#666', marginBottom:'12px'}}>
-            Information som skickas till Nätägaren (DSO) för att möjliggöra analys (Step 19.2).
-        </p>
-        {renderAttributeTable(`${brsFlex322.id} Output: ${content322Output.title}`, content322Output.attributes, true)}
-
-        {/* 3. DSO uppdaterar nätförkvalificering (323) */}
-        <h3 style={{...styles.subSectionHeader, color: '#0052cc'}}>Svar från DSO</h3>
-        <p style={{fontSize:'0.9rem', color: '#666', marginBottom:'12px'}}>
-            DSO återrapporterar analysresultatet (Step 19.2).
-        </p>
-        {renderAttributeTable(`${brsFlex323.id} Input: ${content323Input.title}`, content323Input.attributes, true)}
-
-        {/* 4. Resultat till SP (324) */}
-        <h3 style={{...styles.subSectionHeader, color: '#0052cc'}}>Resultat till SP</h3>
-        <p style={{fontSize:'0.9rem', color: '#666', marginBottom:'12px'}}>
-            Slutgiltigt besked till SP (Info Item AT).
-        </p>
-        {renderAttributeTable(`Notifiering (Resultat): ${content324Output.title}`, content324Output.attributes, true)}
+        {/* Result */}
+        {renderAttributeTable(`${brsFlex324.id} Output (Result Notification)`, content324Output.attributes, true)}
 
       </section>
     </div>

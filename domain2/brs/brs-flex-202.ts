@@ -3,15 +3,16 @@ import { BRSData } from '../../types';
 import { content202Input, content202Output } from '../../content-definitions';
 
 export const brsFlex202: BRSData = {
-  id: "BRS-FLEX-202",
-  title: "SP avslutar Flexavtal",
+  id: "BRS-FLEX-203", // Updated from 202 (Terminate -> 203)
+  previousId: "BRS-FLEX-202",
+  title: "SP avslutar flexavtal",
   purpose: "SP avslutar sin tjänst för en CU (t.ex. vid avtalsslut med kund).",
   actors: [
     { role: "Initiator", description: "SP" },
     { role: "Mottagare", description: "Flexibilitetsregistret (FIS)" }
   ],
   diagramCode: `sequenceDiagram
-    title BRS-FLEX-202: SP avslutar Flexavtal
+    title BRS-FLEX-203: SP avslutar flexavtal
     participant SP as SP
     participant FIS as FIS
 
@@ -27,31 +28,31 @@ export const brsFlex202: BRSData = {
     end
     deactivate FIS`,
   preConditions: [
-    { id: "BRSFLEX202-1", description: "En SP har avslutat ett flexibilitetsavtal." }
+    { id: "BRSFLEX203-1", description: "En SP har avslutat ett flexibilitetsavtal." }
   ],
   postConditions: {
     accepted: [
-      { id: "BRSFLEX202-2", description: "FIS har registrerat slutdatum för flexibilitetsavtalet." },
-      { id: "BRSFLEX202-3", description: "SP har mottagit kvittens på avslutet." }
+      { id: "BRSFLEX203-2", description: "FIS har registrerat slutdatum för flexibilitetsavtalet." },
+      { id: "BRSFLEX203-3", description: "SP har mottagit kvittens på avslutet." }
     ],
     rejected: [
-      { id: "BRSFLEX202-4", description: "Ingen ändring har genomförts." }
+      { id: "BRSFLEX203-4", description: "Ingen ändring har genomförts." }
     ]
   },
   businessRules: [
-    { id: "BRSFLEX202-5", description: "Angivet Flexibilitetsavtals-ID måste existera i FIS.", errorCode: "E_202_AGREEMENT_NOT_FOUND" },
-    { id: "BRSFLEX202-6", description: "Angivet CU-ID måste existera i FIS.", errorCode: "E_202_CU_NOT_FOUND" },
-    { id: "BRSFLEX202-7", description: "Angivet Flexibilitetsavtals-ID måste vara kopplat till angivet CU-ID.", errorCode: "E_202_MISMATCH_AGREEMENT_CU" },
-    { id: "BRSFLEX202-8", description: "Avtalet måste vara aktivt.", errorCode: "E_202_ALREADY_INACTIVE" },
-    { id: "BRSFLEX202-9", description: "Slutdatum måste anges.", errorCode: "E_202_MISSING_DATE" },
-    { id: "BRSFLEX202-10", description: "SP måste vara registrerad på angivet Flexibilitetsavtals-ID.", errorCode: "E_202_UNAUTHORIZED" }
+    { id: "BRSFLEX203-5", description: "Angivet Flexibilitetsavtals-ID måste existera i FIS.", errorCode: "E_203_AGREEMENT_NOT_FOUND" },
+    { id: "BRSFLEX203-6", description: "Angivet CU-ID måste existera i FIS.", errorCode: "E_203_CU_NOT_FOUND" },
+    { id: "BRSFLEX203-7", description: "Angivet Flexibilitetsavtals-ID måste vara kopplat till angivet CU-ID.", errorCode: "E_203_MISMATCH_AGREEMENT_CU" },
+    { id: "BRSFLEX203-8", description: "Avtalet måste vara aktivt.", errorCode: "E_203_ALREADY_INACTIVE" },
+    { id: "BRSFLEX203-9", description: "Slutdatum måste anges.", errorCode: "E_203_MISSING_DATE" },
+    { id: "BRSFLEX203-10", description: "SP måste vara registrerad på angivet Flexibilitetsavtals-ID.", errorCode: "E_203_UNAUTHORIZED" }
   ],
   process: [
-    { id: "BRSFLEX202-11", description: "SP begär avslut av ett flexibilitetsavtal." },
-    { id: "BRSFLEX202-12", description: "Flexibilitetsregistret bekräftar avslutet till SP." }
+    { id: "BRSFLEX203-11", description: "SP begär avslut av ett flexibilitetsavtal." },
+    { id: "BRSFLEX203-12", description: "Flexibilitetsregistret bekräftar avslutet till SP." }
   ],
   exceptionFlow: [
-    { id: "BRSFLEX202-13", description: "Flexibilitetsregistret returnerar ett felmeddelande enligt affärsregel.", implemented: "Yes" }
+    { id: "BRSFLEX203-13", description: "Flexibilitetsregistret returnerar ett felmeddelande enligt affärsregel.", implemented: "Yes" }
   ],
   infoObjects: [content202Input, content202Output]
 };

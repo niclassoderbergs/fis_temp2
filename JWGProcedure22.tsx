@@ -10,6 +10,7 @@ const styles = {
   header: { fontSize: '2rem', fontWeight: 700, marginBottom: '8px', color: '#172b4d' },
   subHeader: { fontSize: '1.1rem', color: '#5e6c84', marginBottom: '32px' },
   sectionHeader: { fontSize: '1.5rem', fontWeight: 600, marginTop: '48px', marginBottom: '16px', color: '#42526e', borderBottom: '2px solid #ebecf0', paddingBottom: '8px' },
+  subSectionHeader: { fontSize: '1.1rem', fontWeight: 600, marginTop: '24px', marginBottom: '12px', color: '#42526e' },
   paragraph: { fontSize: '1rem', lineHeight: '1.6', color: '#333', marginBottom: '16px' },
   table: { width: '100%', borderCollapse: 'collapse' as const, boxShadow: '0 1px 3px rgba(0,0,0,0.1)', fontSize: '0.9rem', border: '1px solid #dfe1e6', marginBottom: '24px' },
   th: { backgroundColor: '#f4f5f7', color: '#172b4d', padding: '12px 16px', textAlign: 'left' as const, borderBottom: '2px solid #dfe1e6', fontWeight: 600 },
@@ -29,36 +30,51 @@ const diagramCode = `sequenceDiagram
     participant SMA as SP module administrator
 
     Note over SP: 22.1 Request SPU or SPG registration
-    SP->>SMA: Registration Request
+    SP->>SMA: Info Item BD: Registration Request (Refers to CJ)
     activate SMA
     
     Note over SMA: 22.2 Validate SPU or SPG registration request
     
     alt Validation Failed
-        SMA-->>SP: Error Notification
+        SMA-->>SP: Info Item B: Error notification
     else Validation Passed
         Note over SMA: 22.3 Register SPU or SPG
         
         Note over SMA: 22.4 Notify about successful SPU or SPG registration
-        SMA-->>SP: Registration Confirmation
+        SMA-->>SP: Info Item BE: Registration Confirmation
     end
     deactivate SMA`;
 
 const steps = [
-  { step: "22.1", action: "Request SPU or SPG registration", description: "The Service provider requests the registration of an SPU or SPG.", producer: "Service provider", receiver: "SP module administrator", infoId: "-" },
+  { step: "22.1", action: "Request SPU or SPG registration", description: "The Service provider requests the registration of an SPU or SPG.", producer: "Service provider", receiver: "SP module administrator", infoId: "BD" },
   { step: "22.2", action: "Validate SPU or SPG registration request", description: "The SP module administrator validates the request.", producer: "SP module administrator", receiver: "-", infoId: "-" },
   { step: "22.3", action: "Register SPU or SPG", description: "The SP module administrator registers the SPU or SPG in the system.", producer: "SP module administrator", receiver: "-", infoId: "-" },
-  { step: "22.4", action: "Notify about successful SPU or SPG registration", description: "The SP module administrator notifies the Service provider about the successful registration.", producer: "SP module administrator", receiver: "Service provider", infoId: "-" }
+  { step: "22.4", action: "Notify about successful SPU or SPG registration", description: "The SP module administrator notifies the Service provider about the successful registration.", producer: "SP module administrator", receiver: "Service provider", infoId: "BE" }
 ];
 
-const attributes = [
-  { name: "Name", desc: "A human readable name for the unit/group." },
-  { name: "Grid Area / Bidding Zone", desc: "The domain location." }
+const attributesBD = [
+  { name: "SP module", desc: "Identification of a flexibility information system module." },
+  { name: "SPU or SPG master data", desc: "Information Object CJ – SPU or SPG master data." },
+  { name: "Preferred registration date", desc: "Date for when the registration shall be considered active." }
+];
+
+// Info Object CJ
+const attributesCJ = [
+  { name: "SP identification", desc: "European wide unique identification of the SP." },
+  { name: "SPU or SPG identification", desc: "Unique identification (if available)." },
+  { name: "Status value", desc: "Status of the SPU or SPG (e.g. Active, Suspended)." },
+  { name: "Start timestamp", desc: "Start timestamp of the recorded status." },
+  { name: "Maximum active power", desc: "Maximum active power available." },
+  { name: "Maximum reactive power", desc: "Maximum reactive power available." },
+  { name: "SPU or SPG data attributes", desc: "Other data attributes defined in national terms." },
+  { name: "Assigned CUs", desc: "List of CUs assigned to the SPU or SPG." }
 ];
 
 const jwgToBrsMapping: Record<string, string> = {
-  "Name": "Namn",
-  "Grid Area / Bidding Zone": "Nätområde-ID / Elområde-ID"
+  "SPU or SPG master data": "Stamdata (Namn, Nätområde)",
+  "Maximum active power": "Aggregerad Kapacitet",
+  "SP identification": "Ägare",
+  "Assigned CUs": "-" // Hanteras via separata kopplingsprocesser (131/141) i BRS
 };
 
 interface Props { 
@@ -69,21 +85,9 @@ interface Props {
 
 export const JWGProcedure22: React.FC<Props> = ({ onBack, onNavigateToBRS, onNavigateToProcedure }) => {
   const getBrsAttribute = (jwgAttrName: string) => {
-    // Custom mapping logic to check both 110 (SPU) and 120 (SPG) content
-    if (jwgAttrName === "Name") {
-        return content110Input.attributes.find(a => a.attribute === "Namn");
-    }
-    if (jwgAttrName === "Grid Area / Bidding Zone") {
-        // Return explicit match
-        return { attribute: "Nätområde-ID / Elområde-ID", description: "Områdestillhörighet", article: "Art 2" };
-    }
-    return null;
-  };
-
-  const getJwgReference = (brsAttrName: string) => {
-    if (brsAttrName === "Namn") return "Name";
-    if (brsAttrName === "Nätområde-ID" || brsAttrName === "Elområde-ID") return "Grid Area / Bidding Zone";
-    return undefined;
+    const mappedName = jwgToBrsMapping[jwgAttrName];
+    if (!mappedName) return null;
+    return null; // Simplified matching for this view
   };
 
   return (
@@ -125,71 +129,64 @@ export const JWGProcedure22: React.FC<Props> = ({ onBack, onNavigateToBRS, onNav
       </section>
 
       <section>
-        <h2 style={styles.sectionHeader}>Datainnehåll</h2>
+        <h2 style={styles.sectionHeader}>Datainnehåll: Info BD (Request)</h2>
         <table style={styles.table}>
-          <thead><tr><th style={styles.th}>JWG Attribut</th><th style={styles.th}>Motsvarighet i {brsFlex110.id} / {brsFlex120.id}</th></tr></thead>
+          <thead><tr><th style={styles.th}>JWG Attribut</th><th style={styles.th}>Beskrivning</th></tr></thead>
           <tbody>
-            {attributes.map((a, i) => {
-              const brsMatch = getBrsAttribute(a.name);
-              return (
-                <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
-                  <td style={styles.td}><strong>{a.name}</strong><br/><span style={{fontSize:'0.8rem', color:'#666'}}>{a.desc}</span></td>
-                  <td style={styles.td}>{brsMatch ? <span style={styles.mappingTag}>{brsMatch.attribute}</span> : '-'}</td>
-                </tr>
-              );
-            })}
+            {attributesBD.map((a, i) => (
+              <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
+                <td style={styles.td}><strong>{a.name}</strong></td>
+                <td style={styles.td}>{a.desc}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </section>
 
       <section>
-        <h2 style={styles.sectionHeader}>Datainnehåll BRS (SPU - {brsFlex110.id})</h2>
-        <p style={styles.paragraph}>Följande attribut ingår i specifikationen för {brsFlex110.id}.</p>
+        <h3 style={styles.subSectionHeader}>Referenced Info Object CJ (SPU/SPG Master Data)</h3>
+        <p style={styles.paragraph}>Information Object CJ definierar strukturen för masterdata som skickas i BD (Request) och BF (Update).</p>
         <table style={styles.table}>
-          <thead><tr><th style={styles.th}>Attribut</th><th style={styles.th}>Beskrivning</th><th style={{...styles.th, backgroundColor: '#e6effc', color: '#0052cc', borderBottom: '2px solid #b3d4ff'}}>JWG Referens</th></tr></thead>
+          <thead><tr><th style={styles.th}>Attribut (CJ)</th><th style={styles.th}>Beskrivning</th></tr></thead>
           <tbody>
-            {content110Input.attributes.map((attr, i) => {
-              const jwgRef = getJwgReference(attr.attribute);
-              return (
-                <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
-                  <td style={styles.td}><strong>{attr.attribute}</strong></td>
-                  <td style={styles.td}>{attr.description}</td>
-                  <td style={{...styles.td, backgroundColor: i % 2 !== 0 ? '#f4f8fd' : '#fff'}}>
-                    {jwgRef ? (
-                        <span style={styles.reverseMappingTag}>{jwgRef}</span>
-                    ) : (
-                        <span style={{color: '#999', fontStyle: 'italic', fontSize: '0.8rem'}}>- (Specifikt för BRS)</span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
+            {attributesCJ.map((a, i) => (
+              <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
+                <td style={styles.td}><strong>{a.name}</strong></td>
+                <td style={styles.td}>{a.desc}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </section>
 
       <section>
-        <h2 style={styles.sectionHeader}>Datainnehåll BRS (SPG - {brsFlex120.id})</h2>
-        <p style={styles.paragraph}>Följande attribut ingår i specifikationen för {brsFlex120.id}.</p>
+        <h2 style={styles.sectionHeader}>Datainnehåll BRS</h2>
+        <p style={styles.paragraph}>I BRS-implementationen hanteras registrering av SPU och SPG separat, men båda mappar mot konceptet i Info Object CJ.</p>
+        {/* SPU */}
+        <h4 style={{marginTop: '16px', color: '#42526e'}}>SPU (BRS-FLEX-111)</h4>
         <table style={styles.table}>
-          <thead><tr><th style={styles.th}>Attribut</th><th style={styles.th}>Beskrivning</th><th style={{...styles.th, backgroundColor: '#e6effc', color: '#0052cc', borderBottom: '2px solid #b3d4ff'}}>JWG Referens</th></tr></thead>
+          <thead><tr><th style={styles.th}>Attribut</th><th style={styles.th}>Beskrivning</th></tr></thead>
           <tbody>
-            {content120Input.attributes.map((attr, i) => {
-              const jwgRef = getJwgReference(attr.attribute);
-              return (
-                <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
-                  <td style={styles.td}><strong>{attr.attribute}</strong></td>
-                  <td style={styles.td}>{attr.description}</td>
-                  <td style={{...styles.td, backgroundColor: i % 2 !== 0 ? '#f4f8fd' : '#fff'}}>
-                    {jwgRef ? (
-                        <span style={styles.reverseMappingTag}>{jwgRef}</span>
-                    ) : (
-                        <span style={{color: '#999', fontStyle: 'italic', fontSize: '0.8rem'}}>- (Specifikt för BRS)</span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
+            {content110Input.attributes.map((attr, i) => (
+              <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
+                <td style={styles.td}><strong>{attr.attribute}</strong></td>
+                <td style={styles.td}>{attr.description}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {/* SPG */}
+        <h4 style={{marginTop: '16px', color: '#42526e'}}>SPG (BRS-FLEX-121)</h4>
+        <table style={styles.table}>
+          <thead><tr><th style={styles.th}>Attribut</th><th style={styles.th}>Beskrivning</th></tr></thead>
+          <tbody>
+            {content120Input.attributes.map((attr, i) => (
+              <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
+                <td style={styles.td}><strong>{attr.attribute}</strong></td>
+                <td style={styles.td}>{attr.description}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </section>

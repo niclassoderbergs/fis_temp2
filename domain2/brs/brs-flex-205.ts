@@ -3,7 +3,8 @@ import { BRSData } from '../../types';
 import { content205Output } from '../../content-definitions';
 
 export const brsFlex205: BRSData = {
-  id: "BRS-FLEX-205",
+  id: "BRS-FLEX-209", // Updated from 205 (Notify -> 209)
+  previousId: "BRS-FLEX-205",
   title: "SP notifieras om avslutat flexavtal",
   purpose: "Att informera SP om att ett flexibilitetsavtal har avslutats på grund av en extern händelse (t.ex. kunden flyttar, byter leverantör eller avslutar via Mina Sidor).",
   actors: [
@@ -11,30 +12,30 @@ export const brsFlex205: BRSData = {
     { role: "Mottagare", description: "Service Provider (SP)" }
   ],
   diagramCode: `sequenceDiagram
-    title BRS-FLEX-205: SP notifieras om avslutat avtal
+    title BRS-FLEX-209: SP notifieras om avslutat avtal
     participant FIS as FIS
     participant SP as SP
 
-    Note over FIS: Trigger: BRS-FLEX-2040 (Flytt/Byte) eller BRS-FLEX-208 (Kundavslut)
+    Note over FIS: Trigger: BRS-FLEX-2030 (Flytt/Byte) eller BRS-FLEX-208 (Kundavslut)
     activate FIS
     FIS->>FIS: Sammanställ data
     FIS->>SP: NotifyFlexAgreementTerminated (Avtals-ID, Orsak, Slutdatum)
     deactivate FIS`,
   preConditions: [
-    { id: "BRSFLEX205-1", description: "Ett flexibilitetsavtal har avslutats via systemprocess (BRS-FLEX-2040) eller via kundinitiativ (BRS-FLEX-208)." }
+    { id: "BRSFLEX209-1", description: "Ett flexibilitetsavtal har avslutats via systemprocess (BRS-FLEX-2030) eller via kundinitiativ (BRS-FLEX-208)." }
   ],
   postConditions: {
     accepted: [
-      { id: "BRSFLEX205-2", description: "SP har mottagit notifiering om att avtalet avslutats." }
+      { id: "BRSFLEX209-2", description: "SP har mottagit notifiering om att avtalet avslutats." }
     ],
     rejected: [
-      { id: "BRSFLEX205-3", description: "Notifiering misslyckades." }
+      { id: "BRSFLEX209-3", description: "Notifiering misslyckades." }
     ]
   },
   businessRules: [],
   process: [
-    { id: "BRSFLEX205-4", description: "FIS skickar notifiering om avslutat avtal." },
-    { id: "BRSFLEX205-5", description: "SP tar emot informationen." }
+    { id: "BRSFLEX209-4", description: "FIS skickar notifiering om avslutat avtal." },
+    { id: "BRSFLEX209-5", description: "SP tar emot informationen." }
   ],
   infoObjects: [content205Output]
 };

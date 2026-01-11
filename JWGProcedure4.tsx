@@ -29,7 +29,7 @@ const diagramCode = `sequenceDiagram
     participant EP as Entitled party
 
     Note over RegP: 4.1 Request de-registration of CU
-    RegP->>CUMA: Info Item F: Request
+    RegP->>CUMA: Info Item F: Request (BRS 102)
     activate CUMA
     
     Note over CUMA: 4.2 Validate CU de-registration request

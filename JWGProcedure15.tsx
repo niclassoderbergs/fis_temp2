@@ -35,7 +35,7 @@ const diagramCode = `sequenceDiagram
     participant EP as Entitled party
 
     Note over SP: 15.1 Request de-registration
-    SP->>SMA: Info Item AK: Request (BRS 804)
+    SP->>SMA: Info Item AK: Request (BRS 803)
     activate SMA
     
     Note over SMA: 15.2 Validate de-registration request
@@ -44,17 +44,17 @@ const diagramCode = `sequenceDiagram
         SMA-->>SP: Info Item B: Validation failed
     else Validation Passed
         Note over SMA: 15.3a Cleanup: Unlink CUs from SPUs
-        SMA->>SMA: Trigger BRS 1320
-        SMA-->>SP: Notify Unlink (BRS 134)
+        SMA->>SMA: Trigger BRS 1330
+        SMA-->>SP: Notify Unlink (BRS 139)
 
         Note over SMA: 15.3b Cleanup: Unlink CUs from SPGs
-        SMA->>SMA: Trigger BRS 1420
-        SMA-->>SP: Notify Unlink (BRS 144)
+        SMA->>SMA: Trigger BRS 1430
+        SMA-->>SP: Notify Unlink (BRS 149)
 
         Note over SMA: 15.4 Execute SP de-registration
         
         Note over SMA: 15.5 Notify de-registration to service provider
-        SMA-->>SP: Info Item AL: Notification (BRS 804 Output)
+        SMA-->>SP: Info Item AL: Notification (BRS 803 Output)
         
         Note over SMA: 15.6 Notify de-registration to entitled parties
         SMA->>EP: Info Item AL: Notification
@@ -64,8 +64,8 @@ const diagramCode = `sequenceDiagram
 const steps = [
   { step: "15.1", action: "Request de-registration", description: "The service provider requests to be de-registered.", producer: "Service provider", receiver: "SP module administrator", infoId: "AK" },
   { step: "15.2", action: "Validate de-registration request", description: "The SP module administrator validates the request.", producer: "SP module administrator", receiver: "-", infoId: "-" },
-  { step: "15.3a", action: "Cleanup SPUs (Unlink CUs)", description: "System triggers removal of CUs from SPUs (1320) and notifies SP (134).", producer: "SP module administrator", receiver: "-", infoId: "-" },
-  { step: "15.3b", action: "Cleanup SPGs (Unlink CUs)", description: "System triggers removal of CUs from SPGs (1420) and notifies SP (144).", producer: "SP module administrator", receiver: "-", infoId: "-" },
+  { step: "15.3a", action: "Cleanup SPUs (Unlink CUs)", description: "System triggers removal of CUs from SPUs (1330) and notifies SP (139).", producer: "SP module administrator", receiver: "-", infoId: "-" },
+  { step: "15.3b", action: "Cleanup SPGs (Unlink CUs)", description: "System triggers removal of CUs from SPGs (1430) and notifies SP (149).", producer: "SP module administrator", receiver: "-", infoId: "-" },
   { step: "15.4", action: "Execute SP de-registration", description: "The SP module administrator de-registers the service provider.", producer: "SP module administrator", receiver: "-", infoId: "-" },
   { step: "15.5", action: "Notify de-registration to service provider", description: "The SP module administrator notifies the service provider about the de-registration.", producer: "SP module administrator", receiver: "Service provider", infoId: "AL" },
   { step: "15.6", action: "Notify de-registration to entitled parties", description: "The SP module administrator notifies the entitled parties about the de-registration.", producer: "SP module administrator", receiver: "Entitled party", infoId: "AL" }
@@ -136,11 +136,11 @@ export const JWGProcedure15: React.FC<Props> = ({ onBack, onNavigateToBRS, onNav
     let mappedName = jwgToBrsMapping[jwgAttrName];
     if (!mappedName) return null;
     
-    // SPU Cleanup (134)
+    // SPU Cleanup (139)
     if (mappedName.includes("SPU")) mappedName = "SPU-ID";
     let attr = getAttributeFromList(mappedName, content134Output.attributes);
     
-    // SPG Cleanup (144)
+    // SPG Cleanup (149)
     if (!attr) {
        if (mappedName === "SPU-ID") mappedName = "SPG-ID"; // Fallback check
        attr = getAttributeFromList(mappedName, content144Output.attributes);
@@ -204,7 +204,7 @@ export const JWGProcedure15: React.FC<Props> = ({ onBack, onNavigateToBRS, onNav
             <div style={{marginTop: '8px', fontSize: '0.9rem', fontStyle: 'italic'}}>Triggade systemprocesser:</div>
             <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex1320.id)}>{brsFlex1320.id}: {brsFlex1320.title} (Städning SPU)</div>
             <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex1420.id)}>{brsFlex1420.id}: {brsFlex1420.title} (Städning SPG)</div>
-            <div style={{marginTop: '4px', fontSize: '0.9rem', fontStyle: 'italic'}}>Notifieringar:</div>
+            <div style={{marginTop: '4px', fontSize: '0.9rem', fontStyle: 'italic'}}>Notifiering:</div>
             <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex134.id)}>{brsFlex134.id} & {brsFlex144.id}</div>
         </div>
         <div style={{fontSize: '2rem', opacity: 0.2}}>🔗</div>
@@ -246,7 +246,7 @@ export const JWGProcedure15: React.FC<Props> = ({ onBack, onNavigateToBRS, onNav
 
       <section>
         <h2 style={styles.sectionHeader}>Datainnehåll: Cleanup Notifications (Step 15.3a/b)</h2>
-        <p style={styles.paragraph}>Systemgenererade notifieringar till SP om att resurser kopplas loss (Motsvarar BRS-FLEX-134/144).</p>
+        <p style={styles.paragraph}>Systemgenererade notifieringar till SP om att resurser kopplas loss (Motsvarar BRS-FLEX-139/149).</p>
         <table style={styles.table}>
           <thead><tr><th style={styles.th}>JWG Attribut</th><th style={styles.th}>Motsvarighet i {brsFlex134.id} / {brsFlex144.id}</th></tr></thead>
           <tbody>
@@ -265,7 +265,7 @@ export const JWGProcedure15: React.FC<Props> = ({ onBack, onNavigateToBRS, onNav
 
       <section>
         <h2 style={styles.sectionHeader}>Datainnehåll: Info AL (Notification)</h2>
-        <p style={styles.paragraph}>Bekräftelse på avregistreringen (Motsvarar BRS-FLEX-804 Output).</p>
+        <p style={styles.paragraph}>Bekräftelse på avregistreringen (Motsvarar BRS-FLEX-803 Output).</p>
         <table style={styles.table}>
           <thead><tr><th style={styles.th}>JWG Attribut</th><th style={styles.th}>Motsvarighet i {brsFlex804.id} Output</th></tr></thead>
           <tbody>
@@ -286,10 +286,10 @@ export const JWGProcedure15: React.FC<Props> = ({ onBack, onNavigateToBRS, onNav
         <h2 style={styles.sectionHeader}>Datainnehåll: BRS Specifikationer</h2>
         <p style={styles.paragraph}>Nedan specificeras datainnehållet för samtliga involverade BRS-transaktioner i denna procedur.</p>
         
-        {/* 1. Begäran (804) */}
+        {/* 1. Begäran (803) */}
         {renderAttributeTable(`${brsFlex804.id} Input: ${content804Input.title}`, content804Input.attributes, true)}
 
-        {/* 2. Intern städning (1320 & 1420) */}
+        {/* 2. Intern städning (1330 & 1430) */}
         <h3 style={{...styles.subSectionHeader, color: '#0052cc'}}>Interna Systemprocesser (Städning)</h3>
         <p style={{fontSize:'0.9rem', color: '#666', marginBottom:'12px'}}>
             Följande processer triggas automatiskt av systemet för att koppla bort resurser från aggregeringsgrupper (städning).
@@ -297,7 +297,7 @@ export const JWGProcedure15: React.FC<Props> = ({ onBack, onNavigateToBRS, onNav
         {renderAttributeTable(`${brsFlex1320.id} Input: ${content132Input.title}`, content132Input.attributes, true)}
         {renderAttributeTable(`${brsFlex1420.id} Input: ${content142Input.title}`, content142Input.attributes, true)}
 
-        {/* 3. Notifieringar (134, 144, 804 Output) */}
+        {/* 3. Notifieringar (139, 149, 803 Output) */}
         <h3 style={{...styles.subSectionHeader, color: '#0052cc'}}>Notifieringar & Resultat</h3>
         <p style={{fontSize:'0.9rem', color: '#666', marginBottom:'12px'}}>
             Följande information skickas till SP som kvittens på utförda åtgärder.

@@ -4,14 +4,14 @@ import { content201Input, content201Output } from '../../content-definitions';
 
 export const brsFlex201: BRSData = {
   id: "BRS-FLEX-201",
-  title: "SP registrerar Flexavtal",
+  title: "SP registrerar flexavtal",
   purpose: "Att koppla en CU till en SP för att kunna sälja flexibilitet.",
   actors: [
     { role: "Initiator", description: "SP" },
     { role: "Mottagare", description: "Flexibilitetsregistret (FIS)" }
   ],
   diagramCode: `sequenceDiagram
-    title BRS-FLEX-201: SP registrerar Flexavtal
+    title BRS-FLEX-201: SP registrerar flexavtal
     participant SP as SP
     participant FIS as FIS
     participant DHV as DHV

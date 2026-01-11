@@ -41,9 +41,9 @@ const diagramCode = `sequenceDiagram
     alt Validation Failed
         SMA-->>SO: Info Item B: Validation failed
     else Validation Passed
-        Note over SMA: 18.3 Register re-activation (BRS 812)
+        Note over SMA: 18.3 Register re-activation (BRS 816)
         
-        Note over SMA: 18.4 Notify SP (BRS 815)
+        Note over SMA: 18.4 Notify SP (BRS 817)
         SMA-->>SP: Notification
         
         opt Notify final customer
@@ -178,10 +178,10 @@ export const JWGProcedure18: React.FC<Props> = ({ onBack, onNavigateToBRS, onNav
         <h2 style={styles.sectionHeader}>Datainnehåll BRS</h2>
         <p style={styles.paragraph}>Nedan specificeras datainnehållet för samtliga involverade BRS-transaktioner i denna procedur.</p>
         
-        {/* 1. Begäran (812) */}
+        {/* 1. Begäran (816) */}
         {renderAttributeTable(`${brsFlex812.id} Input: ${content812Input.title}`, content812Input.attributes, true)}
 
-        {/* 2. Notifiering (815) */}
+        {/* 2. Notifiering (817) */}
         <h3 style={{...styles.subSectionHeader, color: '#0052cc'}}>Notifiering till SP</h3>
         <p style={{fontSize:'0.9rem', color: '#666', marginBottom:'12px'}}>
             Systemgenererad notifiering till SP (Info Item - Notification).

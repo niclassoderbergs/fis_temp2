@@ -3,7 +3,7 @@ import { InfoObject } from './types';
 
 // --- BRS-FLEX-501: Registrera Baselinemetod (Master Data) ---
 export const content501Input: InfoObject = {
-  title: "Från Admin/Tillsynsmyndighet",
+  title: "Från TSO",
   attributes: [
     { attribute: "Metodnamn", description: "Officiellt namn på beräkningsmetoden (t.ex. 'X of Y').", article: "-" },
     { attribute: "Beskrivning", description: "Teknisk beskrivning av algoritmen.", article: "-" },
@@ -116,6 +116,8 @@ export const content5210Input: InfoObject = {
 export const content5210Output: InfoObject = {
   title: "Internt (System)",
   attributes: [
+    { attribute: "CU-ID", description: "Resursen beräkningen avser.", article: "-" },
+    { attribute: "Period", description: "Tidsperiod för baseline.", article: "-" },
     { attribute: "Baseline-resultat", description: "Genererad tidsserie.", article: "-" },
     { attribute: "Kvalitetsstämpel", description: "Flagga för om data saknades etc.", article: "-" }
   ]

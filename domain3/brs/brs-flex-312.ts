@@ -3,57 +3,48 @@ import { BRSData } from '../../types';
 import { content312Input, content312Output } from '../../content-definitions';
 
 export const brsFlex312: BRSData = {
-  id: "BRS-FLEX-312",
-  title: "TSO uppdaterar produktförkvalificering",
-  purpose: "Att registrera resultatet av ett utfört test (Godkänd/Underkänd). Utförs av Systemoperatören efter test genomförts.",
+  id: "BRS-FLEX-319", // Updated from 312
+  previousId: "BRS-FLEX-312",
+  title: "TSO rapporterar testresultat",
+  purpose: "Att registrera det slutgiltiga resultatet (Qualified/Rejected) baserat på det genomförda testet. Detta avslutar kvalificeringsprocessen.",
   actors: [
     { role: "Initiator", description: "Systemoperatör (TSO)" },
     { role: "Mottagare", description: "Flexibilitetsregistret (FIS)" }
   ],
   diagramCode: `sequenceDiagram
-    title BRS-FLEX-312: TSO uppdaterar produktförkvalificering
+    title BRS-FLEX-319: TSO rapporterar testresultat
     participant TSO as TSO
     participant FIS as FIS
 
-    TSO->>FIS: UpdateQualificationResult (SPU-ID, Produkt, Status, GiltigTill)
+    TSO->>FIS: ReportTestResult (Kval-ID, Slutresultat, GiltigTill)
     activate FIS
     FIS->>FIS: Validera affärsregler
 
     alt Validering OK
         FIS->>FIS: Uppdatera status (Qualified/Rejected)
-        
-        opt Om Qualified
-            FIS->>FIS: Spara slutdatum
-        end
-        
         FIS-->>TSO: Ack
     else Validering Fel
         FIS-->>TSO: Error (Validation Failed)
     end
     deactivate FIS`,
   preConditions: [
-    { id: "BRSFLEX312-1", description: "En systemoperatör (TSO) har registrerat resultatet av en produktförkvalificering." }
+    { id: "BRSFLEX319-1", description: "Aktiveringstest har genomförts (status 'Test Completed')." }
   ],
   postConditions: {
     accepted: [
-      { id: "BRSFLEX312-2", description: "FIS har uppdaterat kvalificeringsstatusen." },
-      { id: "BRSFLEX312-3", description: "TSO har mottagit kvittens på uppdateringen." }
+      { id: "BRSFLEX319-2", description: "FIS har uppdaterat kvalificeringsstatusen till slutgiltigt läge." }
     ],
     rejected: [
-      { id: "BRSFLEX312-4", description: "Ingen ändring har genomförts." }
+      { id: "BRSFLEX319-4", description: "Ingen ändring har genomförts." }
     ]
   },
   businessRules: [
-    { id: "BRSFLEX312-5", description: "Ansökan måste finnas (t.ex. status 'Pending Test').", errorCode: "E_312_NO_APPLICATION" },
-    { id: "BRSFLEX312-6", description: "Om Godkänt, måste ett slutdatum för kvalificeringen anges.", errorCode: "E_312_MISSING_EXPIRY" },
-    { id: "BRSFLEX312-7", description: "Status sätts till 'Qualified' eller 'Rejected'.", errorCode: "E_312_INVALID_STATUS" }
+    { id: "BRSFLEX319-5", description: "Ansökan måste finnas i fasen 'Test Completed'.", errorCode: "E_319_INVALID_STATE" },
+    { id: "BRSFLEX319-6", description: "Om Godkänt, måste ett slutdatum för kvalificeringen anges.", errorCode: "E_319_MISSING_EXPIRY" }
   ],
   process: [
-    { id: "BRSFLEX312-8", description: "Systemoperatören (TSO) registrerar resultatet av en produktförkvalificering." },
-    { id: "BRSFLEX312-9", description: "Flexibilitetsregistret bekräftar uppdateringen till TSO." }
-  ],
-  exceptionFlow: [
-    { id: "BRSFLEX312-10", description: "Flexibilitetsregistret returnerar ett felmeddelande enligt affärsregel.", implemented: "Yes" }
+    { id: "BRSFLEX319-8", description: "TSO registrerar slutresultatet av kvalificeringen." },
+    { id: "BRSFLEX319-9", description: "FIS uppdaterar status för kvalificeringen." }
   ],
   infoObjects: [content312Input, content312Output]
 };

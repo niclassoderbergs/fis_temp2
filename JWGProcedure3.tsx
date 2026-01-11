@@ -33,7 +33,7 @@ const diagramCode = `sequenceDiagram
     participant EP as Entitled party
 
     Note over RegP: 3.1 Request CU update
-    RegP->>CUMA: Info Item C: Request
+    RegP->>CUMA: Info Item C: Request (BRS 102)
     activate CUMA
     
     Note over CUMA: 3.2 Validate CU update request

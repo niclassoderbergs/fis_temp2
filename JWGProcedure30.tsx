@@ -1,15 +1,17 @@
 
 import React from 'react';
 import { MermaidDiagram } from './MermaidDiagram';
+import { brsFlex401 } from './domain4/brs/brs-flex-401';
 import { brsFlex402 } from './domain4/brs/brs-flex-402';
 import { brsFlex403 } from './domain4/brs/brs-flex-403';
-import { content402Input, content403Output } from './content-domain-4';
+import { content401Input, content401Output, content402Input, content403Output } from './content-domain-4';
 
 const styles = {
   container: { padding: '40px', backgroundColor: '#fff', minHeight: '100%', boxSizing: 'border-box' as const },
   header: { fontSize: '2rem', fontWeight: 700, marginBottom: '8px', color: '#172b4d' },
   subHeader: { fontSize: '1.1rem', color: '#5e6c84', marginBottom: '32px' },
   sectionHeader: { fontSize: '1.5rem', fontWeight: 600, marginTop: '48px', marginBottom: '16px', color: '#42526e', borderBottom: '2px solid #ebecf0', paddingBottom: '8px' },
+  subSectionHeader: { fontSize: '1.1rem', fontWeight: 600, marginTop: '24px', marginBottom: '12px', color: '#42526e' },
   paragraph: { fontSize: '1rem', lineHeight: '1.6', color: '#333', marginBottom: '16px' },
   table: { width: '100%', borderCollapse: 'collapse' as const, boxShadow: '0 1px 3px rgba(0,0,0,0.1)', fontSize: '0.9rem', border: '1px solid #dfe1e6', marginBottom: '24px' },
   th: { backgroundColor: '#f4f5f7', color: '#172b4d', padding: '12px 16px', textAlign: 'left' as const, borderBottom: '2px solid #dfe1e6', fontWeight: 600 },
@@ -20,7 +22,8 @@ const styles = {
   brsBox: { backgroundColor: '#e3fcef', padding: '16px', borderRadius: '4px', borderLeft: '4px solid #006644', marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
   brsLink: { color: '#006644', fontWeight: 700, textDecoration: 'underline', cursor: 'pointer', fontSize: '1.1rem', display: 'block', marginBottom: '4px' },
   mappingTag: { display: 'inline-block', backgroundColor: '#e3fcef', color: '#006644', padding: '2px 6px', borderRadius: '3px', fontSize: '0.8rem', fontWeight: 600, marginBottom: '4px' },
-  reverseMappingTag: { display: 'inline-block', backgroundColor: '#e6effc', color: '#0052cc', padding: '2px 6px', borderRadius: '3px', fontSize: '0.8rem', fontWeight: 600, marginBottom: '4px' }
+  reverseMappingTag: { display: 'inline-block', backgroundColor: '#e6effc', color: '#0052cc', padding: '2px 6px', borderRadius: '3px', fontSize: '0.8rem', fontWeight: 600, marginBottom: '4px' },
+  noteBox: { backgroundColor: '#fff3cd', border: '1px solid #ffeeba', padding: '12px', borderRadius: '4px', marginBottom: '24px', color: '#856404', fontSize: '0.95rem' }
 };
 
 const diagramCode = `sequenceDiagram
@@ -29,20 +32,20 @@ const diagramCode = `sequenceDiagram
     participant TLA as Temporary limit administrator
     participant EP as Entitled party
 
-    Note over SO: 30.1 Execute temporary limit determination
+    Note over SO: 30.1 Execute temporary limit determination (BRS 401)
     
     Note over SO: 30.2 Send temporary limit
-    SO->>TLA: Info Item BW: Temporary limit
+    SO->>TLA: Info Item BW: Temporary limit (BRS 402)
     
     Note over TLA: 30.2 Receive temporary limit
     
     Note over TLA: 30.3 Notify temporary limit
-    TLA->>EP: Info Item BW: Temporary limit`;
+    TLA->>EP: Info Item BW: Temporary limit (BRS 403)`;
 
 const steps = [
-  { step: "30.1", action: "Execute temporary limit determination", description: "The System operator determines that a temporary limit is needed due to grid constraints.", producer: "System operator", receiver: "-", infoId: "-" },
-  { step: "30.2", action: "Send/Receive temporary limit", description: "The System operator sends the limit to the Administrator (FIS).", producer: "System operator", receiver: "Temporary limit administrator", infoId: "BW" },
-  { step: "30.3", action: "Notify temporary limit", description: "The Administrator notifies relevant Entitled parties (Service Providers) about the limit.", producer: "Temporary limit administrator", receiver: "Entitled party", infoId: "BW" }
+  { step: "30.1", action: "Execute temporary limit determination", description: "The System operator determines that a temporary limit is needed due to grid constraints. (Supported by BRS-FLEX-401)", producer: "System operator", receiver: "-", infoId: "-" },
+  { step: "30.2", action: "Send/Receive temporary limit", description: "The System operator sends the limit to the Administrator (FIS). (BRS-FLEX-402)", producer: "System operator", receiver: "Temporary limit administrator", infoId: "BW" },
+  { step: "30.3", action: "Notify temporary limit", description: "The Administrator notifies relevant Entitled parties (Service Providers) about the limit. (BRS-FLEX-403)", producer: "Temporary limit administrator", receiver: "Entitled party", infoId: "BW" }
 ];
 
 const attributes = [
@@ -57,6 +60,12 @@ const jwgToBrsMapping: Record<string, string> = {
   "Limit Value": "Maximal inmatning", // Also covers Maximalt uttag
   "Direction": "Maximal inmatning", // Implied by which field is used (input vs output)
   "Period": "Starttid" // And Sluttid
+};
+
+// Mapping för 401
+const jwgToBrsMapping401: Record<string, string> = {
+  "Grid Resource Identifier": "Mätpunkts-ID", // Output från 401
+  "Grid Area Identifier": "Nätområdes-ID" // Input till 401
 };
 
 interface Props { 
@@ -83,6 +92,33 @@ export const JWGProcedure30: React.FC<Props> = ({ onBack, onNavigateToBRS, onNav
     return Object.keys(jwgToBrsMapping).find(key => jwgToBrsMapping[key] === brsAttrName);
   };
 
+  const getJwgReference401 = (brsAttrName: string) => {
+    return Object.keys(jwgToBrsMapping401).find(key => jwgToBrsMapping401[key] === brsAttrName);
+  };
+
+  const renderAttributeTable = (title: string, data: any[], showMapping = false, mappingFn?: (name: string) => string | undefined) => (
+    <div style={{marginBottom: '20px'}}>
+      <h3 style={styles.subSectionHeader}>{title}</h3>
+      <table style={styles.table}>
+        <thead><tr><th style={styles.th}>Attribut</th><th style={styles.th}>Beskrivning</th>{showMapping && <th style={{...styles.th, backgroundColor: '#e6effc', color: '#0052cc'}}>JWG Referens</th>}</tr></thead>
+        <tbody>
+          {data.map((attr, i) => {
+            const jwgRef = showMapping ? (mappingFn ? mappingFn(attr.attribute) : getJwgReference(attr.attribute)) : null;
+            return (
+              <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
+                <td style={styles.td}><strong>{attr.attribute}</strong></td>
+                <td style={styles.td}>{attr.description}</td>
+                {showMapping && <td style={{...styles.td, backgroundColor: i % 2 !== 0 ? '#f4f8fd' : '#fff'}}>
+                  {jwgRef ? <span style={styles.reverseMappingTag}>{jwgRef}</span> : <span style={{color: '#999', fontSize: '0.8rem', fontStyle: 'italic'}}>-</span>}
+                </td>}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+
   return (
     <div style={styles.container}>
       <div style={styles.navHeader}>
@@ -96,11 +132,21 @@ export const JWGProcedure30: React.FC<Props> = ({ onBack, onNavigateToBRS, onNav
       <h1 style={styles.header}>Procedure 30: (conditional) Temporary limits</h1>
       <p style={styles.subHeader}>Hantering av tillfälliga nätbegränsningar (Temporary Limits) initierade av Systemoperatören (DSO/TSO).</p>
 
+      <div style={styles.noteBox}>
+        <strong>Implementation Mapping:</strong>
+        <ul style={{margin: '8px 0 0 16px', padding: 0}}>
+            <li><strong>Steg 30.1 (Determination):</strong> Stöds av <strong>BRS-FLEX-401</strong> där DSO hämtar underlag (resurslista) för analys.</li>
+            <li><strong>Steg 30.2 (Send limit):</strong> Motsvarar <strong>BRS-FLEX-402</strong> där DSO registrerar begränsningen i FIS.</li>
+            <li><strong>Steg 30.3 (Notify):</strong> Motsvarar <strong>BRS-FLEX-403</strong> där FIS notifierar berörd SP.</li>
+        </ul>
+      </div>
+
       <div style={styles.brsBox}>
         <div>
             <div style={{fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: '4px', opacity: 0.8}}>Implementerad via</div>
-            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex402.id)}>{brsFlex402.id}: {brsFlex402.title} (Registrering)</div>
-            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex403.id)}>{brsFlex403.id}: {brsFlex403.title} (Notifiering)</div>
+            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex401.id)}>{brsFlex401.id}: {brsFlex401.title} (30.1)</div>
+            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex402.id)}>{brsFlex402.id}: {brsFlex402.title} (30.2)</div>
+            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex403.id)}>{brsFlex403.id}: {brsFlex403.title} (30.3)</div>
         </div>
         <div style={{fontSize: '2rem', opacity: 0.2}}>🔗</div>
       </div>
@@ -140,55 +186,12 @@ export const JWGProcedure30: React.FC<Props> = ({ onBack, onNavigateToBRS, onNav
       </section>
 
       <section>
-        <h2 style={styles.sectionHeader}>Datainnehåll BRS (Registrering - {brsFlex402.id})</h2>
-        <p style={styles.paragraph}>Följande attribut ingår i specifikationen för {brsFlex402.id}.</p>
-        <table style={styles.table}>
-          <thead><tr><th style={styles.th}>Attribut</th><th style={styles.th}>Beskrivning</th><th style={{...styles.th, backgroundColor: '#e6effc', color: '#0052cc', borderBottom: '2px solid #b3d4ff'}}>JWG Referens</th></tr></thead>
-          <tbody>
-            {content402Input.attributes.map((attr, i) => {
-              const jwgRef = getJwgReference(attr.attribute);
-              return (
-                <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
-                  <td style={styles.td}><strong>{attr.attribute}</strong></td>
-                  <td style={styles.td}>{attr.description}</td>
-                  <td style={{...styles.td, backgroundColor: i % 2 !== 0 ? '#f4f8fd' : '#fff'}}>
-                    {jwgRef ? (
-                        <span style={styles.reverseMappingTag}>{jwgRef}</span>
-                    ) : (
-                        <span style={{color: '#999', fontStyle: 'italic', fontSize: '0.8rem'}}>- (Specifikt för BRS)</span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </section>
+        <h2 style={styles.sectionHeader}>Datainnehåll BRS</h2>
+        
+        {renderAttributeTable(`${brsFlex401.id} (Underlag för Determination)`, content401Input.attributes.concat(content401Output.attributes), true, getJwgReference401)}
+        {renderAttributeTable(`${brsFlex402.id} (Registrering)`, content402Input.attributes, true)}
+        {renderAttributeTable(`${brsFlex403.id} (Notifiering)`, content403Output.attributes, true)}
 
-      <section>
-        <h2 style={styles.sectionHeader}>Datainnehåll BRS (Notifiering - {brsFlex403.id})</h2>
-        <p style={styles.paragraph}>Följande attribut ingår i specifikationen för {brsFlex403.id}.</p>
-        <table style={styles.table}>
-          <thead><tr><th style={styles.th}>Attribut</th><th style={styles.th}>Beskrivning</th><th style={{...styles.th, backgroundColor: '#e6effc', color: '#0052cc', borderBottom: '2px solid #b3d4ff'}}>JWG Referens</th></tr></thead>
-          <tbody>
-            {content403Output.attributes.map((attr, i) => {
-              const jwgRef = getJwgReference(attr.attribute);
-              return (
-                <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
-                  <td style={styles.td}><strong>{attr.attribute}</strong></td>
-                  <td style={styles.td}>{attr.description}</td>
-                  <td style={{...styles.td, backgroundColor: i % 2 !== 0 ? '#f4f8fd' : '#fff'}}>
-                    {jwgRef ? (
-                        <span style={styles.reverseMappingTag}>{jwgRef}</span>
-                    ) : (
-                        <span style={{color: '#999', fontStyle: 'italic', fontSize: '0.8rem'}}>- (Specifikt för BRS)</span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
       </section>
     </div>
   );

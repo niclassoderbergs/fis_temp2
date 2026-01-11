@@ -3,13 +3,16 @@ import React from 'react';
 import { MermaidDiagram } from './MermaidDiagram';
 import { brsFlex115 } from './domain1/brs/brs-flex-115';
 import { brsFlex125 } from './domain1/brs/brs-flex-125';
-import { content115Input, content115Output, content125Input, content125Output } from './content-domain-1';
+import { brsFlex118 } from './domain1/brs/brs-flex-118';
+import { brsFlex128 } from './domain1/brs/brs-flex-128';
+import { content115Input, content125Input, content118Output, content128Output } from './content-domain-1';
 
 const styles = {
   container: { padding: '40px', backgroundColor: '#fff', minHeight: '100%', boxSizing: 'border-box' as const },
   header: { fontSize: '2rem', fontWeight: 700, marginBottom: '8px', color: '#172b4d' },
   subHeader: { fontSize: '1.1rem', color: '#5e6c84', marginBottom: '32px' },
   sectionHeader: { fontSize: '1.5rem', fontWeight: 600, marginTop: '48px', marginBottom: '16px', color: '#42526e', borderBottom: '2px solid #ebecf0', paddingBottom: '8px' },
+  subSectionHeader: { fontSize: '1.1rem', fontWeight: 600, marginTop: '24px', marginBottom: '12px', color: '#42526e' },
   paragraph: { fontSize: '1rem', lineHeight: '1.6', color: '#333', marginBottom: '16px' },
   table: { width: '100%', borderCollapse: 'collapse' as const, boxShadow: '0 1px 3px rgba(0,0,0,0.1)', fontSize: '0.9rem', border: '1px solid #dfe1e6', marginBottom: '24px' },
   th: { backgroundColor: '#f4f5f7', color: '#172b4d', padding: '12px 16px', textAlign: 'left' as const, borderBottom: '2px solid #dfe1e6', fontWeight: 600 },
@@ -31,7 +34,7 @@ const diagramCode = `sequenceDiagram
     participant EntP as Entitled party
 
     Note over SO: 27.1 Request SPU or SPG re-activation
-    SO->>SMA: Info Item BP: Request re-activation
+    SO->>SMA: Info Item BP: Request re-activation (BRS 115/125)
     activate SMA
     
     Note over SMA: 27.2 Validate SPU or SPG re-activation request
@@ -42,7 +45,7 @@ const diagramCode = `sequenceDiagram
         Note over SMA: 27.3 Register updated status for the SPG or SPU
         
         Note over SMA: 27.4 Notify about SPU or SPG re-activation
-        SMA-->>SP: Info Item BQ: Notification
+        SMA-->>SP: Info Item BQ: Notification (BRS 118/128)
         
         Note over SMA: 27.5 Notify about SPU or SPG re-activation
         SMA->>EntP: Info Item BQ: Notification
@@ -57,8 +60,12 @@ const steps = [
   { step: "27.5", action: "Notify about SPU or SPG re-activation", description: "The SP module administrator notifies other entitled parties.", producer: "SP module administrator", receiver: "Entitled party", infoId: "BQ" }
 ];
 
-const attributes = [
-  { name: "SPU/SPG identifier", desc: "The resource to re-activate." },
+const attributesBP = [
+  { name: "SPU/SPG identifier", desc: "The resource to re-activate." }
+];
+
+const attributesBQ = [
+  { name: "SPU/SPG identifier", desc: "The resource re-activated." },
   { name: "Status", desc: "The new status (Active)." }
 ];
 
@@ -74,24 +81,54 @@ interface Props {
 }
 
 export const JWGProcedure27: React.FC<Props> = ({ onBack, onNavigateToBRS, onNavigateToProcedure }) => {
-  const getBrsAttribute = (jwgAttrName: string) => {
-    const mappedName = jwgToBrsMapping[jwgAttrName];
+  
+  const getBrsAttributeBP = (jwgAttrName: string) => {
+    let mappedName = jwgToBrsMapping[jwgAttrName];
     if (!mappedName) return null;
     
-    // Check inputs first
-    let attr = content115Input.attributes.find(a => a.attribute === mappedName);
-    if (!attr) attr = content125Input.attributes.find(a => a.attribute === mappedName);
-    
-    // Check outputs (for Status)
-    if (!attr) attr = content115Output.attributes.find(a => a.attribute === mappedName);
-    if (!attr) attr = content125Output.attributes.find(a => a.attribute === mappedName);
+    // Check inputs (115/125 Request)
+    let attr = content115Input.attributes.find(a => mappedName.includes(a.attribute));
+    if (!attr) attr = content125Input.attributes.find(a => mappedName.includes(a.attribute));
+    return attr;
+  };
 
+  const getBrsAttributeBQ = (jwgAttrName: string) => {
+    let mappedName = jwgToBrsMapping[jwgAttrName];
+    if (!mappedName) return null;
+    
+    // Check outputs (118/128 Notification)
+    let attr = content118Output.attributes.find(a => mappedName.includes(a.attribute));
+    if (!attr) attr = content128Output.attributes.find(a => mappedName.includes(a.attribute));
     return attr;
   };
 
   const getJwgReference = (brsAttrName: string) => {
+    if (brsAttrName === "SPU-ID" || brsAttrName === "SPG-ID") return "SPU/SPG identifier";
     return Object.keys(jwgToBrsMapping).find(key => jwgToBrsMapping[key] === brsAttrName);
   };
+
+  const renderAttributeTable = (title: string, data: any[], showMapping = false) => (
+    <div style={{marginBottom: '20px'}}>
+      <h3 style={styles.subSectionHeader}>{title}</h3>
+      <table style={styles.table}>
+        <thead><tr><th style={styles.th}>Attribut</th><th style={styles.th}>Beskrivning</th>{showMapping && <th style={{...styles.th, backgroundColor: '#e6effc', color: '#0052cc'}}>JWG Referens</th>}</tr></thead>
+        <tbody>
+          {data.map((attr, i) => {
+            const jwgRef = showMapping ? getJwgReference(attr.attribute) : null;
+            return (
+              <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
+                <td style={styles.td}><strong>{attr.attribute}</strong></td>
+                <td style={styles.td}>{attr.description}</td>
+                {showMapping && <td style={{...styles.td, backgroundColor: i % 2 !== 0 ? '#f4f8fd' : '#fff'}}>
+                  {jwgRef ? <span style={styles.reverseMappingTag}>{jwgRef}</span> : <span style={{color: '#999', fontSize: '0.8rem', fontStyle: 'italic'}}>-</span>}
+                </td>}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
 
   return (
     <div style={styles.container}>
@@ -109,8 +146,11 @@ export const JWGProcedure27: React.FC<Props> = ({ onBack, onNavigateToBRS, onNav
       <div style={styles.brsBox}>
         <div>
             <div style={{fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: '4px', opacity: 0.8}}>Implementerad via</div>
-            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex115.id)}>{brsFlex115.id}: {brsFlex115.title} (SPU)</div>
-            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex125.id)}>{brsFlex125.id}: {brsFlex125.title} (SPG)</div>
+            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex115.id)}>{brsFlex115.id}: {brsFlex115.title} (SPU Request)</div>
+            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex125.id)}>{brsFlex125.id}: {brsFlex125.title} (SPG Request)</div>
+            <div style={{marginTop: '8px', fontSize: '0.9rem', fontStyle: 'italic'}}>Notifiering:</div>
+            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex118.id)}>{brsFlex118.id}: {brsFlex118.title} (SPU Notify)</div>
+            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex128.id)}>{brsFlex128.id}: {brsFlex128.title} (SPG Notify)</div>
         </div>
         <div style={{fontSize: '2rem', opacity: 0.2}}>🔗</div>
       </div>
@@ -134,10 +174,10 @@ export const JWGProcedure27: React.FC<Props> = ({ onBack, onNavigateToBRS, onNav
       <section>
         <h2 style={styles.sectionHeader}>Datainnehåll: Info BP (Request)</h2>
         <table style={styles.table}>
-          <thead><tr><th style={styles.th}>JWG Attribut</th><th style={styles.th}>Motsvarighet i {brsFlex115.id} / {brsFlex125.id}</th></tr></thead>
+          <thead><tr><th style={styles.th}>JWG Attribut</th><th style={styles.th}>Motsvarighet i {brsFlex115.id} / {brsFlex125.id} Input</th></tr></thead>
           <tbody>
-            {attributes.map((a, i) => {
-              const brsMatch = getBrsAttribute(a.name);
+            {attributesBP.map((a, i) => {
+              const brsMatch = getBrsAttributeBP(a.name);
               return (
                 <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
                   <td style={styles.td}><strong>{a.name}</strong><br/><span style={{fontSize:'0.8rem', color:'#666'}}>{a.desc}</span></td>
@@ -150,24 +190,16 @@ export const JWGProcedure27: React.FC<Props> = ({ onBack, onNavigateToBRS, onNav
       </section>
 
       <section>
-        <h2 style={styles.sectionHeader}>Datainnehåll BRS (SPU - {brsFlex115.id})</h2>
-        <p style={styles.paragraph}>Följande attribut ingår i specifikationen för {brsFlex115.id}.</p>
+        <h2 style={styles.sectionHeader}>Datainnehåll: Info BQ (Notification)</h2>
         <table style={styles.table}>
-          <thead><tr><th style={styles.th}>Attribut</th><th style={styles.th}>Beskrivning</th><th style={{...styles.th, backgroundColor: '#e6effc', color: '#0052cc', borderBottom: '2px solid #b3d4ff'}}>JWG Referens</th></tr></thead>
+          <thead><tr><th style={styles.th}>JWG Attribut</th><th style={styles.th}>Motsvarighet i {brsFlex118.id} / {brsFlex128.id} Output</th></tr></thead>
           <tbody>
-            {content115Input.attributes.map((attr, i) => {
-              const jwgRef = getJwgReference(attr.attribute);
+            {attributesBQ.map((a, i) => {
+              const brsMatch = getBrsAttributeBQ(a.name);
               return (
                 <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
-                  <td style={styles.td}><strong>{attr.attribute}</strong></td>
-                  <td style={styles.td}>{attr.description}</td>
-                  <td style={{...styles.td, backgroundColor: i % 2 !== 0 ? '#f4f8fd' : '#fff'}}>
-                    {jwgRef ? (
-                        <span style={styles.reverseMappingTag}>{jwgRef}</span>
-                    ) : (
-                        <span style={{color: '#999', fontStyle: 'italic', fontSize: '0.8rem'}}>- (Specifikt för BRS)</span>
-                    )}
-                  </td>
+                  <td style={styles.td}><strong>{a.name}</strong><br/><span style={{fontSize:'0.8rem', color:'#666'}}>{a.desc}</span></td>
+                  <td style={styles.td}>{brsMatch ? <span style={styles.mappingTag}>{brsMatch.attribute}</span> : '-'}</td>
                 </tr>
               );
             })}
@@ -176,29 +208,19 @@ export const JWGProcedure27: React.FC<Props> = ({ onBack, onNavigateToBRS, onNav
       </section>
 
       <section>
-        <h2 style={styles.sectionHeader}>Datainnehåll BRS (SPG - {brsFlex125.id})</h2>
-        <p style={styles.paragraph}>Följande attribut ingår i specifikationen för {brsFlex125.id}.</p>
-        <table style={styles.table}>
-          <thead><tr><th style={styles.th}>Attribut</th><th style={styles.th}>Beskrivning</th><th style={{...styles.th, backgroundColor: '#e6effc', color: '#0052cc', borderBottom: '2px solid #b3d4ff'}}>JWG Referens</th></tr></thead>
-          <tbody>
-            {content125Input.attributes.map((attr, i) => {
-              const jwgRef = getJwgReference(attr.attribute);
-              return (
-                <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
-                  <td style={styles.td}><strong>{attr.attribute}</strong></td>
-                  <td style={styles.td}>{attr.description}</td>
-                  <td style={{...styles.td, backgroundColor: i % 2 !== 0 ? '#f4f8fd' : '#fff'}}>
-                    {jwgRef ? (
-                        <span style={styles.reverseMappingTag}>{jwgRef}</span>
-                    ) : (
-                        <span style={{color: '#999', fontStyle: 'italic', fontSize: '0.8rem'}}>- (Specifikt för BRS)</span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <h2 style={styles.sectionHeader}>Datainnehåll BRS</h2>
+        <p style={styles.paragraph}>Specifikation av datamodeller för begäran och notifiering.</p>
+        
+        {/* Begäran SPU */}
+        {renderAttributeTable(`${brsFlex115.id} Input (SPU Request)`, content115Input.attributes, true)}
+        {/* Begäran SPG */}
+        {renderAttributeTable(`${brsFlex125.id} Input (SPG Request)`, content125Input.attributes, true)}
+
+        {/* Notifiering SPU */}
+        <h3 style={{...styles.subSectionHeader, color: '#0052cc'}}>Notifieringar</h3>
+        {renderAttributeTable(`${brsFlex118.id} Output (SPU Notification)`, content118Output.attributes, true)}
+        {renderAttributeTable(`${brsFlex128.id} Output (SPG Notification)`, content128Output.attributes, true)}
+
       </section>
     </div>
   );

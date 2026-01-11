@@ -3,7 +3,8 @@ import { BRSData } from '../../types';
 import { content131Input, content131Output } from '../../content-definitions';
 
 export const brsFlex131: BRSData = {
-  id: "BRS-FLEX-131",
+  id: "BRS-FLEX-133", // Updated from 131
+  previousId: "BRS-FLEX-131",
   title: "SP tar bort CU från SPU",
   purpose: "Att ta bort en CU från en SPU. Detta bryter kopplingen mellan resursen och aggregeringsenheten.",
   actors: [
@@ -11,7 +12,7 @@ export const brsFlex131: BRSData = {
     { role: "Mottagare", description: "FIS" }
   ],
   diagramCode: `sequenceDiagram
-    title BRS-FLEX-131: SP tar bort CU från SPU
+    title BRS-FLEX-133: SP tar bort CU från SPU
     participant SP as SP
     participant FIS as FIS
 
@@ -28,28 +29,28 @@ export const brsFlex131: BRSData = {
     end
     deactivate FIS`,
   preConditions: [
-    { id: "BRSFLEX131-1", description: "En SP har tagit bort en styrbar enhet från en SPU." }
+    { id: "BRSFLEX133-1", description: "En SP har tagit bort en styrbar enhet från en SPU." }
   ],
   postConditions: {
     accepted: [
-      { id: "BRSFLEX131-2", description: "FIS har avslutat kopplingen mellan den styrbara enheten och SPU:n." },
-      { id: "BRSFLEX131-3", description: "FIS har räknat om SPU:ns aggregerade kapacitet." }
+      { id: "BRSFLEX133-2", description: "FIS har avslutat kopplingen mellan den styrbara enheten och SPU:n." },
+      { id: "BRSFLEX133-3", description: "FIS har räknat om SPU:ns aggregerade kapacitet." }
     ],
     rejected: [
-      { id: "BRSFLEX131-4", description: "Relationen kvarstår." }
+      { id: "BRSFLEX133-4", description: "Relationen kvarstår." }
     ]
   },
   businessRules: [
-    { id: "BRSFLEX131-5", description: "Relationen mellan CU och SPU måste existera.", errorCode: "E_131_NO_RELATION" },
-    { id: "BRSFLEX131-6", description: "SPU får inte vara låst i ett aktivt bud för stunden.", errorCode: "E_131_RESOURCE_LOCKED" },
-    { id: "BRSFLEX131-7", description: "Slutdatum måste anges och vara giltigt.", errorCode: "E_131_INVALID_DATE" }
+    { id: "BRSFLEX133-5", description: "Relationen mellan CU och SPU måste existera.", errorCode: "E_133_NO_RELATION" },
+    { id: "BRSFLEX133-6", description: "SPU får inte vara låst i ett aktivt bud för stunden.", errorCode: "E_133_RESOURCE_LOCKED" },
+    { id: "BRSFLEX133-7", description: "Slutdatum måste anges och vara giltigt.", errorCode: "E_133_INVALID_DATE" }
   ],
   process: [
-    { id: "BRSFLEX131-8", description: "SP begär bortkoppling av en CU från en SPU." },
-    { id: "BRSFLEX131-9", description: "FIS bekräftar bortkopplingen till SP." }
+    { id: "BRSFLEX133-8", description: "SP begär bortkoppling av en CU från en SPU." },
+    { id: "BRSFLEX133-9", description: "FIS bekräftar bortkopplingen till SP." }
   ],
   exceptionFlow: [
-    { id: "BRSFLEX131-10", description: "FIS returnerar ett felmeddelande enligt affärsregel.", implemented: "Yes" }
+    { id: "BRSFLEX133-10", description: "FIS returnerar ett felmeddelande enligt affärsregel.", implemented: "Yes" }
   ],
   infoObjects: [content131Input, content131Output]
 };

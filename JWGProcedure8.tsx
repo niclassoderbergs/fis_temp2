@@ -29,7 +29,7 @@ const diagramCode = `sequenceDiagram
     participant PSO as Procuring system operator
 
     Note over SP: 8.1 Request service provider qualification
-    SP->>SPMO: Info Item P: Request
+    SP->>SPMO: Info Item P: Request (BRS 807)
     activate SPMO
     
     Note over SPMO: 8.2 Validate qualification request

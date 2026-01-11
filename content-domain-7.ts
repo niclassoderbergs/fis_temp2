@@ -38,9 +38,9 @@ export const content710Output: InfoObject = {
   ]
 };
 
-// --- BRS-FLEX-711: TSO registrerar aktiverat energibud ---
+// --- BRS-FLEX-711: TSO registrerar energibud (Aktivering/Avrop) ---
 export const content711Input: InfoObject = {
-  title: "Från TSO (Aktiverad Energi)",
+  title: "Från TSO (Energibud)",
   attributes: [
     { attribute: "Aktiverings-ID", description: "Unikt ID för aktiveringen (kan vara samma som Bud-ID).", article: "-" },
     { attribute: "Budobjekt-ID", description: "Referens till SPU/SPG.", article: "-" },
@@ -55,7 +55,7 @@ export const content711Input: InfoObject = {
 export const content711Output: InfoObject = {
   title: "Till TSO",
   attributes: [
-    { attribute: "Status", description: "Registrerad.", article: "-" }
+    { attribute: "Status", description: "Registrerad / Validering startad.", article: "-" }
   ]
 };
 
@@ -79,9 +79,9 @@ export const content702Output: InfoObject = {
   ]
 };
 
-// --- BRS-FLEX-712: DSO registrerar aktiverat energibud ---
+// --- BRS-FLEX-712: DSO registrerar lokalt energibud ---
 export const content712Input: InfoObject = {
-  title: "Från DSO (Aktiverad Energi)",
+  title: "Från DSO (Energibud)",
   attributes: [
     { attribute: "Aktiverings-ID", description: "Unikt ID för aktiveringen.", article: "-" },
     { attribute: "Budobjekt-ID", description: "Referens till resurs.", article: "-" },
@@ -95,7 +95,7 @@ export const content712Input: InfoObject = {
 export const content712Output: InfoObject = {
   title: "Till DSO",
   attributes: [
-    { attribute: "Status", description: "Registrerad.", article: "-" }
+    { attribute: "Status", description: "Registrerad / Validering startad.", article: "-" }
   ]
 };
 
@@ -144,15 +144,25 @@ export const content716Output: InfoObject = {
   ]
 };
 
-// --- BRS-FLEX-717: BRP notifieras om verifierad aktivering ---
+// --- BRS-FLEX-717: TSO notifieras om energibudskontroll (fd 7150) ---
 export const content717Output: InfoObject = {
-  title: "Till BRP",
+  title: "Till TSO",
   attributes: [
-    { attribute: "Aktiverings-ID", description: "Referens till händelsen.", article: "-" },
-    { attribute: "BRP-Volym", description: "Allokerad volym för BRP.", article: "-" },
-    { attribute: "Period", description: "Tidsintervall.", article: "-" },
-    { attribute: "Ingående CUs", description: "Vilka resurser som byggt upp volymen.", article: "-" },
-    { attribute: "MTU", description: "Marknadstidsenhet.", article: "-" }
+    { attribute: "Aktiverings-ID", description: "Referens till energibudet.", article: "-" },
+    { attribute: "Status", description: "Valid / Invalid.", article: "-" },
+    { attribute: "Verifierad Kapacitet", description: "Tillgänglig kapacitet.", article: "-" },
+    { attribute: "Orsak", description: "Vid avslag.", article: "-" }
+  ]
+};
+
+// --- BRS-FLEX-718: DSO notifieras om energibudskontroll (fd 7160) ---
+export const content718Output: InfoObject = {
+  title: "Till DSO",
+  attributes: [
+    { attribute: "Aktiverings-ID", description: "Referens till energibudet.", article: "-" },
+    { attribute: "Status", description: "Valid / Invalid.", article: "-" },
+    { attribute: "Verifierad Kapacitet", description: "Tillgänglig kapacitet.", article: "-" },
+    { attribute: "Orsak", description: "Vid avslag.", article: "-" }
   ]
 };
 
@@ -200,7 +210,7 @@ export const content7121Output: InfoObject = {
 export const content7011Input: InfoObject = {
   title: "Internt (Trigger)",
   attributes: [
-    { attribute: "Källa", description: "BRS-FLEX-7xx.", article: "-" },
+    { attribute: "Källa", description: "BRS-FLEX-701/702.", article: "-" },
     { attribute: "Buddata", description: "Objekt-ID, Volym, Period.", article: "-" },
     { attribute: "MTU", description: "Marknadstidsenhet.", article: "-" }
   ]
@@ -211,6 +221,24 @@ export const content7011Output: InfoObject = {
   attributes: [
     { attribute: "Status", description: "OK / NOK.", article: "-" },
     { attribute: "Aggregerad Kapacitet", description: "Beräknad tillgänglig volym.", article: "-" }
+  ]
+};
+
+// --- BRS-FLEX-7111: FIS kontrollerar energibud (Ny) ---
+export const content7111Input: InfoObject = {
+  title: "Internt (Trigger)",
+  attributes: [
+    { attribute: "Källa", description: "BRS-FLEX-711/712.", article: "-" },
+    { attribute: "Energibud", description: "Objekt-ID, Energi/Volym, Period.", article: "-" },
+    { attribute: "MTU", description: "Marknadstidsenhet.", article: "-" }
+  ]
+};
+
+export const content7111Output: InfoObject = {
+  title: "Internt (Resultat)",
+  attributes: [
+    { attribute: "Status", description: "OK / NOK.", article: "-" },
+    { attribute: "Verifierad Kapacitet", description: "Tillgänglig effekt vid budtillfället.", article: "-" }
   ]
 };
 

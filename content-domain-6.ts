@@ -6,6 +6,7 @@ export const content601Input: InfoObject = {
   title: "Från SP",
   attributes: [
     { attribute: "CU-ID", description: "Resursen mätningen avser.", article: "-" },
+    { attribute: "Period", description: "Tidsintervall som mätvärdena avser.", article: "-" },
     { attribute: "Registreringstidpunkt", description: "Tidpunkt då meddelandet skapades/skickades.", article: "-" },
     { attribute: "Mätar-ID", description: "Unikt ID för undermätaren (om annat än huvudmätare).", article: "-" },
     { attribute: "Tidsserie", description: "Lista av mätvärden där varje post innehåller Tidsstämpel och Värde (kW/MW).", article: "-" },
@@ -22,7 +23,7 @@ export const content601Output: InfoObject = {
 
 // --- BRS-FLEX-602: Begär CU-mätvärden ---
 export const content602Input: InfoObject = {
-  title: "Från SP/FIS",
+  title: "Från Berättigad Aktör",
   attributes: [
     { attribute: "CU-ID", description: "Resursen att hämta data för.", article: "-" },
     { attribute: "Period", description: "Start- och slutdatum.", article: "-" }
@@ -30,7 +31,7 @@ export const content602Input: InfoObject = {
 };
 
 export const content602Output: InfoObject = {
-  title: "Till SP/FIS",
+  title: "Till Berättigad Aktör",
   attributes: [
     { attribute: "CU-ID", description: "Resursen.", article: "-" },
     { attribute: "Tidsserie", description: "Efterfrågade mätvärden.", article: "-" }
@@ -118,7 +119,7 @@ export const content613Output: InfoObject = {
 
 // --- BRS-FLEX-622: Begär mätpunkts-mätvärden ---
 export const content622Input: InfoObject = {
-  title: "Från SP eller System",
+  title: "Från Berättigad Aktör",
   attributes: [
     { attribute: "Mätpunkts-ID", description: "Officiellt ID på anläggningen i DHV.", article: "-" },
     { attribute: "Period", description: "Start- och slutdatum för datat.", article: "-" },
@@ -127,7 +128,7 @@ export const content622Input: InfoObject = {
 };
 
 export const content622Output: InfoObject = {
-  title: "Till SP eller System",
+  title: "Till Berättigad Aktör",
   attributes: [
     { attribute: "Mätpunkts-ID", description: "Anläggningen.", article: "-" },
     { attribute: "Tidsserie", description: "Mätvärden hämtade från DHV.", article: "-" },

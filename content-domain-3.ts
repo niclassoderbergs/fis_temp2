@@ -78,20 +78,50 @@ export const content303Output: InfoObject = {
   ]
 };
 
-// --- BRS-FLEX-305: Hämta Produktdetaljer ---
+// --- BRS-FLEX-305: TSO beslutar om produktansökan (Tidigare Hämta Produktdetaljer) ---
 export const content305Input: InfoObject = {
-  title: "Från SP/FIS",
+  title: "Från TSO",
   attributes: [
-    { attribute: "Produkt-ID", description: "ID på produkten som ska hämtas. (Mandatory)", article: "-" }
+    { attribute: "Kvalificerings-ID", description: "ID på den aktuella ansökan.", article: "-" },
+    { attribute: "Beslut", description: "Approve eller Reject.", article: "-" },
+    { attribute: "Motivering", description: "Obligatoriskt vid avslag (Reject).", article: "-" }
   ]
 };
 
 export const content305Output: InfoObject = {
-  title: "Till SP/FIS",
+  title: "Till TSO",
   attributes: [
-    { attribute: "Produkt-ID", description: "Unikt ID för produkten.", article: "-" },
-    { attribute: "Status", description: "Aktuell status (t.ex. Active).", article: "-" },
-    ...productAttributes // Den detaljerade listan returneras här
+    { attribute: "Transaktions-ID", description: "Kvittens på beslutet.", article: "-" },
+    { attribute: "Ny Status", description: "Administratively Approved / Rejected.", article: "-" }
+  ]
+};
+
+// --- BRS-FLEX-306: SP notifieras om produktansökan ---
+export const content306Output: InfoObject = {
+  title: "Notifiering till SP",
+  attributes: [
+    { attribute: "Kvalificerings-ID", description: "Referens till ansökan.", article: "-" },
+    { attribute: "Status", description: "Resultat (Administratively Approved / Rejected).", article: "-" },
+    { attribute: "Motivering", description: "Orsak vid avslag.", article: "-" },
+    { attribute: "Nästa steg", description: "Instruktion (t.ex. invänta teknisk testplan).", article: "-" }
+  ]
+};
+
+// --- BRS-FLEX-325: DSO beslutar om produktansökan ---
+export const content325Input: InfoObject = {
+  title: "Från DSO",
+  attributes: [
+    { attribute: "Kvalificerings-ID", description: "ID på den aktuella ansökan.", article: "-" },
+    { attribute: "Beslut", description: "Approve eller Reject.", article: "-" },
+    { attribute: "Motivering", description: "Obligatoriskt vid avslag (Reject).", article: "-" }
+  ]
+};
+
+export const content325Output: InfoObject = {
+  title: "Till DSO",
+  attributes: [
+    { attribute: "Transaktions-ID", description: "Kvittens på beslutet.", article: "-" },
+    { attribute: "Ny Status", description: "Administratively Approved / Rejected.", article: "-" }
   ]
 };
 
@@ -116,18 +146,96 @@ export const content311Output: InfoObject = {
     { attribute: "Kvalificerings-ID", description: "Referens till ärendet.", article: "Art 20" },
     { attribute: "SPU-ID / SPG-ID", description: "Referens till resursen.", article: "-" },
     { attribute: "Produkt-ID", description: "Referens till produkten.", article: "-" },
-    { attribute: "Status", description: "Sätts till 'Pending Test'.", article: "-" }
+    { attribute: "Status", description: "Sätts till 'Application Received'.", article: "-" }
   ]
 };
 
-// --- BRS-FLEX-312: Uppdatera Produktförkvalificering ---
+// --- BRS-FLEX-316: Notifiering till TSO om produktansökan ---
+export const content316Output: InfoObject = {
+  title: "Notifiering till TSO",
+  attributes: [
+    { attribute: "Kvalificerings-ID", description: "Referens till ansökan.", article: "Art 20" },
+    { attribute: "SPU-ID / SPG-ID", description: "Resursen som ansökan avser.", article: "-" },
+    { attribute: "Produkt-ID", description: "Produkten som ska kvalificeras.", article: "-" },
+    { attribute: "Ansökningsdatum", description: "När ansökan inkom.", article: "-" },
+    { attribute: "Länk till ansökan", description: "URL eller referens för att granska detaljer.", article: "-" }
+  ]
+};
+
+// --- BRS-FLEX-326: Notifiering till DSO om produktansökan ---
+export const content326Output: InfoObject = {
+  title: "Notifiering till DSO",
+  attributes: [
+    { attribute: "Kvalificerings-ID", description: "Referens till ansökan.", article: "Art 20" },
+    { attribute: "SPU-ID / SPG-ID", description: "Resursen som ansökan avser.", article: "-" },
+    { attribute: "Produkt-ID", description: "Produkten som ska kvalificeras (lokal produkt).", article: "-" },
+    { attribute: "Ansökningsdatum", description: "När ansökan inkom.", article: "-" },
+    { attribute: "Länk till ansökan", description: "URL eller referens för att granska detaljer.", article: "-" }
+  ]
+};
+
+// --- BRS-FLEX-315: TSO initierar produktförkvalificering ---
+export const content315Input: InfoObject = {
+  title: "Internt (TSO Trigger)",
+  attributes: [
+    { attribute: "Kvalificerings-ID", description: "ID på ansökan.", article: "-" },
+    { attribute: "Handling", description: "Initiera teknisk fas (Start Prequalification).", article: "-" }
+  ]
+};
+
+// --- BRS-FLEX-330: SP notifieras om påbörjad förkvalificering ---
+export const content330Output: InfoObject = {
+  title: "Notifiering till SP",
+  attributes: [
+    { attribute: "Kvalificerings-ID", description: "Referens till ansökan.", article: "-" },
+    { attribute: "Status", description: "Prequalification Started.", article: "-" },
+    { attribute: "Meddelande", description: "Instruktion att inkomma med teknisk testdata.", article: "-" }
+  ]
+};
+
+// --- BRS-FLEX-317: SP registrerar testdata ---
+export const content317Input: InfoObject = {
+  title: "Från SP",
+  attributes: [
+    { attribute: "Kvalificerings-ID", description: "Referens till pågående process.", article: "-" },
+    { attribute: "Tekniska parametrar", description: "Ex. Rampningstid, Uthållighet, Responstid.", article: "-" },
+    { attribute: "Testplan", description: "Förslag på tidpunkt för fysiskt test.", article: "-" }
+  ]
+};
+
+export const content317Output: InfoObject = {
+  title: "Till SP",
+  attributes: [
+    { attribute: "Status", description: "Ready for Activation Test.", article: "-" }
+  ]
+};
+
+// --- BRS-FLEX-318: TSO genomför aktiveringstest ---
+export const content318Input: InfoObject = {
+  title: "Från TSO",
+  attributes: [
+    { attribute: "Kvalificerings-ID", description: "Referens.", article: "-" },
+    { attribute: "Test-ID", description: "Referens till det utförda testet.", article: "-" },
+    { attribute: "Testdatum", description: "När testet utfördes.", article: "-" },
+    { attribute: "Resultatdata", description: "Loggfiler eller mätdata från testet.", article: "-" }
+  ]
+};
+
+export const content318Output: InfoObject = {
+  title: "Till TSO",
+  attributes: [
+    { attribute: "Status", description: "Test Completed.", article: "-" }
+  ]
+};
+
+// --- BRS-FLEX-312: TSO rapporterar testresultat ---
 export const content312Input: InfoObject = {
   title: "Från TSO",
   attributes: [
-    { attribute: "SPU-ID / SPG-ID", description: "Resursen som testats.", article: "-" },
-    { attribute: "Produkt-ID", description: "Produkten testet avsåg.", article: "-" },
-    { attribute: "Status", description: "Resultat (Qualified/Rejected).", article: "-" },
-    { attribute: "Giltig till", description: "Slutdatum för kvalificeringen (om godkänd).", article: "-" }
+    { attribute: "Kvalificerings-ID", description: "Referens till ärendet.", article: "-" },
+    { attribute: "Slutresultat", description: "Qualified eller Rejected.", article: "-" },
+    { attribute: "Giltig till", description: "Slutdatum för kvalificeringen (om godkänd).", article: "-" },
+    { attribute: "Kommentar", description: "Motivering eller begränsningar.", article: "-" }
   ]
 };
 
@@ -135,9 +243,7 @@ export const content312Output: InfoObject = {
   title: "Till TSO",
   attributes: [
     { attribute: "Transaktions-ID", description: "Kvittens på uppdatering.", article: "-" },
-    { attribute: "SPU-ID / SPG-ID", description: "Referens till resursen.", article: "-" },
-    { attribute: "Produkt-ID", description: "Referens till produkten.", article: "-" },
-    { attribute: "Status", description: "Bekräftelse.", article: "-" }
+    { attribute: "Status", description: "Qualified/Rejected.", article: "-" }
   ]
 };
 
@@ -145,14 +251,14 @@ export const content312Output: InfoObject = {
 export const content313Output: InfoObject = {
   title: "Notifiering till SP",
   attributes: [
-    { attribute: "SPU-ID / SPG-ID", description: "Resursen notifieringen avser.", article: "-" },
-    { attribute: "Produkt-ID", description: "Produkten som avses.", article: "-" },
-    { attribute: "Status", description: "Ny status (Qualified / Rejected).", article: "-" },
-    { attribute: "Giltig till", description: "Slutdatum (om godkänd).", article: "-" }
+    { attribute: "Kvalificerings-ID", description: "Referens.", article: "-" },
+    { attribute: "Status", description: "Slutgiltigt besked (Qualified / Rejected).", article: "-" },
+    { attribute: "Giltig till", description: "Slutdatum (om godkänd).", article: "-" },
+    { attribute: "Kommentar", description: "Eventuell motivering.", article: "-" }
   ]
 };
 
-// --- BRS-FLEX-314: Notifiering till TSO om ansökan ---
+// --- BRS-FLEX-314: Notifiering till TSO om ansökan (Legacy / Test Data) ---
 export const content314Output: InfoObject = {
   title: "Notifiering till TSO",
   attributes: [

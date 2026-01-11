@@ -29,7 +29,7 @@ const diagramCode = `sequenceDiagram
     participant EP as Eligible Party
 
     Note over SP: 7.1 Request registration
-    SP->>SPMO: Info Item L: Request
+    SP->>SPMO: Info Item L: Request (BRS 801)
     activate SPMO
     
     Note over SPMO: 7.2 Validate registration request

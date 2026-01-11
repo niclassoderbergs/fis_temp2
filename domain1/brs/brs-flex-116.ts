@@ -3,7 +3,8 @@ import { BRSData } from '../../types';
 import { content116Input, content116Output } from '../../content-definitions';
 
 export const brsFlex116: BRSData = {
-  id: "BRS-FLEX-116",
+  id: "BRS-FLEX-114", // Updated from 116
+  previousId: "BRS-FLEX-116",
   title: "Begär SPU information",
   purpose: "Möjliggör för behöriga aktörer (främst SP) att hämta aktuell information om en SPU, inklusive status och aggregerad kapacitet.",
   actors: [
@@ -11,7 +12,7 @@ export const brsFlex116: BRSData = {
     { role: "Mottagare", description: "FIS" }
   ],
   diagramCode: `sequenceDiagram
-    title BRS-FLEX-116: Begär SPU information
+    title BRS-FLEX-114: Begär SPU information
     participant Req as SP
     participant FIS as FIS
 
@@ -21,22 +22,22 @@ export const brsFlex116: BRSData = {
     FIS-->>Req: SPUData (Status, Kapacitet)
     deactivate FIS`,
   preConditions: [
-    { id: "BRSFLEX116-1", description: "En aktör har begärt information om en SPU." }
+    { id: "BRSFLEX114-1", description: "En aktör har begärt information om en SPU." }
   ],
   postConditions: {
     accepted: [
-      { id: "BRSFLEX116-2", description: "FIS har returnerat SPU-information." }
+      { id: "BRSFLEX114-2", description: "FIS har returnerat SPU-information." }
     ],
     rejected: [
-      { id: "BRSFLEX116-3", description: "Ingen information returnerad (behörighet/ej hittad)." }
+      { id: "BRSFLEX114-3", description: "Ingen information returnerad (behörighet/ej hittad)." }
     ]
   },
   businessRules: [
-    { id: "BRSFLEX116-4", description: "SP måste äga SPU:n för att se fullständig information.", errorCode: "E_116_UNAUTHORIZED" }
+    { id: "BRSFLEX114-4", description: "SP måste äga SPU:n för att se fullständig information.", errorCode: "E_114_UNAUTHORIZED" }
   ],
   process: [
-    { id: "BRSFLEX116-5", description: "Aktör begär information om en SPU." },
-    { id: "BRSFLEX116-6", description: "FIS returnerar datan." }
+    { id: "BRSFLEX114-5", description: "Aktör begär information om en SPU." },
+    { id: "BRSFLEX114-6", description: "FIS returnerar datan." }
   ],
   infoObjects: [content116Input, content116Output]
 };

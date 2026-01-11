@@ -3,7 +3,8 @@ import { BRSData } from '../../types';
 import { content105Input, content105Output } from '../../content-definitions';
 
 export const brsFlex105: BRSData = {
-  id: "BRS-FLEX-105",
+  id: "BRS-FLEX-107", // Updated from 105
+  previousId: "BRS-FLEX-105",
   title: "SP begär återaktivering av CU",
   purpose: "SP begär att en suspenderad CU ska återaktiveras efter att orsaken till suspenderingen har åtgärdats.",
   actors: [
@@ -11,7 +12,7 @@ export const brsFlex105: BRSData = {
     { role: "Mottagare", description: "FIS" }
   ],
   diagramCode: `sequenceDiagram
-    title BRS-FLEX-105: SP begär återaktivering av CU
+    title BRS-FLEX-107: SP begär återaktivering av CU
     participant SP as SP
     participant FIS as FIS
 
@@ -22,24 +23,24 @@ export const brsFlex105: BRSData = {
     FIS-->>SP: Ack (Mottaget)
     deactivate FIS`,
   preConditions: [
-    { id: "BRSFLEX105-1", description: "CU har status 'Suspended'." }
+    { id: "BRSFLEX107-1", description: "CU har status 'Suspended'." }
   ],
   postConditions: {
     accepted: [
-      { id: "BRSFLEX105-2", description: "Ärende om återaktivering har skapats." },
-      { id: "BRSFLEX105-3", description: "SP har mottagit bekräftelse på att begäran är mottagen." }
+      { id: "BRSFLEX107-2", description: "Ärende om återaktivering har skapats." },
+      { id: "BRSFLEX107-3", description: "SP har mottagit bekräftelse på att begäran är mottagen." }
     ],
     rejected: [
-      { id: "BRSFLEX105-4", description: "Begäran avvisad (t.ex. felaktigt ID eller ej suspenderad)." }
+      { id: "BRSFLEX107-4", description: "Begäran avvisad (t.ex. felaktigt ID eller ej suspenderad)." }
     ]
   },
   businessRules: [
-    { id: "BRSFLEX105-5", description: "Endast resursens ägare (SP) får begära återaktivering.", errorCode: "E_105_UNAUTHORIZED" },
-    { id: "BRSFLEX105-6", description: "Resursen måste vara i status 'Suspended'.", errorCode: "E_105_INVALID_STATUS" }
+    { id: "BRSFLEX107-5", description: "Endast resursens ägare (SP) får begära återaktivering.", errorCode: "E_107_UNAUTHORIZED" },
+    { id: "BRSFLEX107-6", description: "Resursen måste vara i status 'Suspended'.", errorCode: "E_107_INVALID_STATUS" }
   ],
   process: [
-    { id: "BRSFLEX105-7", description: "SP skickar begäran om återaktivering." },
-    { id: "BRSFLEX105-8", description: "FIS validerar och skapar ett ärende." }
+    { id: "BRSFLEX107-7", description: "SP skickar begäran om återaktivering." },
+    { id: "BRSFLEX107-8", description: "FIS validerar och skapar ett ärende." }
   ],
   infoObjects: [content105Input, content105Output]
 };

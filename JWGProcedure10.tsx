@@ -33,7 +33,7 @@ const diagramCode = `sequenceDiagram
     SP->>FC: Info Item R: Termination message
 
     Note over SP: 10.2 Request to remove the assignment of the CU
-    SP->>CUMA: Info Item S: Request removal
+    SP->>CUMA: Info Item S: Request removal (BRS 203)
     activate CUMA
     
     Note over CUMA: 10.3 Validate request to remove assignment

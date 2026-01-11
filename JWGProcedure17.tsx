@@ -42,12 +42,12 @@ const diagramCode = `sequenceDiagram
     alt Validation Failed
         SMA-->>PSO: Info Item B: Validation failed
     else Validation Passed
-        Note over SMA: 17.3 Register revocation (BRS 811)
+        Note over SMA: 17.3 Register revocation (BRS 823)
         
-        Note over SMA: 17.3b Terminate contracts (BRS 2040)
+        Note over SMA: 17.3b Terminate contracts (BRS 2030)
         SMA->>SMA: Terminate all SP contracts
         
-        Note over SMA: 17.4 Notify about SP revocation (BRS 814)
+        Note over SMA: 17.4 Notify about SP revocation (BRS 829)
         SMA-->>SP: Notification
         
         Note over SMA: 17.5 Notify affected parties
@@ -187,13 +187,13 @@ export const JWGProcedure17: React.FC<Props> = ({ onBack, onNavigateToBRS, onNav
         <h2 style={styles.sectionHeader}>Datainnehåll BRS</h2>
         <p style={styles.paragraph}>Nedan specificeras datainnehållet för samtliga involverade BRS-transaktioner i denna procedur.</p>
         
-        {/* 1. Begäran (811) */}
+        {/* 1. Begäran (823) */}
         {renderAttributeTable(`${brsFlex811.id} Input: ${content811Input.title}`, content811Input.attributes, true)}
 
-        {/* 2. Kontraktshantering (2040) */}
+        {/* 2. Kontraktshantering (2030) */}
         {renderAttributeTable(`${brsFlex2040.id} Input: ${content204Input.title}`, content204Input.attributes, false)}
 
-        {/* 3. Notifiering (814) */}
+        {/* 3. Notifiering (829) */}
         <h3 style={{...styles.subSectionHeader, color: '#0052cc'}}>Notifiering till SP</h3>
         <p style={{fontSize:'0.9rem', color: '#666', marginBottom:'12px'}}>
             Systemgenererad notifiering till SP om att kontot stängts (Info Item - Notification).

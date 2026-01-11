@@ -33,8 +33,7 @@ export const brsFlex1210: BRSData = {
   },
   businessRules: [],
   process: [
-    { id: "BRSFLEX1210-5", description: "FIS registrerar en SPG administrativt." },
-    { id: "BRSFLEX1210-6", description: "FIS initierar notifiering till SP (via separat process)." }
+    { id: "BRSFLEX1210-5", description: "FIS registrerar en SPG administrativt." }
   ],
   infoObjects: [content1210Input, content1210Output]
 };

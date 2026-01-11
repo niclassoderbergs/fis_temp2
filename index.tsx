@@ -7,7 +7,12 @@ import { MPSSection } from './MPSSection';
 import { BRSData, MPSData } from './types';
 import { StatusPage } from './StatusPage';
 import { DomainConditionsPage } from './DomainConditionsPage';
+import { DomainActorOverviewPage } from './DomainActorOverviewPage';
+import { GlobalActorOverviewPage } from './GlobalActorOverviewPage';
 import { ProceduresPage } from './ProceduresPage';
+import { RenumberingProposalPage } from './RenumberingProposalPage'; 
+import { WelcomePage } from './WelcomePage'; // New Import
+import { InformationModelPage } from './InformationModelPage'; // New Import
 import { JWGProcedure1 } from './JWGProcedure1';
 import { JWGProcedure2 } from './JWGProcedure2';
 import { JWGProcedure3 } from './JWGProcedure3';
@@ -50,8 +55,8 @@ const styles = {
     display: 'flex',
     flexDirection: 'column' as const,
     height: '100vh',
-    backgroundColor: '#f4f6f8',
-    color: '#333'
+    backgroundColor: '#ffffff',
+    color: '#172b4d'
   },
   header: {
     backgroundColor: '#0052cc',
@@ -67,7 +72,8 @@ const styles = {
   },
   headerLeft: {
     display: 'flex',
-    alignItems: 'center'
+    alignItems: 'center',
+    cursor: 'pointer'
   },
   navButton: {
     backgroundColor: 'transparent',
@@ -90,7 +96,7 @@ const styles = {
   sidebar: {
     width: '300px',
     backgroundColor: '#f7f9fc',
-    borderRight: '1px solid #dfe1e6',
+    borderRight: '1px solid #ebecf0',
     overflowY: 'auto' as const,
     display: 'flex',
     flexDirection: 'column' as const,
@@ -100,17 +106,18 @@ const styles = {
   mainScroll: {
     flex: 1,
     overflowY: 'auto' as const,
-    backgroundColor: '#e0e0e0',
-    padding: '40px'
+    backgroundColor: '#ffffff',
+    padding: '0'
   },
   paper: {
-    maxWidth: '900px',
+    maxWidth: '1600px', // Wider, wiki-style
+    width: '100%',
     margin: '0 auto',
     backgroundColor: 'white',
-    padding: '60px 80px',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-    minHeight: '1000px',
+    padding: '48px 60px',
+    minHeight: '100%',
     boxSizing: 'border-box' as const
+    // Box shadow removed for flatter look
   },
   // Typography
   docId: {
@@ -125,7 +132,7 @@ const styles = {
   docTitle: {
     fontSize: '2.5rem',
     fontWeight: 700,
-    color: '#000',
+    color: '#172b4d',
     margin: '0 0 32px 0',
     lineHeight: 1.1,
     width: '100%'
@@ -153,24 +160,25 @@ const styles = {
   },
   paragraph: {
     fontSize: '1rem',
-    lineHeight: '1.5',
-    color: '#333',
+    lineHeight: '1.6',
+    color: '#172b4d',
     marginBottom: '16px'
   },
   // Diagram
   diagramWrapper: {
     marginTop: '24px',
     marginBottom: '8px',
-    border: '1px solid #000',
+    border: '1px solid #ebecf0',
+    borderRadius: '4px'
   },
   caption: {
     fontSize: '0.9rem',
     fontStyle: 'italic',
-    color: '#444',
+    color: '#5e6c84',
     marginBottom: '32px'
   },
   captionId: {
-    color: '#800080',
+    color: '#0052cc',
     fontWeight: 500
   },
   // Tables
@@ -178,37 +186,37 @@ const styles = {
     width: '100%',
     borderCollapse: 'collapse' as const,
     marginBottom: '16px',
-    fontSize: '0.85rem',
-    border: '1px solid #ccc',
+    fontSize: '0.9rem',
+    border: '1px solid #dfe1e6',
     backgroundColor: 'white'
   },
   th: {
-    backgroundColor: '#1f6089',
-    color: 'white',
-    padding: '6px 8px',
+    backgroundColor: '#f4f5f7',
+    color: '#172b4d',
+    padding: '10px 12px',
     textAlign: 'left' as const,
     fontWeight: 600,
-    border: '1px solid #1f6089',
+    border: '1px solid #dfe1e6',
     verticalAlign: 'top' as const
   },
   td: {
-    padding: '6px 8px',
-    border: '1px solid #ccc',
+    padding: '10px 12px',
+    border: '1px solid #dfe1e6',
     verticalAlign: 'top' as const,
-    color: '#333',
-    lineHeight: '1.4'
+    color: '#172b4d',
+    lineHeight: '1.5'
   },
   trEven: {
-    backgroundColor: '#f9f9f9'
+    backgroundColor: '#fafbfc'
   },
   badge: {
-    border: '1px solid #ccc',
-    color: '#999',
+    border: '1px solid #dfe1e6',
+    color: '#5e6c84',
     fontSize: '0.75rem',
     padding: '1px 6px',
     borderRadius: '3px',
-    fontWeight: 400,
-    backgroundColor: 'white',
+    fontWeight: 500,
+    backgroundColor: '#f4f5f7',
     textTransform: 'none' as const
   },
   // Tree View Styles
@@ -254,7 +262,7 @@ const styles = {
     backgroundColor: 'transparent',
     cursor: 'pointer',
     fontSize: '0.85rem',
-    color: '#333',
+    color: '#172b4d',
     outline: 'none',
     textDecoration: 'none'
   },
@@ -281,7 +289,7 @@ const styles = {
   input: {
     width: '100%',
     boxSizing: 'border-box' as const,
-    padding: '4px',
+    padding: '6px',
     border: '1px solid #0052cc',
     borderRadius: '3px',
     backgroundColor: '#fffdf5', // light yellow hint
@@ -291,7 +299,7 @@ const styles = {
   textarea: {
     width: '100%',
     boxSizing: 'border-box' as const,
-    padding: '4px',
+    padding: '6px',
     border: '1px solid #0052cc',
     borderRadius: '3px',
     backgroundColor: '#fffdf5',
@@ -345,7 +353,7 @@ const EditableTable = ({
   onAdd?: () => void,
   onRemove?: (idx: number) => void
 }) => (
-  <div style={{marginBottom: '16px'}}>
+  <div style={{marginBottom: '24px'}}>
     <table style={styles.table}>
       <thead>
         <tr>
@@ -382,7 +390,7 @@ const EditableTable = ({
                       />
                     )
                   ) : (
-                    isId ? <span style={{fontWeight: 600}}>{val}</span> : val
+                    isId ? <span style={{fontWeight: 600, fontFamily: 'monospace'}}>{val}</span> : val
                   )}
                 </td>
               );
@@ -402,7 +410,7 @@ const EditableTable = ({
         ))}
         {data.length === 0 && !isEditing && (
           <tr>
-            <td colSpan={columns.length} style={{ ...styles.td, fontStyle: 'italic', color: '#777' }}>
+            <td colSpan={columns.length} style={{ ...styles.td, fontStyle: 'italic', color: '#6b778c' }}>
               None defined.
             </td>
           </tr>
@@ -427,8 +435,8 @@ interface GroupDef {
 
 const groups: GroupDef[] = [
   { id: '100', title: 'Domän 1: Master data och aggregeringsobjekt', brsPrefixes: ['BRS-FLEX-1'], mpsPrefixes: ['MPS-FLEX-1'] },
-  { id: '200', title: 'Domän 2: Avtal & Marknad', brsPrefixes: ['BRS-FLEX-2'], mpsPrefixes: ['MPS-FLEX-2'] }, 
-  { id: '300', title: 'Domän 3: Produkt & Förkvalificering', brsPrefixes: ['BRS-FLEX-3'], mpsPrefixes: ['MPS-FLEX-3'] },
+  { id: '200', title: 'Domän 2: Avtal & marknad', brsPrefixes: ['BRS-FLEX-2'], mpsPrefixes: ['MPS-FLEX-2'] }, 
+  { id: '300', title: 'Domän 3: Produkt & förkvalificering', brsPrefixes: ['BRS-FLEX-3'], mpsPrefixes: ['MPS-FLEX-3'] },
   { id: '400', title: 'Domän 4: Nätbegränsningar', brsPrefixes: ['BRS-FLEX-4'], mpsPrefixes: ['MPS-FLEX-4'] },
   { id: '500', title: 'Domän 5: Baseline', brsPrefixes: ['BRS-FLEX-5'], mpsPrefixes: ['MPS-FLEX-5'] },
   { id: '600', title: 'Domän 6: Mätvärden', brsPrefixes: ['BRS-FLEX-6'], mpsPrefixes: ['MPS-FLEX-6'] },
@@ -448,6 +456,7 @@ interface SidebarGroupProps {
   onSelectBRS: (id: string) => void;
   onSelectMPS: (id: string) => void;
   onSelectConditions: (domainId: string) => void;
+  onSelectActorOverview: (domainId: string) => void; 
   viewMode: string;
 }
 
@@ -463,6 +472,7 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
   onSelectBRS, 
   onSelectMPS,
   onSelectConditions,
+  onSelectActorOverview,
   viewMode 
 }) => {
   const [hover, setHover] = useState(false);
@@ -495,6 +505,8 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
   const domainId = group.id.substring(0, 1);
   // Allow condition matrix for domain 1-8
   const showConditionsLink = ['100', '200', '300', '400', '500', '600', '700', '800'].includes(group.id);
+  // Show Actor Overview for Domain 1 (Could be expanded later)
+  const showActorOverview = ['100', '200', '300', '400', '500', '600', '700', '800'].includes(group.id);
 
   return (
     <div style={styles.treeGroup}>
@@ -558,6 +570,22 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
           {brsItems.length > 0 && (
             <>
               <div style={styles.treeSubHeader}>BRS - Affärstransaktioner</div>
+              
+              {/* Specific link for Actor Overview - Moved here */}
+              {showActorOverview && (
+                <button
+                    onClick={() => onSelectActorOverview(domainId)}
+                    style={{
+                      ...styles.treeItem,
+                      ...(viewMode === 'actorOverview' && selectedDomain === domainId ? styles.treeItemActive : {}),
+                      color: (viewMode === 'actorOverview' && selectedDomain === domainId) ? '#0052cc' : '#6b778c',
+                      fontWeight: 600
+                    }}
+                  >
+                    👥 Aktörsöversikt: Domän {domainId}
+                </button>
+              )}
+
               {brsItems.map(brs => {
                  const isActive = viewMode === 'detail' && selectedId === brs.id;
                  return (
@@ -638,7 +666,7 @@ const STORAGE_KEY = 'fis-wiki-data-v1';
 const sortById = (a: { id: string }, b: { id: string }) => 
   a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' });
 
-type ViewMode = 'detail' | 'status' | 'mps' | 'conditions' | 'procedures' 
+type ViewMode = 'welcome' | 'detail' | 'status' | 'mps' | 'conditions' | 'actorOverview' | 'globalActorOverview' | 'procedures' | 'renumbering' | 'infoModel'
 | 'jwg-procedure-1' | 'jwg-procedure-2' | 'jwg-procedure-3' | 'jwg-procedure-4' | 'jwg-procedure-5' 
 | 'jwg-procedure-6' | 'jwg-procedure-7' | 'jwg-procedure-8' | 'jwg-procedure-9' | 'jwg-procedure-10' 
 | 'jwg-procedure-11' | 'jwg-procedure-12' | 'jwg-procedure-13' | 'jwg-procedure-14' | 'jwg-procedure-15'
@@ -654,11 +682,17 @@ function App() {
   const [selectedId, setSelectedId] = useState<string>(initialBrsList[0].id);
   const [selectedMpsId, setSelectedMpsId] = useState<string>(initialMpsList[0]?.id || '');
   const [selectedDomain, setSelectedDomain] = useState<string>('1'); // '1' or '2' etc.
+  const [mpsScrollTarget, setMpsScrollTarget] = useState<string | null>(null);
   
   const [openGroups, setOpenGroups] = useState<string[]>(['100', '200', '300', '400', '500', '600', '700', '800']);
-  const [viewMode, setViewMode] = useState<ViewMode>('detail');
+  const [viewMode, setViewMode] = useState<ViewMode>('welcome');
   const [isEditing, setIsEditing] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+
+  // Admin section state
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
+  const [adminHover, setAdminHover] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -695,6 +729,20 @@ function App() {
       setBrsData(initialBrsList);
       localStorage.removeItem(STORAGE_KEY);
       setIsEditing(false);
+    }
+  };
+
+  const handleAdminToggle = () => {
+    if (isAdminUnlocked) {
+        setIsAdminOpen(!isAdminOpen);
+    } else {
+        const password = prompt("Ange lösenord för Admin-sektionen:");
+        if (password === "FISEMH") {
+            setIsAdminUnlocked(true);
+            setIsAdminOpen(true);
+        } else {
+            if (password !== null) alert("Felaktigt lösenord.");
+        }
     }
   };
 
@@ -746,13 +794,34 @@ function App() {
   };
 
   const handleSelectMPS = (id: string) => {
-    setSelectedMpsId(id);
+    // If ID contains more than just the MPS ID (e.g. "MPS-FLEX-100-Sc1.1"), 
+    // extract the MPS ID and set the rest as scroll target.
+    const match = id.match(/^(MPS-FLEX-\d+)/);
+    if (match) {
+        const baseId = match[1];
+        setSelectedMpsId(baseId);
+        // If the ID is longer than the base ID (meaning it points to a scenario or step)
+        if (id.length > baseId.length) {
+            setMpsScrollTarget(id);
+        } else {
+            setMpsScrollTarget(null);
+        }
+    } else {
+        // Fallback or full match
+        setSelectedMpsId(id);
+        setMpsScrollTarget(null);
+    }
     setViewMode('mps');
   };
 
   const handleSelectConditions = (domainId: string) => {
     setSelectedDomain(domainId);
     setViewMode('conditions');
+  };
+
+  const handleSelectActorOverview = (domainId: string) => {
+    setSelectedDomain(domainId);
+    setViewMode('actorOverview');
   };
 
   const handleNavigateProcedure = (id: number) => {
@@ -774,7 +843,7 @@ function App() {
   return (
     <div style={styles.appContainer}>
       <header style={styles.header}>
-        <div style={styles.headerLeft}>
+        <div style={styles.headerLeft} onClick={() => setViewMode('welcome')}>
           <h1 style={{ fontSize: '1.2rem', fontWeight: 600, margin: 0 }}>FIS Wiki</h1>
           <span style={{ marginLeft: '16px', opacity: 0.8, fontSize: '0.9rem', borderLeft: '1px solid rgba(255,255,255,0.3)', paddingLeft: '16px' }}>
             Technical Specifications {isEditing && <span style={{backgroundColor: '#ffab00', color: '#000', padding: '2px 6px', borderRadius: '4px', fontSize: '0.7rem', marginLeft: '8px'}}>EDIT MODE</span>}
@@ -803,15 +872,24 @@ function App() {
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
           
           <nav style={styles.sidebar}>
+             <button onClick={() => setViewMode('welcome')} style={{...styles.treeItem, padding: '16px 16px 16px 20px', fontSize: '0.95rem', fontWeight: 700, borderBottom: '1px solid #ebecf0', color: viewMode === 'welcome' ? '#0052cc' : '#172b4d', backgroundColor: viewMode === 'welcome' ? '#e6effc' : 'transparent'}}>
+                🏠 Startsida
+             </button>
+
              <div style={styles.menuHeader}>Översikt</div>
-             <button onClick={() => setViewMode('status')} style={{...styles.treeItem, fontWeight: 500, ...(viewMode === 'status' ? styles.treeItemActive : {})}}>
+             <button onClick={() => setViewMode('globalActorOverview')} style={{...styles.treeItem, fontWeight: 500, ...(viewMode === 'globalActorOverview' ? styles.treeItemActive : {})}}>
                 <div style={{display: 'flex', alignItems: 'center'}}>
-                    <span style={{fontSize: '1.1rem', marginRight: '8px'}}>📊</span> Status Dashboard
+                    <span style={{fontSize: '1.1rem', marginRight: '8px'}}>👥</span> Global aktörsöversikt
                 </div>
              </button>
              <button onClick={() => setViewMode('procedures')} style={{...styles.treeItem, fontWeight: 500, ...(viewMode === 'procedures' ? styles.treeItemActive : {})}}>
                 <div style={{display: 'flex', alignItems: 'center'}}>
-                    <span style={{fontSize: '1.1rem', marginRight: '8px'}}>📜</span> JWG Processlista
+                    <span style={{fontSize: '1.1rem', marginRight: '8px'}}>📜</span> JWG processlista
+                </div>
+             </button>
+             <button onClick={() => setViewMode('infoModel')} style={{...styles.treeItem, fontWeight: 500, ...(viewMode === 'infoModel' ? styles.treeItemActive : {})}}>
+                <div style={{display: 'flex', alignItems: 'center'}}>
+                    <span style={{fontSize: '1.1rem', marginRight: '8px'}}>🧩</span> Informationsmodell
                 </div>
              </button>
 
@@ -839,21 +917,67 @@ function App() {
                       onSelectBRS={handleSelectBRS}
                       onSelectMPS={handleSelectMPS}
                       onSelectConditions={handleSelectConditions}
+                      onSelectActorOverview={handleSelectActorOverview}
                       viewMode={viewMode}
                     />
                 );
             })}
+
+            {/* Admin Section - moved to bottom */}
+            <div style={styles.treeGroup}>
+              <button 
+                onClick={handleAdminToggle}
+                onMouseEnter={() => setAdminHover(true)}
+                onMouseLeave={() => setAdminHover(false)}
+                style={{
+                  ...styles.treeHeader,
+                  ...(adminHover ? styles.treeHeaderHover : {})
+                }}
+              >
+                <span style={{
+                  ...styles.arrow,
+                  transform: isAdminOpen ? 'rotate(90deg)' : 'rotate(0deg)'
+                }}>▶</span>
+                Admin
+              </button>
+              
+              {isAdminOpen && (
+                <div style={styles.treeContent}>
+                   <button onClick={() => setViewMode('status')} style={{...styles.treeItem, fontWeight: 500, ...(viewMode === 'status' ? styles.treeItemActive : {})}}>
+                      <div style={{display: 'flex', alignItems: 'center'}}>
+                          <span style={{fontSize: '1.1rem', marginRight: '8px'}}>📊</span> Status Dashboard
+                      </div>
+                   </button>
+                   <button onClick={() => setViewMode('renumbering')} style={{...styles.treeItem, fontWeight: 500, ...(viewMode === 'renumbering' ? styles.treeItemActive : {})}}>
+                      <div style={{display: 'flex', alignItems: 'center'}}>
+                          <span style={{fontSize: '1.1rem', marginRight: '8px'}}>🔢</span> ID Omnumrering
+                      </div>
+                   </button>
+                </div>
+              )}
+            </div>
+
           </nav>
 
           <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+            {viewMode === 'welcome' && (
+              <div style={styles.mainScroll}>
+                  <div style={styles.paper}>
+                    <WelcomePage onNavigate={(view) => setViewMode(view as ViewMode)} />
+                  </div>
+              </div>
+            )}
+
             {viewMode === 'status' && (
-              <div style={{flex: 1, overflowY: 'auto', backgroundColor: '#e0e0e0', padding: '40px'}}>
-                  <StatusPage 
-                    data={brsData} 
-                    mpsData={mpsData}
-                    onSelectBRS={handleSelectBRS} 
-                    onSelectMPS={handleSelectMPS}
-                  />
+              <div style={styles.mainScroll}>
+                  <div style={styles.paper}>
+                    <StatusPage 
+                        data={brsData} 
+                        mpsData={mpsData}
+                        onSelectBRS={handleSelectBRS} 
+                        onSelectMPS={handleSelectMPS}
+                    />
+                  </div>
               </div>
             )}
 
@@ -863,6 +987,51 @@ function App() {
                   <ProceduresPage 
                     onNavigateToBRS={handleSelectBRS} 
                     onNavigateToProcedure={handleNavigateProcedure}
+                  />
+                </div>
+              </div>
+            )}
+
+            {viewMode === 'infoModel' && (
+              <div style={styles.mainScroll}>
+                <div style={styles.paper}>
+                  <InformationModelPage 
+                    onNavigateToBRS={handleSelectBRS} 
+                  />
+                </div>
+              </div>
+            )}
+
+            {viewMode === 'renumbering' && (
+              <div style={styles.mainScroll}>
+                <div style={styles.paper}>
+                  <RenumberingProposalPage 
+                    onBack={() => setViewMode('status')} 
+                    brsList={brsData}
+                  />
+                </div>
+              </div>
+            )}
+
+            {viewMode === 'actorOverview' && (
+              <div style={styles.mainScroll}>
+                <div style={styles.paper}>
+                  <DomainActorOverviewPage 
+                    brsData={brsData}
+                    mpsData={mpsData} 
+                    domainId={selectedDomain}
+                    onNavigateToBRS={handleSelectBRS}
+                  />
+                </div>
+              </div>
+            )}
+
+            {viewMode === 'globalActorOverview' && (
+              <div style={styles.mainScroll}>
+                <div style={styles.paper}>
+                  <GlobalActorOverviewPage 
+                    brsData={brsData}
+                    onNavigateToBRS={handleSelectBRS}
                   />
                 </div>
               </div>
@@ -906,14 +1075,17 @@ function App() {
 
             {viewMode === 'conditions' && (
               <div style={styles.mainScroll}>
-                <DomainConditionsPage 
-                    mpsData={mpsData} 
-                    brsData={brsData}
-                    domainId={selectedDomain}
-                    domainTitle={`Domän ${selectedDomain}`}
-                    onNavigateToBRS={handleSelectBRS}
-                    onNavigateToMPS={handleSelectMPS}
-                />
+                <div style={styles.paper}>
+                    <DomainConditionsPage 
+                        mpsData={mpsData} 
+                        brsData={brsData}
+                        domainId={selectedDomain}
+                        domainTitle={`Domän ${selectedDomain}`}
+                        onNavigateToBRS={handleSelectBRS}
+                        onNavigateToMPS={handleSelectMPS}
+                        onNavigateToProcedure={handleNavigateProcedure} // Added prop
+                    />
+                </div>
               </div>
             )}
 
@@ -925,6 +1097,8 @@ function App() {
                     brsList={brsData} 
                     styles={styles} 
                     onNavigateToBRS={handleSelectBRS}
+                    onNavigateToProcedure={handleNavigateProcedure} // Added prop
+                    scrollToId={mpsScrollTarget} // Pass scroll target
                   />
                 </div>
               </div>

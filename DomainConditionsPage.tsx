@@ -1,6 +1,7 @@
 
 import React, { useMemo } from 'react';
 import { BRSData, MPSData } from './types';
+import { implementationMap, procedures } from './jwg-data';
 
 interface Props {
   mpsData: MPSData[];
@@ -9,6 +10,7 @@ interface Props {
   domainTitle: string; // E.g., 'Domän 1', 'Domän 2'
   onNavigateToBRS: (id: string) => void;
   onNavigateToMPS: (id: string) => void;
+  onNavigateToProcedure: (id: number) => void;
 }
 
 const styles = {
@@ -61,39 +63,6 @@ const styles = {
     color: '#172b4d',
     lineHeight: '1.5'
   },
-  scenarioTitle: {
-    fontWeight: 600,
-    color: '#0052cc',
-    display: 'block',
-    marginBottom: '4px',
-    cursor: 'pointer',
-    textDecoration: 'underline'
-  },
-  scenarioId: {
-    fontWeight: 700,
-    color: '#333',
-    display: 'block',
-    marginBottom: '2px',
-    fontSize: '0.9rem',
-    cursor: 'pointer'
-  },
-  mpsId: {
-    fontSize: '0.75rem',
-    color: '#6b778c',
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.5px',
-    marginBottom: '4px',
-    display: 'block',
-    cursor: 'pointer'
-  },
-  list: {
-    margin: '0',
-    paddingLeft: '20px',
-    marginTop: '4px'
-  },
-  listItem: {
-    marginBottom: '6px'
-  },
   tag: {
     display: 'inline-block',
     padding: '2px 6px',
@@ -104,13 +73,18 @@ const styles = {
     fontWeight: 600,
     cursor: 'pointer'
   },
-  triggerBox: {
-    backgroundColor: '#fff7d6', // Light yellow for trigger
-    padding: '8px',
-    borderRadius: '4px',
-    marginBottom: '8px',
-    border: '1px solid #ffecb3',
-    fontSize: '0.85rem'
+  jwgTag: {
+    display: 'inline-block',
+    padding: '2px 6px',
+    backgroundColor: '#f3e5f5', // Light purple
+    color: '#4a148c',
+    borderRadius: '3px',
+    fontSize: '0.7rem',
+    fontWeight: 500,
+    border: '1px solid #e1bee7',
+    marginRight: '4px',
+    cursor: 'pointer',
+    width: 'fit-content'
   },
   ruleId: {
     fontFamily: 'monospace',
@@ -121,7 +95,8 @@ const styles = {
     padding: '2px 6px',
     borderRadius: '3px',
     border: '1px solid #ebecf0',
-    whiteSpace: 'nowrap' as const
+    whiteSpace: 'nowrap' as const,
+    cursor: 'help'
   },
   // Status badges for inventory
   statusLinked: {
@@ -150,12 +125,34 @@ const styles = {
     padding: '6px 8px',
     borderLeft: '3px solid #0052cc',
     backgroundColor: '#f9f9f9',
-    fontSize: '0.85rem'
+    fontSize: '0.85rem',
+    transition: 'background-color 0.2s',
+    cursor: 'pointer'
+  },
+  linkBoxHover: {
+    backgroundColor: '#ebecf0'
+  },
+  crossDomainBox: {
+    borderLeft: '3px solid #ffab00',
+    backgroundColor: '#fffbf0'
+  },
+  crossDomainBadge: {
+    display: 'inline-block',
+    fontSize: '0.6rem',
+    fontWeight: 700,
+    color: '#172b4d',
+    backgroundColor: '#ffab00',
+    padding: '1px 4px',
+    borderRadius: '2px',
+    marginLeft: '6px',
+    verticalAlign: 'text-bottom',
+    textTransform: 'uppercase' as const
   },
   linkStep: {
     fontWeight: 700,
-    color: '#172b4d',
-    display: 'block'
+    color: '#0052cc',
+    display: 'block',
+    textDecoration: 'underline'
   },
   linkDetail: {
     color: '#5e6c84',
@@ -223,17 +220,24 @@ const LinkableText = ({ text, onNavigate }: { text: string, onNavigate: (id: str
   );
 };
 
-export const DomainConditionsPage: React.FC<Props> = ({ mpsData, brsData, domainId, domainTitle, onNavigateToBRS, onNavigateToMPS }) => {
+export const DomainConditionsPage: React.FC<Props> = ({ mpsData, brsData, domainId, domainTitle, onNavigateToBRS, onNavigateToMPS, onNavigateToProcedure }) => {
   
-  // 1. Filter Data for Selected Domain
-  const activeBRS = useMemo(() => brsData.filter(b => b.id.startsWith(`BRS-FLEX-${domainId}`)), [brsData, domainId]);
+  // 1. Filter Data for Selected Domain and Sort Numerically
+  const activeBRS = useMemo(() => {
+    return brsData
+      .filter(b => b.id.startsWith(`BRS-FLEX-${domainId}`))
+      .sort((a, b) => {
+        // Extract numeric part for proper sorting (e.g. 104 < 1020)
+        // Removes non-digits and parses as integer
+        const getNum = (id: string) => parseInt(id.replace(/\D/g, '') || '0', 10);
+        return getNum(a.id) - getNum(b.id);
+      });
+  }, [brsData, domainId]);
 
   // 2. Build Mapping: Condition ID -> List of specific steps where it is used
-  // CRITICAL FIX: We must use ALL mpsData here, not just activeMPS. 
-  // A rule in Domain 2 might be triggered by a process in Domain 1.
   const conditionUsage = useMemo(() => {
     // Only map Explicit usages (direct reference to the Rule ID)
-    const map: Record<string, { mpsId: string, scenarioId: string, stepId: string, title: string }[]> = {};
+    const map: Record<string, { mpsId: string, scenarioId: string, stepId: string, title: string, mpsDomain: string }[]> = {};
 
     const addUsage = (id: string, usage: any) => {
         if (!map[id]) map[id] = [];
@@ -245,13 +249,18 @@ export const DomainConditionsPage: React.FC<Props> = ({ mpsData, brsData, domain
 
     // Iterate over ALL MPS data to find cross-domain references
     mpsData.forEach(mps => {
+        // Extract domain from MPS ID (e.g. MPS-FLEX-200 -> 2)
+        const mpsDomainMatch = mps.id.match(/MPS-FLEX-(\d)/);
+        const mpsDomain = mpsDomainMatch ? mpsDomainMatch[1] : '?';
+
         mps.scenarios.forEach(sc => {
             sc.steps.forEach((step) => {
                 const usageBase = {
                     mpsId: mps.id,
                     scenarioId: sc.id,
                     stepId: step.stepId,
-                    title: sc.title
+                    title: sc.title,
+                    mpsDomain: mpsDomain
                 };
 
                 // STRICT: Only map if the step explicitly references the specific Rule ID.
@@ -263,6 +272,17 @@ export const DomainConditionsPage: React.FC<Props> = ({ mpsData, brsData, domain
     });
     return map;
   }, [mpsData]);
+
+  // Helper to find linked JWG procedures for a BRS
+  const getJwgProcedures = (brsId: string) => {
+    const matchedIds: number[] = [];
+    Object.entries(implementationMap).forEach(([procId, brsList]) => {
+        if (brsList.includes(brsId)) {
+            matchedIds.push(Number(procId));
+        }
+    });
+    return matchedIds.sort((a, b) => a - b);
+  };
 
   // 3. Calculate Stats
   const stats = useMemo(() => {
@@ -309,7 +329,7 @@ export const DomainConditionsPage: React.FC<Props> = ({ mpsData, brsData, domain
         Här listas alla definierade start- och slutvillkor i <strong>{domainTitle}</strong>. 
         Rader markerade med <strong>rött</strong> saknar en explicit koppling till ett steg i en marknadsprocess (MPS).
         <br/><br/>
-        <em>Obs: Täckningen kontrolleras mot <strong>alla</strong> MPS:er i systemet, vilket innebär att referenser från andra domäner räknas som godkänd täckning.</em>
+        <em>Obs: Täckningen kontrolleras mot <strong>alla</strong> MPS:er i systemet. Kopplingar från andra domäner markeras med <span style={{backgroundColor: '#ffab00', color:'#172b4d', padding: '0 4px', borderRadius:'2px', fontWeight:700, fontSize:'0.7rem'}}>ORANGE</span>.</em>
       </div>
 
       <div style={styles.statsBox}>
@@ -339,15 +359,16 @@ export const DomainConditionsPage: React.FC<Props> = ({ mpsData, brsData, domain
       <table style={styles.table}>
         <thead>
             <tr>
-                <th style={{...styles.th, width: '12%'}}>BRS</th>
-                <th style={{...styles.th, width: '15%'}}>Villkors-ID</th>
-                <th style={{...styles.th, width: '45%'}}>Beskrivning</th>
+                <th style={{...styles.th, width: '20%'}}>BRS & JWG</th>
+                <th style={{...styles.th, width: '10%'}}>Villkors-ID</th>
+                <th style={{...styles.th, width: '42%'}}>Beskrivning</th>
                 <th style={{...styles.th, width: '28%'}}>MPS Täckning (Explicit Ref)</th>
             </tr>
         </thead>
         <tbody>
-            {activeBRS.flatMap(brs => 
-                brs.preConditions.map((cond: any, idx) => {
+            {activeBRS.flatMap(brs => {
+                const jwgIds = getJwgProcedures(brs.id);
+                return brs.preConditions.map((cond: any, idx) => {
                     const cId = typeof cond === 'string' ? null : cond.id;
                     const desc = typeof cond === 'string' ? cond : cond.description;
                     const usages = cId ? conditionUsage[cId] : null;
@@ -362,10 +383,30 @@ export const DomainConditionsPage: React.FC<Props> = ({ mpsData, brsData, domain
                                 >
                                     {brs.id}
                                 </div>
+                                {jwgIds.length > 0 && (
+                                    <div style={{marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '4px'}}>
+                                        {jwgIds.map(pid => {
+                                            const procName = procedures.find(p => p.id === pid)?.name || '';
+                                            return (
+                                                <div 
+                                                    key={pid} 
+                                                    style={styles.jwgTag}
+                                                    title={`Gå till JWG Procedure ${pid}: ${procName}`}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        onNavigateToProcedure(pid);
+                                                    }}
+                                                >
+                                                    <span style={{fontWeight: 700}}>JWG {pid}:</span> {procName}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
                             </td>
                             <td style={styles.td}>
                                 {cId ? (
-                                    <span style={styles.ruleId}>{cId}</span>
+                                    <span style={styles.ruleId} title={desc}>{cId}</span>
                                 ) : (
                                     <span style={{fontStyle: 'italic', color: '#999', fontSize: '0.8rem'}}>N/A (Text)</span>
                                 )}
@@ -375,12 +416,28 @@ export const DomainConditionsPage: React.FC<Props> = ({ mpsData, brsData, domain
                             </td>
                             <td style={styles.td}>
                                 {usages && usages.length > 0 ? (
-                                    usages.map((u, uIdx) => (
-                                        <div key={uIdx} style={styles.linkBox}>
-                                            <span style={styles.linkStep}>Steg {u.stepId}</span>
-                                            <span style={styles.linkDetail}>{u.mpsId}: {u.title}</span>
-                                        </div>
-                                    ))
+                                    usages.map((u, uIdx) => {
+                                        const isCrossDomain = u.mpsDomain && u.mpsDomain !== domainId;
+                                        return (
+                                            <div 
+                                                key={uIdx} 
+                                                style={{
+                                                    ...styles.linkBox,
+                                                    ...(isCrossDomain ? styles.crossDomainBox : {})
+                                                }}
+                                                onClick={() => onNavigateToMPS(u.stepId)}
+                                                title={`Gå till scenario ${u.scenarioId}, steg ${u.stepId}`}
+                                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#ebecf0'}
+                                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = isCrossDomain ? '#fffbf0' : '#f9f9f9'}
+                                            >
+                                                <span style={styles.linkStep}>
+                                                    Steg {u.stepId}
+                                                    {isCrossDomain && <span style={styles.crossDomainBadge}>Domän {u.mpsDomain}</span>}
+                                                </span>
+                                                <span style={styles.linkDetail}>{u.mpsId}: {u.title}</span>
+                                            </div>
+                                        );
+                                    })
                                 ) : (
                                     <span style={styles.statusUnlinked}>Ej kopplad i MPS</span>
                                 )}
@@ -388,7 +445,7 @@ export const DomainConditionsPage: React.FC<Props> = ({ mpsData, brsData, domain
                         </tr>
                     );
                 })
-            )}
+            })}
         </tbody>
       </table>
 
@@ -396,14 +453,15 @@ export const DomainConditionsPage: React.FC<Props> = ({ mpsData, brsData, domain
       <table style={styles.table}>
         <thead>
             <tr>
-                <th style={{...styles.th, width: '12%'}}>BRS</th>
-                <th style={{...styles.th, width: '15%'}}>Villkors-ID</th>
-                <th style={{...styles.th, width: '45%'}}>Beskrivning</th>
+                <th style={{...styles.th, width: '20%'}}>BRS & JWG</th>
+                <th style={{...styles.th, width: '10%'}}>Villkors-ID</th>
+                <th style={{...styles.th, width: '42%'}}>Beskrivning</th>
                 <th style={{...styles.th, width: '28%'}}>MPS Täckning (Explicit Ref)</th>
             </tr>
         </thead>
         <tbody>
             {activeBRS.flatMap(brs => {
+                const jwgIds = getJwgProcedures(brs.id);
                 const conditions = Array.isArray(brs.postConditions.accepted) 
                     ? brs.postConditions.accepted 
                     : [brs.postConditions.accepted].filter(Boolean);
@@ -423,10 +481,30 @@ export const DomainConditionsPage: React.FC<Props> = ({ mpsData, brsData, domain
                                 >
                                     {brs.id}
                                 </div>
+                                {jwgIds.length > 0 && (
+                                    <div style={{marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '4px'}}>
+                                        {jwgIds.map(pid => {
+                                            const procName = procedures.find(p => p.id === pid)?.name || '';
+                                            return (
+                                                <div 
+                                                    key={pid} 
+                                                    style={styles.jwgTag}
+                                                    title={`Gå till JWG Procedure ${pid}: ${procName}`}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        onNavigateToProcedure(pid);
+                                                    }}
+                                                >
+                                                    <span style={{fontWeight: 700}}>JWG {pid}:</span> {procName}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
                             </td>
                             <td style={styles.td}>
                                 {cId ? (
-                                    <span style={styles.ruleId}>{cId}</span>
+                                    <span style={styles.ruleId} title={desc}>{cId}</span>
                                 ) : (
                                     <span style={{fontStyle: 'italic', color: '#999', fontSize: '0.8rem'}}>N/A (Text)</span>
                                 )}
@@ -436,12 +514,28 @@ export const DomainConditionsPage: React.FC<Props> = ({ mpsData, brsData, domain
                             </td>
                             <td style={styles.td}>
                                 {usages && usages.length > 0 ? (
-                                    usages.map((u, uIdx) => (
-                                        <div key={uIdx} style={styles.linkBox}>
-                                            <span style={styles.linkStep}>Steg {u.stepId}</span>
-                                            <span style={styles.linkDetail}>{u.mpsId}: {u.title}</span>
-                                        </div>
-                                    ))
+                                    usages.map((u, uIdx) => {
+                                        const isCrossDomain = u.mpsDomain && u.mpsDomain !== domainId;
+                                        return (
+                                            <div 
+                                                key={uIdx} 
+                                                style={{
+                                                    ...styles.linkBox,
+                                                    ...(isCrossDomain ? styles.crossDomainBox : {})
+                                                }}
+                                                onClick={() => onNavigateToMPS(u.stepId)}
+                                                title={`Gå till scenario ${u.scenarioId}, steg ${u.stepId}`}
+                                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#ebecf0'}
+                                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = isCrossDomain ? '#fffbf0' : '#f9f9f9'}
+                                            >
+                                                <span style={styles.linkStep}>
+                                                    Steg {u.stepId}
+                                                    {isCrossDomain && <span style={styles.crossDomainBadge}>Domän {u.mpsDomain}</span>}
+                                                </span>
+                                                <span style={styles.linkDetail}>{u.mpsId}: {u.title}</span>
+                                            </div>
+                                        );
+                                    })
                                 ) : (
                                     <span style={styles.statusUnlinked}>Ej kopplad i MPS</span>
                                 )}

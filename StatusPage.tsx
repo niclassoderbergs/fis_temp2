@@ -3,6 +3,7 @@ import React, { useState, useMemo } from 'react';
 import { BRSData, MPSData } from './types';
 import { calculateQuality, QualityReport, SectionScore } from './QualityCalculator';
 import { calculateMPSQuality, MPSQualityReport } from './MPSQualityCalculator';
+import { renumberingMap } from './id-mapping';
 
 interface StatusPageProps {
   data: BRSData[];
@@ -127,9 +128,14 @@ const styles = {
     gap: '12px',
     fontSize: '0.9rem'
   },
-  errorLabel: {
-    fontWeight: 600,
-    minWidth: '120px'
+  impactBox: {
+    backgroundColor: '#e6effc',
+    borderColor: '#0052cc',
+    color: '#172b4d',
+    border: '1px solid',
+    borderRadius: '8px',
+    padding: '20px',
+    marginBottom: '32px'
   }
 };
 
@@ -215,6 +221,44 @@ const checkIntegrity = (mpsList: MPSData[], brsList: BRSData[]): IntegrityError[
 
   return errors;
 };
+
+// --- Impact Analysis Function ---
+interface ImpactItem {
+    mpsId: string;
+    stepId: string;
+    oldRef: string;
+    newRef: string;
+}
+
+const checkRenumberingImpact = (mpsList: MPSData[]): ImpactItem[] => {
+    const impacts: ImpactItem[] = [];
+    const changeMap = new Map(renumberingMap.filter(m => m.type !== 'no_change').map(m => [`BRS-FLEX-${m.oldId}`, `BRS-FLEX-${m.newId}`]));
+    
+    // Create a set of all valid NEW IDs to filter false positives (where IDs are reused)
+    const validNewIds = new Set(renumberingMap.map(m => `BRS-FLEX-${m.newId}`));
+
+    mpsList.forEach(mps => {
+        mps.scenarios.forEach(sc => {
+            sc.steps.forEach(step => {
+                // Logic: 
+                // 1. It must match an entry in changeMap (meaning it's an old ID for something).
+                // 2. BUT if it matches a validNewId, we assume it has already been migrated to point to the new process with that ID.
+                if (step.refBRS && changeMap.has(step.refBRS)) {
+                    // Check if it's a false positive (reused ID)
+                    if (!validNewIds.has(step.refBRS)) {
+                        impacts.push({
+                            mpsId: mps.id,
+                            stepId: step.stepId,
+                            oldRef: step.refBRS,
+                            newRef: changeMap.get(step.refBRS)!
+                        });
+                    }
+                }
+            });
+        });
+    });
+    return impacts;
+}
 
 type SortKey = 'id' | 'title' | 'purpose' | 'diagram' | 'startConditions' | 'stopConditions' | 'businessRules' | 'flows' | 'content' | 'total' 
              | 'meta' | 'scenarios' | 'traceability' | 'conditionCoverage'; 
@@ -306,6 +350,9 @@ export const StatusPage: React.FC<StatusPageProps> = ({ data, mpsData = [], onSe
 
   // Run Integrity Check
   const integrityErrors = useMemo(() => checkIntegrity(mpsData, data), [mpsData, data]);
+  
+  // Run Renumbering Impact Analysis
+  const renumberingImpacts = useMemo(() => checkRenumberingImpact(mpsData), [mpsData]);
 
   return (
     <div style={styles.container}>
@@ -354,6 +401,30 @@ export const StatusPage: React.FC<StatusPageProps> = ({ data, mpsData = [], onSe
           <p style={{margin: 0}}>Alla MPS-steg refererar till existerande BRS-ID:n och regler.</p>
         )}
       </div>
+
+      {/* Impact Analysis Panel */}
+      {renumberingImpacts.length > 0 && (
+          <div style={styles.impactBox}>
+            <div style={styles.integrityTitle}>🔄 Renumbering Impact Analysis</div>
+            <p style={{marginTop: 0, marginBottom: '16px'}}>
+              Om du aktiverar det nya ID-schemat (Renumbering Proposal) kommer följande <strong>{renumberingImpacts.length}</strong> MPS-referenser att behöva uppdateras.
+              Detta verktyg hjälper dig att säkerställa att inga "döda länkar" uppstår vid migreringen.
+            </p>
+            <div style={{maxHeight: '300px', overflowY: 'auto'}}>
+                <ul style={styles.errorList}>
+                {renumberingImpacts.map((imp, idx) => (
+                    <li key={idx} style={styles.errorItem}>
+                    <div style={{minWidth: '150px', fontWeight: 600}}>{imp.mpsId}</div>
+                    <div style={{minWidth: '80px'}}>{imp.stepId}</div>
+                    <div style={{flex: 1}}>
+                        Byt referens: <span style={{color: '#d63939', textDecoration:'line-through'}}>{imp.oldRef}</span> → <span style={{color: '#006644', fontWeight: 700}}>{imp.newRef}</span>
+                    </div>
+                    </li>
+                ))}
+                </ul>
+            </div>
+          </div>
+      )}
 
       <p style={{marginBottom: '24px', color: '#666'}}>
         Nedan visas kvalitetsmätningar för BRS och MPS.
@@ -442,8 +513,13 @@ export const StatusPage: React.FC<StatusPageProps> = ({ data, mpsData = [], onSe
                                 {/* Scenarier rader */}
                                 {report.scenarioMetrics.map(sc => (
                                     <tr key={sc.id} style={{backgroundColor: '#ffffff'}}>
-                                        <td style={{...styles.td, paddingLeft: '40px', color: '#555', fontSize: '0.85rem'}}>
-                                            ↳ {sc.id}
+                                        <td style={{...styles.td, paddingLeft: '40px', fontSize: '0.85rem'}}>
+                                            ↳ <span 
+                                                style={{...styles.idCell, color: '#0052cc', cursor: 'pointer', textDecoration: 'underline'}} 
+                                                onClick={() => onSelectMPS && onSelectMPS(sc.id)}
+                                              >
+                                                {sc.id}
+                                              </span>
                                         </td>
                                         <td style={{...styles.td, color: '#555', fontStyle: 'italic'}}>{sc.title}</td>
                                         <td style={styles.td}></td>

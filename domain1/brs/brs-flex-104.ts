@@ -3,43 +3,40 @@ import { BRSData } from '../../types';
 import { content104Input, content104Output } from '../../content-definitions';
 
 export const brsFlex104: BRSData = {
-  id: "BRS-FLEX-104",
+  id: "BRS-FLEX-105", // Updated from 104
+  previousId: "BRS-FLEX-104",
   title: "FIS stänger tillfälligt av CU",
   purpose: "Att administrativt stänga av en CU (Controllable Unit). Detta förhindrar att enheten används för nya åtaganden, t.ex. vid tekniska fel, regelbrott eller på begäran av systemoperatör.",
   actors: [
     { role: "Initiator", description: "FIS (System/Admin)" },
-    { role: "Mottagare", description: "SP - via notifiering" }
+    { role: "Mottagare", description: "System" }
   ],
   diagramCode: `sequenceDiagram
-    title BRS-FLEX-104: FIS stänger tillfälligt av CU
+    title BRS-FLEX-105: FIS stänger tillfälligt av CU
     participant Admin as FIS Admin
     participant FIS as FIS
-    participant SP as SP
 
     Admin->>FIS: SuspendCU (CU-ID, Orsak)
     activate FIS
     FIS->>FIS: Validera status
     FIS->>FIS: Sätt status 'Suspended'
-    FIS->>SP: NotifyCUSuspended (CU-ID, Orsak)
     deactivate FIS`,
   preConditions: [
-    { id: "BRSFLEX104-1", description: "En administratör har beslutat att stänga av en CU." }
+    { id: "BRSFLEX105-1", description: "En administratör har beslutat att stänga av en CU." }
   ],
   postConditions: {
     accepted: [
-      { id: "BRSFLEX104-2", description: "CU-status har satts till 'Suspended'." },
-      { id: "BRSFLEX104-3", description: "SP har notifierats." }
+      { id: "BRSFLEX105-2", description: "CU-status har satts till 'Suspended'." }
     ],
     rejected: [
-      { id: "BRSFLEX104-4", description: "Åtgärden misslyckades." }
+      { id: "BRSFLEX105-4", description: "Åtgärden misslyckades." }
     ]
   },
   businessRules: [
-    { id: "BRSFLEX104-5", description: "CU-ID måste existera.", errorCode: "E_104_NOT_FOUND" }
+    { id: "BRSFLEX105-5", description: "CU-ID måste existera.", errorCode: "E_105_NOT_FOUND" }
   ],
   process: [
-    { id: "BRSFLEX104-6", description: "FIS administrerar avstängning av en CU." },
-    { id: "BRSFLEX104-7", description: "FIS notifierar SP." }
+    { id: "BRSFLEX105-6", description: "FIS administrerar avstängning av en CU." }
   ],
   infoObjects: [content104Input, content104Output]
 };

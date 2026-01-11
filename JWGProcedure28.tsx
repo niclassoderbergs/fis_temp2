@@ -10,6 +10,7 @@ const styles = {
   header: { fontSize: '2rem', fontWeight: 700, marginBottom: '8px', color: '#172b4d' },
   subHeader: { fontSize: '1.1rem', color: '#5e6c84', marginBottom: '32px' },
   sectionHeader: { fontSize: '1.5rem', fontWeight: 600, marginTop: '48px', marginBottom: '16px', color: '#42526e', borderBottom: '2px solid #ebecf0', paddingBottom: '8px' },
+  subSectionHeader: { fontSize: '1.1rem', fontWeight: 600, marginTop: '24px', marginBottom: '12px', color: '#42526e' },
   paragraph: { fontSize: '1rem', lineHeight: '1.6', color: '#333', marginBottom: '16px' },
   table: { width: '100%', borderCollapse: 'collapse' as const, boxShadow: '0 1px 3px rgba(0,0,0,0.1)', fontSize: '0.9rem', border: '1px solid #dfe1e6', marginBottom: '24px' },
   th: { backgroundColor: '#f4f5f7', color: '#172b4d', padding: '12px 16px', textAlign: 'left' as const, borderBottom: '2px solid #dfe1e6', fontWeight: 600 },
@@ -48,16 +49,20 @@ const steps = [
   { step: "28.3", action: "Notify about updated SPG/U information", description: "The SP module administrator sends the requested SPU/SPG information.", producer: "SP module administrator", receiver: "Entitled party", infoId: "BS" }
 ];
 
-const attributes = [
-  { name: "SPU/SPG identifier", desc: "ID of the resource to query." },
-  { name: "Status", desc: "Current status (Active, Suspended, etc)." },
-  { name: "Master Data", desc: "Grid Area, Capacity, etc." }
+const attributesBR = [
+  { name: "SPU/SPG identifier", desc: "The identifier of the SPU or SPG to retrieve data for." }
+];
+
+const attributesBS = [
+  { name: "SPU/SPG identifier", desc: "The identifier of the SPU or SPG." },
+  { name: "Status", desc: "The current status of the entity (e.g. Active, Suspended)." },
+  { name: "Master Data", desc: "Descriptive attributes (Name, Grid Area, Capacity, etc)." }
 ];
 
 const jwgToBrsMapping: Record<string, string> = {
   "SPU/SPG identifier": "SPU-ID / SPG-ID",
   "Status": "Status",
-  "Master Data": "Aggregerad Kapacitet"
+  "Master Data": "Namn / Elområde / Kapacitet"
 };
 
 interface Props { 
@@ -67,24 +72,59 @@ interface Props {
 }
 
 export const JWGProcedure28: React.FC<Props> = ({ onBack, onNavigateToBRS, onNavigateToProcedure }) => {
-  const getBrsAttribute = (jwgAttrName: string) => {
-    const mappedName = jwgToBrsMapping[jwgAttrName];
+  const getBrsAttributeBR = (jwgAttrName: string) => {
+    let mappedName = jwgToBrsMapping[jwgAttrName];
     if (!mappedName) return null;
     
     // Check inputs (116/126)
-    let attr = content116Input.attributes.find(a => a.attribute === mappedName);
-    if (!attr) attr = content126Input.attributes.find(a => a.attribute === mappedName);
+    let attr = content116Input.attributes.find(a => mappedName.includes(a.attribute));
+    if (!attr) attr = content126Input.attributes.find(a => mappedName.includes(a.attribute));
+    return attr;
+  };
+
+  const getBrsAttributeBS = (jwgAttrName: string) => {
+    let mappedName = jwgToBrsMapping[jwgAttrName];
+    if (!mappedName) return null;
+
+    if (jwgAttrName === "Master Data") {
+        return { attribute: "Namn / Elområde / Kapacitet", description: "Samtliga stamdata-attribut", article: "-" };
+    }
     
     // Check outputs (116/126)
-    if (!attr) attr = content116Output.attributes.find(a => a.attribute === mappedName);
-    if (!attr) attr = content126Output.attributes.find(a => a.attribute === mappedName);
-
+    let attr = content116Output.attributes.find(a => mappedName.includes(a.attribute));
+    if (!attr) attr = content126Output.attributes.find(a => mappedName.includes(a.attribute));
     return attr;
   };
 
   const getJwgReference = (brsAttrName: string) => {
+    if (brsAttrName === "SPU-ID" || brsAttrName === "SPG-ID") return "SPU/SPG identifier";
+    if (brsAttrName === "Status") return "Status";
+    if (["Namn", "Elområde", "Aggregerad Kapacitet", "Antal CU", "Elområde-ID"].includes(brsAttrName)) return "Master Data";
     return Object.keys(jwgToBrsMapping).find(key => jwgToBrsMapping[key] === brsAttrName);
   };
+
+  const renderAttributeTable = (title: string, data: any[], showMapping = false) => (
+    <div style={{marginBottom: '20px'}}>
+      <h3 style={styles.subSectionHeader}>{title}</h3>
+      <table style={styles.table}>
+        <thead><tr><th style={styles.th}>Attribut</th><th style={styles.th}>Beskrivning</th>{showMapping && <th style={{...styles.th, backgroundColor: '#e6effc', color: '#0052cc'}}>JWG Referens</th>}</tr></thead>
+        <tbody>
+          {data.map((attr, i) => {
+            const jwgRef = showMapping ? getJwgReference(attr.attribute) : null;
+            return (
+              <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
+                <td style={styles.td}><strong>{attr.attribute}</strong></td>
+                <td style={styles.td}>{attr.description}</td>
+                {showMapping && <td style={{...styles.td, backgroundColor: i % 2 !== 0 ? '#f4f8fd' : '#fff'}}>
+                  {jwgRef ? <span style={styles.reverseMappingTag}>{jwgRef}</span> : <span style={{color: '#999', fontSize: '0.8rem', fontStyle: 'italic'}}>-</span>}
+                </td>}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
 
   return (
     <div style={styles.container}>
@@ -127,10 +167,10 @@ export const JWGProcedure28: React.FC<Props> = ({ onBack, onNavigateToBRS, onNav
       <section>
         <h2 style={styles.sectionHeader}>Datainnehåll: Info BR (Request)</h2>
         <table style={styles.table}>
-          <thead><tr><th style={styles.th}>JWG Attribut</th><th style={styles.th}>Motsvarighet i {brsFlex116.id} / {brsFlex126.id}</th></tr></thead>
+          <thead><tr><th style={styles.th}>JWG Attribut</th><th style={styles.th}>Motsvarighet i {brsFlex116.id} / {brsFlex126.id} Input</th></tr></thead>
           <tbody>
-            {attributes.map((a, i) => {
-              const brsMatch = getBrsAttribute(a.name);
+            {attributesBR.map((a, i) => {
+              const brsMatch = getBrsAttributeBR(a.name);
               return (
                 <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
                   <td style={styles.td}><strong>{a.name}</strong><br/><span style={{fontSize:'0.8rem', color:'#666'}}>{a.desc}</span></td>
@@ -143,24 +183,16 @@ export const JWGProcedure28: React.FC<Props> = ({ onBack, onNavigateToBRS, onNav
       </section>
 
       <section>
-        <h2 style={styles.sectionHeader}>Datainnehåll BRS (SPU - {brsFlex116.id})</h2>
-        <p style={styles.paragraph}>Följande attribut ingår i specifikationen för {brsFlex116.id}.</p>
+        <h2 style={styles.sectionHeader}>Datainnehåll: Info BS (Response)</h2>
         <table style={styles.table}>
-          <thead><tr><th style={styles.th}>Attribut</th><th style={styles.th}>Beskrivning</th><th style={{...styles.th, backgroundColor: '#e6effc', color: '#0052cc', borderBottom: '2px solid #b3d4ff'}}>JWG Referens</th></tr></thead>
+          <thead><tr><th style={styles.th}>JWG Attribut</th><th style={styles.th}>Motsvarighet i {brsFlex116.id} / {brsFlex126.id} Output</th></tr></thead>
           <tbody>
-            {content116Output.attributes.map((attr, i) => {
-              const jwgRef = getJwgReference(attr.attribute);
+            {attributesBS.map((a, i) => {
+              const brsMatch = getBrsAttributeBS(a.name);
               return (
                 <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
-                  <td style={styles.td}><strong>{attr.attribute}</strong></td>
-                  <td style={styles.td}>{attr.description}</td>
-                  <td style={{...styles.td, backgroundColor: i % 2 !== 0 ? '#f4f8fd' : '#fff'}}>
-                    {jwgRef ? (
-                        <span style={styles.reverseMappingTag}>{jwgRef}</span>
-                    ) : (
-                        <span style={{color: '#999', fontStyle: 'italic', fontSize: '0.8rem'}}>- (Specifikt för BRS)</span>
-                    )}
-                  </td>
+                  <td style={styles.td}><strong>{a.name}</strong><br/><span style={{fontSize:'0.8rem', color:'#666'}}>{a.desc}</span></td>
+                  <td style={styles.td}>{brsMatch ? <span style={styles.mappingTag}>{brsMatch.attribute}</span> : '-'}</td>
                 </tr>
               );
             })}
@@ -169,29 +201,17 @@ export const JWGProcedure28: React.FC<Props> = ({ onBack, onNavigateToBRS, onNav
       </section>
 
       <section>
-        <h2 style={styles.sectionHeader}>Datainnehåll BRS (SPG - {brsFlex126.id})</h2>
-        <p style={styles.paragraph}>Följande attribut ingår i specifikationen för {brsFlex126.id}.</p>
-        <table style={styles.table}>
-          <thead><tr><th style={styles.th}>Attribut</th><th style={styles.th}>Beskrivning</th><th style={{...styles.th, backgroundColor: '#e6effc', color: '#0052cc', borderBottom: '2px solid #b3d4ff'}}>JWG Referens</th></tr></thead>
-          <tbody>
-            {content126Output.attributes.map((attr, i) => {
-              const jwgRef = getJwgReference(attr.attribute);
-              return (
-                <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
-                  <td style={styles.td}><strong>{attr.attribute}</strong></td>
-                  <td style={styles.td}>{attr.description}</td>
-                  <td style={{...styles.td, backgroundColor: i % 2 !== 0 ? '#f4f8fd' : '#fff'}}>
-                    {jwgRef ? (
-                        <span style={styles.reverseMappingTag}>{jwgRef}</span>
-                    ) : (
-                        <span style={{color: '#999', fontStyle: 'italic', fontSize: '0.8rem'}}>- (Specifikt för BRS)</span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <h2 style={styles.sectionHeader}>Datainnehåll BRS</h2>
+        <p style={styles.paragraph}>Specifikation av datamodeller för begäran och svar.</p>
+        
+        {/* SPU */}
+        {renderAttributeTable(`${brsFlex116.id} Input (SPU Request)`, content116Input.attributes, true)}
+        {renderAttributeTable(`${brsFlex116.id} Output (SPU Data)`, content116Output.attributes, true)}
+
+        {/* SPG */}
+        {renderAttributeTable(`${brsFlex126.id} Input (SPG Request)`, content126Input.attributes, true)}
+        {renderAttributeTable(`${brsFlex126.id} Output (SPG Data)`, content126Output.attributes, true)}
+
       </section>
     </div>
   );

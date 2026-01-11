@@ -56,7 +56,7 @@ const diagramCode = `sequenceDiagram
                 
                 opt Notify contract revocation?
                     Note over CUMA: 9.9 (conditional) Notify contract revocation
-                    CUMA->>SP: Info Item V: Notification
+                    CUMA->>SP: Info Item V: Notification (BRS 209)
                 end
                 
                 opt Notify final customer?
@@ -69,7 +69,7 @@ const diagramCode = `sequenceDiagram
 
     else Implicit (e.g. Move Out)
         Note over MPA: 9.5 Request to process change of accounting point entitlement
-        MPA->>CUMA: Info Item T: Request
+        MPA->>CUMA: Info Item T: Request (BRS 208)
         activate CUMA
         
         Note over CUMA: 9.6 Validate request to process change...
@@ -84,7 +84,7 @@ const diagramCode = `sequenceDiagram
             
             opt Notify contract revocation?
                 Note over CUMA: 9.9 (conditional) Notify contract revocation
-                CUMA->>SP: Info Item V: Notification
+                CUMA->>SP: Info Item V: Notification (BRS 209)
             end
         end
         deactivate CUMA
@@ -132,7 +132,7 @@ export const JWGProcedure9: React.FC<Props> = ({ onBack, onNavigateToBRS, onNavi
     // Check Implicit/Explicit Trigger (BRS 208)
     let attr = content208Input.attributes.find(a => a.attribute === mappedName);
     
-    // Check Notification (BRS 205)
+    // Check Notification (BRS 209)
     if (!attr) attr = content205Output.attributes.find(a => a.attribute === mappedName);
 
     return attr;
@@ -183,7 +183,7 @@ export const JWGProcedure9: React.FC<Props> = ({ onBack, onNavigateToBRS, onNavi
       <section>
         <h2 style={styles.sectionHeader}>Datainnehåll: Request Info (S & T)</h2>
         <table style={styles.table}>
-          <thead><tr><th style={styles.th}>JWG Attribut</th><th style={styles.th}>Motsvarighet i {brsFlex208.id} / 205</th></tr></thead>
+          <thead><tr><th style={styles.th}>JWG Attribut</th><th style={styles.th}>Motsvarighet i {brsFlex208.id} / 209</th></tr></thead>
           <tbody>
             {attributes.map((a, i) => {
               const brsMatch = getBrsAttribute(a.name);
@@ -225,7 +225,7 @@ export const JWGProcedure9: React.FC<Props> = ({ onBack, onNavigateToBRS, onNavi
       </section>
 
       <section>
-        <h2 style={styles.sectionHeader}>Datainnehåll BRS-FLEX-205 (Notifiering till SP)</h2>
+        <h2 style={styles.sectionHeader}>Datainnehåll BRS-FLEX-209 (Notifiering till SP)</h2>
         <p style={styles.paragraph}>Attribut som skickas till SP vid tvingande avslut.</p>
         <table style={styles.table}>
           <thead><tr><th style={styles.th}>Attribut</th><th style={styles.th}>Beskrivning</th><th style={{...styles.th, backgroundColor: '#e6effc', color: '#0052cc', borderBottom: '2px solid #b3d4ff'}}>JWG Referens</th></tr></thead>

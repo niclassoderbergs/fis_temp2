@@ -4,7 +4,7 @@ import { content314Output } from '../../content-definitions';
 
 export const brsFlex314: BRSData = {
   id: "BRS-FLEX-314",
-  title: "FIS notifierar TSO om produktförkvalificering",
+  title: "TSO notifieras om produktförkvalificering",
   purpose: "Att automatiskt distribuera nödvändigt underlag till Systemoperatören (TSO) för att de ska kunna planera och genomföra fysiska kvalificeringstester. Triggas när en ansökan godkänts i BRS-FLEX-311.",
   actors: [
     { role: "Initiator", description: "FIS (System)" },

@@ -1,14 +1,15 @@
-
 import React from 'react';
 import { MermaidDiagram } from './MermaidDiagram';
 import { brsFlex104 } from './domain1/brs/brs-flex-104';
-import { content104Input, content104Output } from './content-domain-1';
+import { content104Input } from './content-domain-1';
+import { content108Output } from './content-domain-1'; // New import for notification
 
 const styles = {
   container: { padding: '40px', backgroundColor: '#fff', minHeight: '100%', boxSizing: 'border-box' as const },
   header: { fontSize: '2rem', fontWeight: 700, marginBottom: '8px', color: '#172b4d' },
   subHeader: { fontSize: '1.1rem', color: '#5e6c84', marginBottom: '32px' },
   sectionHeader: { fontSize: '1.5rem', fontWeight: 600, marginTop: '48px', marginBottom: '16px', color: '#42526e', borderBottom: '2px solid #ebecf0', paddingBottom: '8px' },
+  subSectionHeader: { fontSize: '1.1rem', fontWeight: 600, marginTop: '24px', marginBottom: '12px', color: '#42526e' },
   paragraph: { fontSize: '1rem', lineHeight: '1.6', color: '#333', marginBottom: '16px' },
   table: { width: '100%', borderCollapse: 'collapse' as const, boxShadow: '0 1px 3px rgba(0,0,0,0.1)', fontSize: '0.9rem', border: '1px solid #dfe1e6', marginBottom: '24px' },
   th: { backgroundColor: '#f4f5f7', color: '#172b4d', padding: '12px 16px', textAlign: 'left' as const, borderBottom: '2px solid #dfe1e6', fontWeight: 600 },
@@ -30,7 +31,7 @@ const diagramCode = `sequenceDiagram
     participant FC as Final customer
 
     Note over EP: 5.1 Request suspension of CU
-    EP->>CUMA: Info Item H: Request
+    EP->>CUMA: Info Item H: Request (BRS 105)
     activate CUMA
     
     Note over CUMA: 5.2 Validate CU suspension request
@@ -71,7 +72,7 @@ const attributes = [
 const jwgToBrsMapping: Record<string, string> = {
   "CU identification": "CU-ID",
   "Reason for suspension": "Orsak",
-  "Suspension start date": "Starttid" // Finns i BRS Output, inte Input
+  "Suspension start date": "Starttid" // Finns i BRS Output (108), inte Input (105)
 };
 
 interface Props { 
@@ -85,12 +86,12 @@ export const JWGProcedure5: React.FC<Props> = ({ onBack, onNavigateToBRS, onNavi
     const mappedName = jwgToBrsMapping[jwgAttrName];
     if (!mappedName) return null;
     
-    // Check input object first
+    // Check input object first (105)
     let attr = content104Input.attributes.find(a => a.attribute === mappedName);
     if (attr) return attr;
 
-    // Check output object
-    return content104Output.attributes.find(a => a.attribute === mappedName);
+    // Check output object (108 Notification)
+    return content108Output.attributes.find(a => a.attribute === mappedName);
   };
 
   const getJwgReference = (brsAttrName: string) => {
@@ -113,7 +114,8 @@ export const JWGProcedure5: React.FC<Props> = ({ onBack, onNavigateToBRS, onNavi
       <div style={styles.brsBox}>
         <div>
             <div style={{fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: '4px', opacity: 0.8}}>Implementerad via</div>
-            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex104.id)}>{brsFlex104.id}: {brsFlex104.title}</div>
+            <div style={styles.brsLink} onClick={() => onNavigateToBRS(brsFlex104.id)}>{brsFlex104.id}: {brsFlex104.title} (Suspend)</div>
+            <div style={{fontSize:'0.8rem', marginTop:'4px'}}>Notifiering hanteras via <strong>BRS-FLEX-108</strong>.</div>
         </div>
         <div style={{fontSize: '2rem', opacity: 0.2}}>🔗</div>
       </div>
@@ -137,7 +139,7 @@ export const JWGProcedure5: React.FC<Props> = ({ onBack, onNavigateToBRS, onNavi
       <section>
         <h2 style={styles.sectionHeader}>Datainnehåll JWG: Info Item H</h2>
         <table style={styles.table}>
-          <thead><tr><th style={styles.th}>JWG Attribut</th><th style={styles.th}>Motsvarighet i {brsFlex104.id}</th></tr></thead>
+          <thead><tr><th style={styles.th}>JWG Attribut</th><th style={styles.th}>Motsvarighet i BRS</th></tr></thead>
           <tbody>
             {attributes.map((a, i) => {
               const brsMatch = getBrsAttribute(a.name);
@@ -154,7 +156,9 @@ export const JWGProcedure5: React.FC<Props> = ({ onBack, onNavigateToBRS, onNavi
 
       <section>
         <h2 style={styles.sectionHeader}>Datainnehåll BRS</h2>
-        <p style={styles.paragraph}>Följande attribut ingår i specifikationen för {brsFlex104.id} (InfoObject: {content104Input.title}). Här visas vilka JWG-krav som attributet uppfyller.</p>
+        
+        {/* Request (105) */}
+        <h3 style={{...styles.subSectionHeader, color: '#0052cc'}}>Begäran (BRS-FLEX-105)</h3>
         <table style={styles.table}>
           <thead><tr><th style={styles.th}>Attribut</th><th style={styles.th}>Beskrivning</th><th style={{...styles.th, backgroundColor: '#e6effc', color: '#0052cc', borderBottom: '2px solid #b3d4ff'}}>JWG Referens</th></tr></thead>
           <tbody>
@@ -168,7 +172,7 @@ export const JWGProcedure5: React.FC<Props> = ({ onBack, onNavigateToBRS, onNavi
                     {jwgRef ? (
                         <span style={styles.reverseMappingTag}>{jwgRef}</span>
                     ) : (
-                        <span style={{color: '#999', fontStyle: 'italic', fontSize: '0.8rem'}}>- (Specifikt för BRS)</span>
+                        <span style={{color: '#999', fontStyle: 'italic', fontSize: '0.8rem'}}>-</span>
                     )}
                   </td>
                 </tr>
@@ -176,6 +180,31 @@ export const JWGProcedure5: React.FC<Props> = ({ onBack, onNavigateToBRS, onNavi
             })}
           </tbody>
         </table>
+
+        {/* Notifiering (108) */}
+        <h3 style={{...styles.subSectionHeader, color: '#0052cc'}}>Notifiering (BRS-FLEX-108)</h3>
+        <table style={styles.table}>
+          <thead><tr><th style={styles.th}>Attribut</th><th style={styles.th}>Beskrivning</th><th style={{...styles.th, backgroundColor: '#e6effc', color: '#0052cc', borderBottom: '2px solid #b3d4ff'}}>JWG Referens</th></tr></thead>
+          <tbody>
+            {content108Output.attributes.map((attr, i) => {
+              const jwgRef = getJwgReference(attr.attribute);
+              return (
+                <tr key={i} style={i % 2 !== 0 ? { backgroundColor: '#f9f9f9' } : {}}>
+                  <td style={styles.td}><strong>{attr.attribute}</strong></td>
+                  <td style={styles.td}>{attr.description}</td>
+                  <td style={{...styles.td, backgroundColor: i % 2 !== 0 ? '#f4f8fd' : '#fff'}}>
+                    {jwgRef ? (
+                        <span style={styles.reverseMappingTag}>{jwgRef}</span>
+                    ) : (
+                        <span style={{color: '#999', fontStyle: 'italic', fontSize: '0.8rem'}}>-</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+
       </section>
     </div>
   );
