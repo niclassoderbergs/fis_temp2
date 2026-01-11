@@ -371,7 +371,7 @@ export const StatusPage: React.FC<StatusPageProps> = ({ data, mpsData = [], onSe
           <div>
             <p style={{marginTop: 0, marginBottom: '16px'}}>
               Följande <strong>{integrityErrors.length}</strong> referenser i MPS-scenarier pekar på BRS-objekt eller regler som inte existerar. 
-              Detta kan bero på att BRS-filer har bytt namn eller ID (t.ex. 104 -> 1040).
+              Detta kan bero på att BRS-filer har bytt namn eller ID (t.ex. 104 &rarr; 1040).
             </p>
             <ul style={styles.errorList}>
               {integrityErrors.map((err, idx) => (
@@ -417,7 +417,7 @@ export const StatusPage: React.FC<StatusPageProps> = ({ data, mpsData = [], onSe
                     <div style={{minWidth: '150px', fontWeight: 600}}>{imp.mpsId}</div>
                     <div style={{minWidth: '80px'}}>{imp.stepId}</div>
                     <div style={{flex: 1}}>
-                        Byt referens: <span style={{color: '#d63939', textDecoration:'line-through'}}>{imp.oldRef}</span> → <span style={{color: '#006644', fontWeight: 700}}>{imp.newRef}</span>
+                        Byt referens: <span style={{color: '#d63939', textDecoration:'line-through'}}>{imp.oldRef}</span> &rarr; <span style={{color: '#006644', fontWeight: 700}}>{imp.newRef}</span>
                     </div>
                     </li>
                 ))}
