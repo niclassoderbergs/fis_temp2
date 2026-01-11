@@ -137,7 +137,7 @@ export const JWGProcedure31: React.FC<Props> = ({ onBack, onNavigateToBRS, onNav
         <ul style={{margin: '8px 0 0 16px', padding: 0}}>
             <li><strong>Steg 31.1 (Indata):</strong> Motsvarar <strong>BRS-FLEX-601</strong> (Undermätning) eller hämtning från Datahub.</li>
             <li><strong>Steg 31.2 (Beräkning):</strong> Motsvarar <strong>BRS-FLEX-5210</strong> (Systemberäkning).</li>
-            <li><strong>Steg 31.3 (Internal):</strong> Intern överlämning inom FIS (Calculator -> Administrator).</li>
+            <li><strong>Steg 31.3 (Internal):</strong> Intern överlämning inom FIS (Calculator &rarr; Administrator).</li>
             <li><strong>Steg 31.4 (Notifiering):</strong> Motsvarar <strong>BRS-FLEX-522</strong> (Notifiering av baseline).</li>
         </ul>
       </div>
