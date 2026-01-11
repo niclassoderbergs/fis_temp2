@@ -329,6 +329,68 @@ const styles = {
     fontWeight: 600,
     width: '100%',
     textAlign: 'center' as const
+  },
+  // Login Styles
+  loginOverlay: {
+    position: 'fixed' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#f4f5f7',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000
+  },
+  loginBox: {
+    backgroundColor: '#fff',
+    padding: '40px',
+    borderRadius: '8px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+    width: '320px',
+    textAlign: 'center' as const,
+    border: '1px solid #dfe1e6'
+  },
+  loginTitle: {
+    fontSize: '1.5rem',
+    fontWeight: 700,
+    color: '#172b4d',
+    marginBottom: '8px'
+  },
+  loginSubTitle: {
+    fontSize: '0.9rem',
+    color: '#5e6c84',
+    marginBottom: '24px'
+  },
+  loginInput: {
+    width: '100%',
+    padding: '10px 12px',
+    borderRadius: '4px',
+    border: '1px solid #dfe1e6',
+    marginBottom: '16px',
+    fontSize: '1rem',
+    boxSizing: 'border-box' as const
+  },
+  loginButton: {
+    width: '100%',
+    padding: '10px 12px',
+    backgroundColor: '#0052cc',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    fontSize: '1rem',
+    fontWeight: 600,
+    cursor: 'pointer',
+    transition: 'background-color 0.2s'
+  },
+  errorMessage: {
+    color: '#de350b',
+    fontSize: '0.85rem',
+    marginTop: '12px',
+    backgroundColor: '#ffebe6',
+    padding: '8px',
+    borderRadius: '4px'
   }
 };
 
@@ -679,6 +741,13 @@ function App() {
   const [brsData, setBrsData] = useState<BRSData[]>(initialBrsList);
   const [mpsData, setMpsData] = useState<MPSData[]>(initialMpsList);
   
+  // Login State
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return sessionStorage.getItem('fis_auth_token') === 'true';
+  });
+  const [passwordInput, setPasswordInput] = useState('');
+  const [authError, setAuthError] = useState(false);
+
   const [selectedId, setSelectedId] = useState<string>(initialBrsList[0].id);
   const [selectedMpsId, setSelectedMpsId] = useState<string>(initialMpsList[0]?.id || '');
   const [selectedDomain, setSelectedDomain] = useState<string>('1'); // '1' or '2' etc.
@@ -719,6 +788,17 @@ function App() {
 
   const activeBRS = brsData.find(b => b.id === selectedId) || brsData[0];
   const activeMPS = mpsData.find(m => m.id === selectedMpsId) || mpsData[0];
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordInput === 'SVKFIS') {
+        setIsAuthenticated(true);
+        sessionStorage.setItem('fis_auth_token', 'true');
+        setAuthError(false);
+    } else {
+        setAuthError(true);
+    }
+  };
 
   const handleUpdateBRS = (updated: BRSData) => {
     setBrsData(prev => prev.map(item => item.id === updated.id ? updated : item));
@@ -839,6 +919,29 @@ function App() {
     `${activeBRS.id}-POST-ERR`
   );
   const flowData = normalizeArray(activeBRS.process, `${activeBRS.id.replace('BRS-FLEX-', 'BRS')}`);
+
+  if (!isAuthenticated) {
+    return (
+        <div style={styles.loginOverlay}>
+            <div style={styles.loginBox}>
+                <div style={styles.loginTitle}>FIS Wiki</div>
+                <div style={styles.loginSubTitle}>Tekniska specifikationer</div>
+                <form onSubmit={handleLogin}>
+                    <input 
+                        type="password" 
+                        placeholder="Ange lösenord" 
+                        style={styles.loginInput}
+                        value={passwordInput}
+                        onChange={(e) => setPasswordInput(e.target.value)}
+                        autoFocus
+                    />
+                    <button type="submit" style={styles.loginButton}>Logga in</button>
+                </form>
+                {authError && <div style={styles.errorMessage}>Felaktigt lösenord.</div>}
+            </div>
+        </div>
+    );
+  }
 
   return (
     <div style={styles.appContainer}>

@@ -62,7 +62,7 @@ export const RenumberingProposalPage: React.FC<Props> = ({ onBack, brsList }) =>
                 <strong> 73x</strong> = TSO Energi, 
                 <strong> 74x</strong> = DSO Energi.
             </li>
-            <li><strong>Systemprocesser:</strong> Interna systemprocesser har fått 4-siffriga IDn (t.ex. 1020 istället för 1040) och matchar numera sin "förälder"-process (102 -> 1020).</li>
+            <li><strong>Systemprocesser:</strong> Interna systemprocesser har fått 4-siffriga IDn (t.ex. 1020 istället för 1040) och matchar numera sin "förälder"-process (102 &rarr; 1020).</li>
         </ul>
       </div>
 
