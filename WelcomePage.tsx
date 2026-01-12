@@ -215,8 +215,25 @@ export const WelcomePage: React.FC<Props> = ({ onNavigate }) => {
 
       </div>
 
-      {/* Aktörsöversikt - Placerad före JWG */}
+      {/* Navigationskort: Domäner & Aktörer */}
       <div style={styles.grid}>
+        
+        {/* Domänöversikt */}
+        <div 
+            style={styles.card} 
+            onClick={() => onNavigate('domainOverview')}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 20px rgba(0,0,0,0.1)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.05)'; }}
+        >
+          <div style={styles.cardIcon}>🌐</div>
+          <h3 style={styles.cardTitle}>Domänöversikt</h3>
+          <p style={styles.cardText}>
+            Utforska systemets indelning i 8 funktionella domäner och deras respektive processer.
+          </p>
+          <div style={styles.cardAction}>Utforska Domäner →</div>
+        </div>
+
+        {/* Aktörsöversikt */}
         <div 
             style={styles.card} 
             onClick={() => onNavigate('globalActorOverview')}
