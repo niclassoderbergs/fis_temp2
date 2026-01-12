@@ -8,11 +8,15 @@ import { BRSData, MPSData } from './types';
 import { StatusPage } from './StatusPage';
 import { DomainConditionsPage } from './DomainConditionsPage';
 import { DomainActorOverviewPage } from './DomainActorOverviewPage';
+import { DomainBRSOverviewPage } from './DomainBRSOverviewPage'; 
+import { DomainMPSOverviewPage } from './DomainMPSOverviewPage'; 
+import { DomainLandingPage } from './DomainLandingPage'; 
+import { DomainOverviewPage } from './DomainOverviewPage'; // New Import
 import { GlobalActorOverviewPage } from './GlobalActorOverviewPage';
 import { ProceduresPage } from './ProceduresPage';
 import { RenumberingProposalPage } from './RenumberingProposalPage'; 
-import { WelcomePage } from './WelcomePage'; // New Import
-import { InformationModelPage } from './InformationModelPage'; // New Import
+import { WelcomePage } from './WelcomePage'; 
+import { InformationModelPage } from './InformationModelPage'; 
 import { JWGProcedure1 } from './JWGProcedure1';
 import { JWGProcedure2 } from './JWGProcedure2';
 import { JWGProcedure3 } from './JWGProcedure3';
@@ -224,8 +228,7 @@ const styles = {
     marginBottom: '4px',
   },
   treeHeader: {
-    padding: '12px 16px',
-    cursor: 'pointer',
+    padding: '0',
     display: 'flex',
     alignItems: 'center',
     fontWeight: 600,
@@ -236,22 +239,51 @@ const styles = {
     border: 'none',
     width: '100%',
     textAlign: 'left' as const,
+    transition: 'background-color 0.1s'
   },
   treeHeaderHover: {
     backgroundColor: '#ebecf0'
+  },
+  treeArrow: {
+    padding: '12px 8px 12px 16px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    color: '#5e6c84'
+  },
+  treeLabel: {
+    padding: '12px 16px 12px 0',
+    cursor: 'pointer',
+    flex: 1,
+    whiteSpace: 'nowrap' as const,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis'
   },
   treeContent: {
     overflow: 'hidden',
     transition: 'max-height 0.2s ease-in-out'
   },
-  treeSubHeader: {
-    padding: '8px 16px 4px 28px', 
+  treeSubHeaderContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    marginTop: '4px',
+    width: '100%',
+  },
+  treeSubHeaderArrow: {
+      padding: '8px 4px 4px 16px',
+      cursor: 'pointer',
+      color: '#6b778c',
+  },
+  treeSubHeaderLabel: {
+    padding: '8px 16px 4px 4px', 
     fontSize: '0.7rem', 
     textTransform: 'uppercase' as const, 
     color: '#6b778c', 
     fontWeight: 700, 
     letterSpacing: '0.5px',
-    marginTop: '4px'
+    cursor: 'pointer',
+    flex: 1,
+    textAlign: 'left' as const,
   },
   treeItem: {
     display: 'block',
@@ -519,6 +551,9 @@ interface SidebarGroupProps {
   onSelectMPS: (id: string) => void;
   onSelectConditions: (domainId: string) => void;
   onSelectActorOverview: (domainId: string) => void; 
+  onSelectBRSOverview: (domainId: string) => void; 
+  onSelectMPSOverview: (domainId: string) => void;
+  onSelectDomain: (domainId: string) => void;
   viewMode: string;
 }
 
@@ -535,16 +570,37 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
   onSelectMPS,
   onSelectConditions,
   onSelectActorOverview,
+  onSelectBRSOverview,
+  onSelectMPSOverview,
+  onSelectDomain,
   viewMode 
 }) => {
   const [hover, setHover] = useState(false);
+  const [isMpsOpen, setIsMpsOpen] = useState(false);
+  const [isBrsOpen, setIsBrsOpen] = useState(false);
+
+  // Determine domain ID (e.g. '100' -> '1')
+  const domainId = group.id.substring(0, 1);
+  const isDomainActive = (viewMode === 'domainLanding' && selectedDomain === domainId);
+
+  // Auto-expand subsections if the view mode is relevant for this domain
+  useEffect(() => {
+    if (selectedDomain === domainId) {
+        if (['mpsOverview', 'mps', 'conditions'].includes(viewMode)) {
+            setIsMpsOpen(true);
+        }
+        if (['brsOverview', 'detail', 'actorOverview'].includes(viewMode)) {
+            setIsBrsOpen(true);
+        }
+    }
+  }, [selectedDomain, viewMode, domainId]);
 
   const hasItems = brsItems.length > 0 || mpsItems.length > 0;
-
+  
   if (!hasItems) {
       return (
         <div style={styles.treeGroup}>
-            <div style={{...styles.treeHeader, opacity: 0.5, cursor: 'default'}}>
+            <div style={{...styles.treeHeader, padding: '12px 16px', opacity: 0.5, cursor: 'default'}}>
                 <span style={{...styles.arrow, visibility: 'hidden'}}>▶</span>
                 {group.title}
             </div>
@@ -553,117 +609,172 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
   }
 
   // Rename logic
-  let mpsHeader = "MPS - Marknadsprocesser";
-  if (group.id === '100') mpsHeader = "MPS - Marknadsprocesser Domän 1";
-  else if (group.id === '200') mpsHeader = "MPS - Marknadsprocesser Domän 2";
-  else if (group.id === '300') mpsHeader = "MPS - Marknadsprocesser Domän 3";
-  else if (group.id === '400') mpsHeader = "MPS - Marknadsprocesser Domän 4";
-  else if (group.id === '500') mpsHeader = "MPS - Marknadsprocesser Domän 5";
-  else if (group.id === '600') mpsHeader = "MPS - Marknadsprocesser Domän 6";
-  else if (group.id === '700') mpsHeader = "MPS - Marknadsprocesser Domän 7";
-  else if (group.id === '800') mpsHeader = "MPS - Marknadsprocesser Domän 8";
+  const mpsHeader = "MPS - Marknadsprocesser";
 
-  // Determine domain ID
-  const domainId = group.id.substring(0, 1);
   // Allow condition matrix for domain 1-8
   const showConditionsLink = ['100', '200', '300', '400', '500', '600', '700', '800'].includes(group.id);
-  // Show Actor Overview for Domain 1 (Could be expanded later)
+  // Show Actor Overview for Domain 1-8
   const showActorOverview = ['100', '200', '300', '400', '500', '600', '700', '800'].includes(group.id);
-
+  
   return (
     <div style={styles.treeGroup}>
-      <button 
-        onClick={onToggle}
-        onMouseEnter={() => setHover(true)}
-        onMouseLeave={() => setHover(false)}
+      <div 
         style={{
           ...styles.treeHeader,
-          ...(hover ? styles.treeHeaderHover : {})
+          ...(hover || isDomainActive ? styles.treeHeaderHover : {})
         }}
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
       >
-        <span style={{
-          ...styles.arrow,
-          transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)'
-        }}>▶</span>
-        {group.title}
-      </button>
+        <span 
+            style={styles.treeArrow} 
+            onClick={(e) => { e.stopPropagation(); onToggle(); }}
+            title="Toggle expansion"
+        >
+            <span style={{
+                fontSize: '0.7rem',
+                display: 'inline-block',
+                transition: 'transform 0.2s',
+                transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)'
+            }}>▶</span>
+        </span>
+        <span 
+            style={{...styles.treeLabel, color: isDomainActive ? '#0052cc' : '#42526e'}} 
+            onClick={() => onSelectDomain(domainId)}
+            title="Go to Domain Overview"
+        >
+            {group.title}
+        </span>
+      </div>
       
       {isOpen && (
         <div style={styles.treeContent}>
           {/* MPS Section */}
           {(mpsItems.length > 0 || showConditionsLink) && (
             <>
-              <div style={styles.treeSubHeader}>{mpsHeader}</div>
+              <div style={styles.treeSubHeaderContainer}>
+                  <span 
+                     style={styles.treeSubHeaderArrow} 
+                     onClick={() => setIsMpsOpen(!isMpsOpen)}
+                  >
+                     <span style={{
+                        fontSize: '0.6rem', 
+                        display: 'inline-block',
+                        transition: 'transform 0.2s',
+                        transform: isMpsOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+                     }}>▶</span>
+                  </span>
+                  <span 
+                    style={{
+                        ...styles.treeSubHeaderLabel,
+                        color: (viewMode === 'mpsOverview' && selectedDomain === domainId) ? '#0052cc' : '#6b778c'
+                    }}
+                    onClick={() => onSelectMPSOverview(domainId)}
+                    title="View all MPS"
+                  >
+                     {mpsHeader}
+                  </span>
+              </div>
               
-              {/* Specific link for Conditions Matrix */}
-              {showConditionsLink && (
-                <button
-                    onClick={() => onSelectConditions(domainId)}
-                    style={{
-                      ...styles.treeItem,
-                      ...(viewMode === 'conditions' && selectedDomain === domainId ? styles.treeItemActive : {}),
-                      color: (viewMode === 'conditions' && selectedDomain === domainId) ? '#0052cc' : '#6b778c'
-                    }}
-                  >
-                    📋 MPS/BRS översikt: Domän {domainId}
-                </button>
-              )}
+              {isMpsOpen && (
+                <div>
+                  {/* Specific link for Conditions Matrix */}
+                  {showConditionsLink && (
+                    <button
+                        onClick={() => onSelectConditions(domainId)}
+                        style={{
+                          ...styles.treeItem,
+                          ...(viewMode === 'conditions' && selectedDomain === domainId ? styles.treeItemActive : {}),
+                          color: (viewMode === 'conditions' && selectedDomain === domainId) ? '#0052cc' : '#6b778c'
+                        }}
+                      >
+                        📋 MPS/BRS översikt
+                    </button>
+                  )}
 
-              {mpsItems.map(mps => {
-                const isActive = viewMode === 'mps' && selectedMpsId === mps.id;
-                return (
-                  <button
-                    key={mps.id}
-                    onClick={() => onSelectMPS(mps.id)}
-                    style={{
-                      ...styles.treeItem,
-                      ...(isActive ? styles.treeItemActive : {})
-                    }}
-                  >
-                    <div style={{ fontSize: '0.75rem', opacity: 0.8, marginBottom: '2px' }}>{mps.id}</div>
-                    {mps.title}
-                  </button>
-                );
-              })}
+                  {mpsItems.map(mps => {
+                    const isActive = viewMode === 'mps' && selectedMpsId === mps.id;
+                    return (
+                      <button
+                        key={mps.id}
+                        onClick={() => onSelectMPS(mps.id)}
+                        style={{
+                          ...styles.treeItem,
+                          ...(isActive ? styles.treeItemActive : {})
+                        }}
+                      >
+                        <div style={{ fontSize: '0.75rem', opacity: 0.8, marginBottom: '2px' }}>{mps.id}</div>
+                        {mps.title}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </>
           )}
 
           {/* BRS Section */}
           {brsItems.length > 0 && (
             <>
-              <div style={styles.treeSubHeader}>BRS - Affärstransaktioner</div>
-              
-              {/* Specific link for Actor Overview - Moved here */}
-              {showActorOverview && (
-                <button
-                    onClick={() => onSelectActorOverview(domainId)}
-                    style={{
-                      ...styles.treeItem,
-                      ...(viewMode === 'actorOverview' && selectedDomain === domainId ? styles.treeItemActive : {}),
-                      color: (viewMode === 'actorOverview' && selectedDomain === domainId) ? '#0052cc' : '#6b778c',
-                      fontWeight: 600
-                    }}
+              <div style={styles.treeSubHeaderContainer}>
+                  <span 
+                     style={styles.treeSubHeaderArrow} 
+                     onClick={() => setIsBrsOpen(!isBrsOpen)}
                   >
-                    👥 Aktörsöversikt: Domän {domainId}
-                </button>
-              )}
+                     <span style={{
+                        fontSize: '0.6rem', 
+                        display: 'inline-block',
+                        transition: 'transform 0.2s',
+                        transform: isBrsOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+                     }}>▶</span>
+                  </span>
+                  <span 
+                    style={{
+                        ...styles.treeSubHeaderLabel,
+                        color: (viewMode === 'brsOverview' && selectedDomain === domainId) ? '#0052cc' : '#6b778c'
+                    }}
+                    onClick={() => onSelectBRSOverview(domainId)}
+                    title="View all BRS"
+                  >
+                     BRS - Affärstransaktioner
+                  </span>
+              </div>
 
-              {brsItems.map(brs => {
-                 const isActive = viewMode === 'detail' && selectedId === brs.id;
-                 return (
-                   <button
-                     key={brs.id}
-                     onClick={() => onSelectBRS(brs.id)}
-                     style={{
-                       ...styles.treeItem,
-                       ...(isActive ? styles.treeItemActive : {})
-                     }}
-                   >
-                     <div style={{ fontSize: '0.75rem', opacity: 0.8, marginBottom: '2px' }}>{brs.id}</div>
-                     {brs.title}
-                   </button>
-                 );
-              })}
+              {isBrsOpen && (
+                <div>
+                  {/* Specific link for Actor Overview */}
+                  {showActorOverview && (
+                    <button
+                        onClick={() => onSelectActorOverview(domainId)}
+                        style={{
+                          ...styles.treeItem,
+                          ...(viewMode === 'actorOverview' && selectedDomain === domainId ? styles.treeItemActive : {}),
+                          color: (viewMode === 'actorOverview' && selectedDomain === domainId) ? '#0052cc' : '#6b778c',
+                          fontWeight: 600
+                        }}
+                      >
+                        👥 Aktörsöversikt
+                    </button>
+                  )}
+
+                  {brsItems.map(brs => {
+                     const isActive = viewMode === 'detail' && selectedId === brs.id;
+                     return (
+                       <button
+                         key={brs.id}
+                         onClick={() => onSelectBRS(brs.id)}
+                         style={{
+                           ...styles.treeItem,
+                           ...(isActive ? styles.treeItemActive : {})
+                         }}
+                       >
+                         <div style={{ fontSize: '0.75rem', opacity: 0.8, marginBottom: '2px' }}>{brs.id}</div>
+                         {brs.title}
+                       </button>
+                     );
+                  })}
+                </div>
+              )}
             </>
           )}
         </div>
@@ -728,7 +839,7 @@ const STORAGE_KEY = 'fis-wiki-data-v1';
 const sortById = (a: { id: string }, b: { id: string }) => 
   a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' });
 
-type ViewMode = 'welcome' | 'detail' | 'status' | 'mps' | 'conditions' | 'actorOverview' | 'globalActorOverview' | 'procedures' | 'renumbering' | 'infoModel'
+type ViewMode = 'welcome' | 'detail' | 'status' | 'mps' | 'conditions' | 'actorOverview' | 'brsOverview' | 'mpsOverview' | 'globalActorOverview' | 'procedures' | 'renumbering' | 'infoModel' | 'domainLanding' | 'domainOverview'
 | 'jwg-procedure-1' | 'jwg-procedure-2' | 'jwg-procedure-3' | 'jwg-procedure-4' | 'jwg-procedure-5' 
 | 'jwg-procedure-6' | 'jwg-procedure-7' | 'jwg-procedure-8' | 'jwg-procedure-9' | 'jwg-procedure-10' 
 | 'jwg-procedure-11' | 'jwg-procedure-12' | 'jwg-procedure-13' | 'jwg-procedure-14' | 'jwg-procedure-15'
@@ -753,7 +864,7 @@ function App() {
   const [selectedDomain, setSelectedDomain] = useState<string>('1'); // '1' or '2' etc.
   const [mpsScrollTarget, setMpsScrollTarget] = useState<string | null>(null);
   
-  const [openGroups, setOpenGroups] = useState<string[]>(['100', '200', '300', '400', '500', '600', '700', '800']);
+  const [openGroups, setOpenGroups] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('welcome');
   const [isEditing, setIsEditing] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -863,6 +974,14 @@ function App() {
     handleUpdateBRS({ ...activeBRS, [field]: list });
   };
 
+  // Helper to ensure the correct group is expanded in the sidebar
+  const ensureGroupOpen = (domainId: string) => {
+    const groupId = `${domainId}00`; // Matches the group ID format ('100', '200')
+    if (!openGroups.includes(groupId)) {
+        setOpenGroups(prev => [...prev, groupId]);
+    }
+  };
+
   // Render helpers
   const toggleGroup = (groupId: string) => {
     setOpenGroups(prev => prev.includes(groupId) ? prev.filter(id => id !== groupId) : [...prev, groupId]);
@@ -871,14 +990,24 @@ function App() {
   const handleSelectBRS = (id: string) => {
     setSelectedId(id);
     setViewMode('detail');
+    const match = id.match(/BRS-FLEX-(\d)/);
+    if (match) {
+        setSelectedDomain(match[1]);
+        ensureGroupOpen(match[1]);
+    }
   };
 
   const handleSelectMPS = (id: string) => {
     // If ID contains more than just the MPS ID (e.g. "MPS-FLEX-100-Sc1.1"), 
     // extract the MPS ID and set the rest as scroll target.
-    const match = id.match(/^(MPS-FLEX-\d+)/);
+    const match = id.match(/^(MPS-FLEX-(\d+))/);
     if (match) {
         const baseId = match[1];
+        // match[2] is "100" or "105", so domain is first char of that
+        const domainId = match[2].charAt(0);
+        setSelectedDomain(domainId);
+        ensureGroupOpen(domainId);
+        
         setSelectedMpsId(baseId);
         // If the ID is longer than the base ID (meaning it points to a scenario or step)
         if (id.length > baseId.length) {
@@ -897,11 +1026,31 @@ function App() {
   const handleSelectConditions = (domainId: string) => {
     setSelectedDomain(domainId);
     setViewMode('conditions');
+    ensureGroupOpen(domainId);
   };
 
   const handleSelectActorOverview = (domainId: string) => {
     setSelectedDomain(domainId);
     setViewMode('actorOverview');
+    ensureGroupOpen(domainId);
+  };
+
+  const handleSelectBRSOverview = (domainId: string) => {
+    setSelectedDomain(domainId);
+    setViewMode('brsOverview');
+    ensureGroupOpen(domainId);
+  };
+
+  const handleSelectMPSOverview = (domainId: string) => {
+    setSelectedDomain(domainId);
+    setViewMode('mpsOverview');
+    ensureGroupOpen(domainId);
+  };
+
+  const handleSelectDomain = (domainId: string) => {
+    setSelectedDomain(domainId);
+    setViewMode('domainLanding');
+    ensureGroupOpen(domainId);
   };
 
   const handleNavigateProcedure = (id: number) => {
@@ -980,6 +1129,11 @@ function App() {
              </button>
 
              <div style={styles.menuHeader}>Översikt</div>
+             <button onClick={() => setViewMode('domainOverview')} style={{...styles.treeItem, fontWeight: 500, ...(viewMode === 'domainOverview' ? styles.treeItemActive : {})}}>
+                <div style={{display: 'flex', alignItems: 'center'}}>
+                    <span style={{fontSize: '1.1rem', marginRight: '8px'}}>🌐</span> Domänöversikt
+                </div>
+             </button>
              <button onClick={() => setViewMode('globalActorOverview')} style={{...styles.treeItem, fontWeight: 500, ...(viewMode === 'globalActorOverview' ? styles.treeItemActive : {})}}>
                 <div style={{display: 'flex', alignItems: 'center'}}>
                     <span style={{fontSize: '1.1rem', marginRight: '8px'}}>👥</span> Global aktörsöversikt
@@ -1021,6 +1175,9 @@ function App() {
                       onSelectMPS={handleSelectMPS}
                       onSelectConditions={handleSelectConditions}
                       onSelectActorOverview={handleSelectActorOverview}
+                      onSelectBRSOverview={handleSelectBRSOverview}
+                      onSelectMPSOverview={handleSelectMPSOverview}
+                      onSelectDomain={handleSelectDomain}
                       viewMode={viewMode}
                     />
                 );
@@ -1028,21 +1185,22 @@ function App() {
 
             {/* Admin Section - moved to bottom */}
             <div style={styles.treeGroup}>
-              <button 
+               <div 
+                style={{
+                  ...styles.treeHeader,
+                  padding: '12px 16px',
+                  ...(adminHover ? styles.treeHeaderHover : {})
+                }}
                 onClick={handleAdminToggle}
                 onMouseEnter={() => setAdminHover(true)}
                 onMouseLeave={() => setAdminHover(false)}
-                style={{
-                  ...styles.treeHeader,
-                  ...(adminHover ? styles.treeHeaderHover : {})
-                }}
               >
                 <span style={{
                   ...styles.arrow,
                   transform: isAdminOpen ? 'rotate(90deg)' : 'rotate(0deg)'
                 }}>▶</span>
                 Admin
-              </button>
+              </div>
               
               {isAdminOpen && (
                 <div style={styles.treeContent}>
@@ -1068,6 +1226,30 @@ function App() {
                   <div style={styles.paper}>
                     <WelcomePage onNavigate={(view) => setViewMode(view as ViewMode)} />
                   </div>
+              </div>
+            )}
+
+            {viewMode === 'domainOverview' && (
+              <div style={styles.mainScroll}>
+                <div style={styles.paper}>
+                  <DomainOverviewPage 
+                    onNavigateToDomain={handleSelectDomain}
+                  />
+                </div>
+              </div>
+            )}
+
+            {viewMode === 'domainLanding' && (
+              <div style={styles.mainScroll}>
+                <div style={styles.paper}>
+                  <DomainLandingPage 
+                    domainId={selectedDomain}
+                    brsData={brsData}
+                    mpsData={mpsData}
+                    onNavigateToBRS={handleSelectBRS}
+                    onNavigateToMPS={handleSelectMPS}
+                  />
+                </div>
               </div>
             )}
 
@@ -1124,6 +1306,30 @@ function App() {
                     mpsData={mpsData} 
                     domainId={selectedDomain}
                     onNavigateToBRS={handleSelectBRS}
+                  />
+                </div>
+              </div>
+            )}
+
+            {viewMode === 'brsOverview' && (
+              <div style={styles.mainScroll}>
+                <div style={styles.paper}>
+                  <DomainBRSOverviewPage 
+                    brsData={brsData}
+                    domainId={selectedDomain}
+                    onNavigateToBRS={handleSelectBRS}
+                  />
+                </div>
+              </div>
+            )}
+
+            {viewMode === 'mpsOverview' && (
+              <div style={styles.mainScroll}>
+                <div style={styles.paper}>
+                  <DomainMPSOverviewPage 
+                    mpsData={mpsData}
+                    domainId={selectedDomain}
+                    onNavigateToMPS={handleSelectMPS}
                   />
                 </div>
               </div>
@@ -1186,7 +1392,7 @@ function App() {
                         domainTitle={`Domän ${selectedDomain}`}
                         onNavigateToBRS={handleSelectBRS}
                         onNavigateToMPS={handleSelectMPS}
-                        onNavigateToProcedure={handleNavigateProcedure} // Added prop
+                        onNavigateToProcedure={handleNavigateProcedure}
                     />
                 </div>
               </div>
@@ -1200,8 +1406,8 @@ function App() {
                     brsList={brsData} 
                     styles={styles} 
                     onNavigateToBRS={handleSelectBRS}
-                    onNavigateToProcedure={handleNavigateProcedure} // Added prop
-                    scrollToId={mpsScrollTarget} // Pass scroll target
+                    onNavigateToProcedure={handleNavigateProcedure}
+                    scrollToId={mpsScrollTarget}
                   />
                 </div>
               </div>

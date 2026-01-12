@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { MPSData, BRSData, Scenario } from './types';
 import { MermaidDiagram } from './MermaidDiagram';
 import { procedures, implementationMap } from './jwg-data';
@@ -15,6 +15,14 @@ interface MPSSectionProps {
 
 export const MPSSection: React.FC<MPSSectionProps> = ({ activeMPS, brsList, styles, onNavigateToBRS, onNavigateToProcedure, scrollToId }) => {
   const rootRef = useRef<HTMLDivElement>(null);
+
+  // Filter scenarios to exclude failure cases
+  const visibleScenarios = useMemo(() => {
+    return activeMPS.scenarios.filter(sc => {
+         const t = sc.title.toLowerCase();
+         return !(t.includes('misslyckad') || t.includes('avslag') || t.includes('underkänt'));
+    });
+  }, [activeMPS.scenarios]);
 
   // Reset scroll position when switching MPS
   useEffect(() => {
@@ -236,7 +244,7 @@ export const MPSSection: React.FC<MPSSectionProps> = ({ activeMPS, brsList, styl
             </tr>
           </thead>
           <tbody>
-            {activeMPS.scenarios.map((sc, idx) => {
+            {visibleScenarios.map((sc, idx) => {
                 const jwgIds = getScenarioJwgIds(sc);
 
                 return (
@@ -284,7 +292,7 @@ export const MPSSection: React.FC<MPSSectionProps> = ({ activeMPS, brsList, styl
 
       <section>
         <h2 style={styles.sectionHeader}>Scenarios</h2>
-        {activeMPS.scenarios.map((scenario, index) => {
+        {visibleScenarios.map((scenario, index) => {
             const jwgIds = getScenarioJwgIds(scenario);
             
             return (

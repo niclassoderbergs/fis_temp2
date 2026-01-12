@@ -27,21 +27,17 @@ const styles = {
     color: '#5e6c84',
     marginBottom: '32px'
   },
-  controls: {
-    marginBottom: '24px',
+  sectionTitle: {
+    fontSize: '1.4rem',
+    fontWeight: 600,
+    marginTop: '48px',
+    marginBottom: '16px',
+    color: '#0052cc',
+    borderBottom: '2px solid #ebecf0',
+    paddingBottom: '8px',
     display: 'flex',
-    gap: '16px',
-    alignItems: 'center'
-  },
-  searchInput: {
-    padding: '10px 16px',
-    borderRadius: '4px',
-    border: '1px solid #dfe1e6',
-    fontSize: '0.9rem',
-    width: '300px',
-    outline: 'none',
-    transition: 'border-color 0.2s',
-    boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.05)'
+    alignItems: 'center',
+    flexWrap: 'wrap' as const
   },
   table: {
     width: '100%',
@@ -49,308 +45,326 @@ const styles = {
     fontSize: '0.9rem',
     boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
     border: '1px solid #dfe1e6',
-    backgroundColor: 'white'
+    backgroundColor: 'white',
+    marginBottom: '24px'
   },
-  thSortable: {
+  th: {
     backgroundColor: '#f4f5f7',
     color: '#172b4d',
     padding: '12px 16px',
     textAlign: 'left' as const,
     borderBottom: '2px solid #dfe1e6',
-    fontWeight: 600,
-    cursor: 'pointer',
-    userSelect: 'none' as const,
-    whiteSpace: 'nowrap' as const,
-    transition: 'background-color 0.2s'
+    fontWeight: 600
   },
-  thIcon: {
-    marginLeft: '8px',
-    fontSize: '0.8rem',
-    color: '#6b778c'
-  },
-  row: {
-    borderBottom: '1px solid #ebecf0',
-    transition: 'background-color 0.1s',
-    cursor: 'pointer'
-  },
-  rowHover: {
-    backgroundColor: '#fafbfc'
-  },
-  rowExpanded: {
-    backgroundColor: '#f2f6fa'
-  },
-  cell: {
-    padding: '12px 16px',
-    color: '#172b4d',
-    verticalAlign: 'middle' as const
-  },
-  expandableRow: {
-    backgroundColor: '#f9f9f9', // Lighter background for content
-    borderBottom: '1px solid #ebecf0'
-  },
-  expandableContent: {
-    padding: '24px 32px',
-    fontSize: '0.9rem',
-    color: '#42526e',
-    boxShadow: 'inset 0 4px 4px -4px rgba(0,0,0,0.1)'
+  td: {
+    padding: '10px 16px',
+    borderBottom: '1px solid #dfe1e6',
+    verticalAlign: 'middle' as const,
+    color: '#172b4d'
   },
   brsId: {
     fontFamily: 'monospace',
     fontWeight: 600,
     color: '#0052cc',
-    fontSize: '0.95rem'
-  },
-  navButton: {
-    marginTop: '16px',
-    display: 'inline-block',
-    padding: '8px 16px',
-    backgroundColor: '#0052cc',
-    color: 'white',
-    borderRadius: '4px',
-    fontWeight: 600,
-    fontSize: '0.85rem',
     cursor: 'pointer',
-    border: 'none',
-    boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+    textDecoration: 'underline'
   },
-  actorBadge: {
+  domainBadge: {
+    display: 'inline-block',
+    padding: '2px 6px',
+    borderRadius: '3px',
+    fontSize: '0.75rem',
     fontWeight: 600,
-    color: '#172b4d',
-    backgroundColor: '#e6effc',
-    padding: '4px 8px',
+    backgroundColor: '#ebecf0',
+    color: '#42526e',
+    cursor: 'help'
+  },
+  infoBox: {
+    backgroundColor: '#deebff',
+    borderLeft: '4px solid #0052cc',
+    padding: '16px 20px',
     borderRadius: '4px',
-    fontSize: '0.85rem'
+    marginBottom: '32px',
+    color: '#172b4d',
+    fontSize: '0.95rem',
+    lineHeight: '1.5'
+  },
+  infoTitle: {
+    fontWeight: 700,
+    marginBottom: '8px',
+    display: 'block',
+    color: '#0747a6'
+  },
+  statBreakdown: {
+    fontSize: '0.85rem',
+    fontWeight: 400,
+    color: '#5e6c84',
+    marginLeft: '16px',
+    display: 'flex',
+    gap: '12px',
+    alignItems: 'center'
+  },
+  statItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px'
   }
 };
 
-// Helper to normalize actor names from BRS
-const normalizeActor = (description: string): string => {
-  const d = description.toLowerCase();
-  
-  // Handle multi-party lists explicitly to avoid them being captured by single checks
-  if (d.includes('/') && (d.includes('tso') || d.includes('dso') || d.includes('brp'))) {
-      return description; // Return full string for transparency
-  }
-
-  if (d.includes('sp') || d.includes('service provider')) return 'Service Provider (SP)';
-  if (d.includes('fis') || d.includes('system') || d.includes('admin') || d.includes('registret')) return 'Flexibility Information System (FIS)';
-  if (d.includes('dhv') || d.includes('datahub')) return 'Datahub (DHV)';
-  if (d.includes('dso') || d.includes('nätägare')) return 'DSO (Nätägare)';
-  if (d.includes('tso') || d.includes('systemoperatör')) return 'TSO (Systemoperatör)';
-  if (d.includes('brp') || d.includes('balansansvarig')) return 'Balansansvarig (BRP)';
-  if (d.includes('elleverantör') || d.includes('supplier')) return 'Elleverantör';
-  if (d.includes('nemo')) return 'NEMO';
-  if (d.includes('slutkund') || d.includes('final customer') || d.includes('kund')) return 'Slutkund';
-  
-  return description.length < 30 ? description : 'Övriga';
+const domainNames: Record<string, string> = {
+  '1': 'Master data och aggregeringsobjekt',
+  '2': 'Avtal & marknad',
+  '3': 'Produkt & förkvalificering',
+  '4': 'Nätbegränsningar',
+  '5': 'Baseline',
+  '6': 'Mätvärden',
+  '7': 'Verifiering & budgivning',
+  '8': 'Aktörsadministration'
 };
 
-interface FlatRowData {
-    uniqueKey: string;
-    id: string;
-    title: string;
-    purpose: string;
-    actorName: string;
-}
+const getActorCategories = (brs: BRSData): string[] => {
+  const categories = new Set<string>();
+  const titleLower = brs.title.toLowerCase();
+  const isNotification = titleLower.includes('notifier') || titleLower.includes('notify');
+  
+  brs.actors.forEach(actor => {
+      const roleLower = actor.role.toLowerCase();
+      const descLower = actor.description.toLowerCase();
+      
+      let isRelevant = false;
+      if (isNotification) {
+          if (roleLower.includes('mottagare') || roleLower.includes('receiver')) isRelevant = true;
+      } else {
+          if (roleLower.includes('initiator')) isRelevant = true;
+      }
 
-type SortKey = 'id' | 'title' | 'actorName';
+      if (isRelevant) {
+          if (descLower.includes('sp') || descLower.includes('service provider')) categories.add('Service Provider (SP)');
+          if (descLower.includes('tso') || descLower.includes('systemoperatör')) categories.add('Systemoperatör (TSO)');
+          if (descLower.includes('dso') || descLower.includes('nätägare')) categories.add('Nätägare (DSO)');
+          if (descLower.includes('brp') || descLower.includes('balansansvarig')) categories.add('Balansansvarig (BRP)');
+          if (descLower.includes('elleverantör') || descLower.includes('supplier')) categories.add('Elleverantör');
+          if (descLower.includes('nemo')) categories.add('NEMO');
+          if (descLower.includes('slutkund') || descLower.includes('final customer') || descLower.includes('kund')) categories.add('Slutkund');
+          if (descLower.includes('dhv') || descLower.includes('datahub')) categories.add('Datahub (DHV)');
+          
+          if ((descLower.includes('fis') || descLower.includes('system') || descLower.includes('admin')) && 
+              !descLower.includes('systemoperatör') && 
+              !descLower.includes('connecting system operator')) {
+              categories.add('System / FIS (Admin)');
+          }
+      }
+  });
+
+  if (categories.size === 0) {
+      const firstActorDesc = brs.actors[0]?.description.toLowerCase() || '';
+      if (firstActorDesc.includes('sp')) return ['Service Provider (SP)']; 
+      return ['Övriga / Ospecificerad'];
+  }
+
+  return Array.from(categories);
+};
+
+const definedCategories = [
+  'Service Provider (SP)',
+  'Systemoperatör (TSO)',
+  'Nätägare (DSO)',
+  'Balansansvarig (BRP)',
+  'Elleverantör',
+  'NEMO',
+  'Slutkund',
+  'Datahub (DHV)',
+  'System / FIS (Admin)',
+  'Övriga / Ospecificerad'
+];
 
 export const DomainActorOverviewPage: React.FC<Props> = ({ brsData, domainId, onNavigateToBRS }) => {
-  
-  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
-  const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'asc' | 'desc' }>({ key: 'id', direction: 'asc' });
-  const [searchTerm, setSearchTerm] = useState('');
 
-  const toggleRow = (key: string) => {
-    const newSet = new Set(expandedRows);
-    if (newSet.has(key)) {
-      newSet.delete(key);
-    } else {
-      newSet.add(key);
-    }
-    setExpandedRows(newSet);
-  };
-
-  const handleSort = (key: SortKey) => {
-    setSortConfig(prev => {
-      if (prev.key === key) {
-        return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' };
-      }
-      return { key, direction: 'asc' };
-    });
-  };
-
-  // 1. Prepare Flat Data
-  const flatData = useMemo(() => {
-    const rows: FlatRowData[] = [];
-    
-    // Filter BRS for Domain
-    const domainBRSs = brsData.filter(b => b.id.startsWith(`BRS-FLEX-${domainId}`));
-
-    domainBRSs.forEach(brs => {
-        let normalizedName = 'Unknown';
-        const numericId = brs.id.replace('BRS-FLEX-', '');
-
-        // Override logic specific to TSO transactions
-        const tsoIds = ['301', '308', '314', '317', '318', '319', '320'];
-        
-        if (tsoIds.includes(numericId)) {
-            normalizedName = 'TSO (Systemoperatör)';
-        } else {
-            // Standard Logic:
-            // - Default: Use Initiator
-            // - Exception: If it's a notification, use Receiver (Mottagare)
-            
-            let targetActor = brs.actors.find(a => a.role.toLowerCase().includes('initiator'));
-            const isNotification = brs.title.toLowerCase().includes('notifier') || brs.title.toLowerCase().includes('notify');
-
-            if (isNotification) {
-                 const receiver = brs.actors.find(a => a.role.toLowerCase().includes('mottagare') || a.role.toLowerCase().includes('receiver'));
-                 if (receiver) {
-                     targetActor = receiver;
-                 }
-            }
-
-            // Fallback
-            if (!targetActor) targetActor = brs.actors[0];
-            
-            if (targetActor) {
-                normalizedName = normalizeActor(targetActor.description);
-            }
-        }
-
-        rows.push({
-            uniqueKey: brs.id,
-            id: brs.id,
-            title: brs.title,
-            purpose: brs.purpose,
-            actorName: normalizedName
+  const domainBRSs = useMemo(() => {
+     return brsData
+        .filter(b => b.id.startsWith(`BRS-FLEX-${domainId}`))
+        .sort((a, b) => {
+            const numA = parseInt(a.id.replace(/\D/g, ''), 10);
+            const numB = parseInt(b.id.replace(/\D/g, ''), 10);
+            return numA - numB;
         });
-    });
-
-    return rows;
   }, [brsData, domainId]);
 
-  // 2. Filter & Sort Data
-  const filteredSortedData = useMemo(() => {
-    let data = [...flatData];
+  const { groupedData, spuCount, spgCount, reduction, expansionCount } = useMemo(() => {
+    const groups: Record<string, BRSData[]> = {};
+    
+    definedCategories.forEach(cat => groups[cat] = []);
 
-    if (searchTerm) {
-        const lowerSearch = searchTerm.toLowerCase();
-        data = data.filter(r => 
-            r.id.toLowerCase().includes(lowerSearch) || 
-            r.title.toLowerCase().includes(lowerSearch) || 
-            r.actorName.toLowerCase().includes(lowerSearch)
-        );
-    }
+    let spu = 0;
+    let spg = 0;
+    let expansion = 0;
 
-    const { key, direction } = sortConfig;
-    const multiplier = direction === 'asc' ? 1 : -1;
+    domainBRSs.forEach(brs => {
+      if (brs.title.includes('SPU')) spu++;
+      if (brs.title.includes('SPG')) spg++;
 
-    data.sort((a, b) => {
-        if (key === 'id') {
-             // Smart sort for IDs (handle numeric part)
-             return a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' }) * multiplier;
-        }
-        return a[key].localeCompare(b[key]) * multiplier;
+      const categories = getActorCategories(brs);
+      
+      if (categories.length > 1) {
+          expansion += (categories.length - 1);
+      }
+
+      categories.forEach(cat => {
+          if (!groups[cat]) groups[cat] = []; 
+          groups[cat].push(brs);
+      });
     });
 
-    return data;
-  }, [flatData, sortConfig, searchTerm]);
+    return { 
+        groupedData: groups, 
+        spuCount: spu, 
+        spgCount: spg, 
+        reduction: Math.min(spu, spg),
+        expansionCount: expansion
+    };
+  }, [domainBRSs]);
 
-  const getSortIcon = (key: SortKey) => {
-    if (sortConfig.key !== key) return null;
-    return <span style={styles.thIcon}>{sortConfig.direction === 'asc' ? '▲' : '▼'}</span>;
+  const getDomainInfo = (id: string) => {
+    const match = id.match(/BRS-FLEX-(\d)/);
+    const num = match ? match[1] : '';
+    return {
+        label: num ? `Domän ${num}` : '-',
+        title: domainNames[num] || ''
+    };
   };
 
   return (
     <div style={styles.container}>
       <h1 style={styles.header}>Aktörsöversikt: Domän {domainId}</h1>
       <p style={styles.subHeader}>
-        Tabellen visar en översikt över transaktionerna i domänen och vilken aktör som är primär part (Initiativtagare för processer, Mottagare för notifieringar).
+        En sammanställning av alla affärstransaktioner (BRS) i domän {domainId}, grupperat per ansvarig aktör.
       </p>
 
-      <div style={styles.controls}>
-        <input 
-            type="text" 
-            placeholder="Sök på ID, titel eller aktör..." 
-            style={styles.searchInput}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-        />
+      <div style={styles.infoBox}>
+        <span style={styles.infoTitle}>Systemarkitekturanalys</span>
+        
+        <div style={{marginBottom: '16px'}}>
+            <strong>Optimering av aggregeringsobjekt (SPU vs SPG)</strong><br/>
+            För närvarande hanteras SPU (Technical Unit) och SPG (Market Group) som separata objekt med speglade processer i Domän 1.
+            <ul>
+                <li>Antal SPU-specifika BRS:er: <strong>{spuCount}</strong></li>
+                <li>Antal SPG-specifika BRS:er: <strong>{spgCount}</strong></li>
+            </ul>
+            Om dessa begrepp slogs ihop till ett gemensamt aggregeringsobjekt skulle antalet dokumenterade affärstransaktioner kunna <strong>minska</strong> med cirka <strong>{reduction}</strong> stycken.
+        </div>
+
+        <div style={{marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(7, 71, 166, 0.2)'}}>
+            <strong>Analys av multi-aktörsprocesser (splittring)</strong><br/>
+            Vissa processer (särskilt notifieringar och datautlämning) riktas till flera aktörer samtidigt (t.ex. "Mottagare: TSO / DSO / BRP").
+            <br/>
+            <ul>
+                <li>Nuvarande strategi: En gemensam BRS hanterar logiken för alla mottagare.</li>
+                <li>Alternativ strategi: En separat BRS per unik aktörsroll.</li>
+            </ul>
+            Om vi skulle tvinga fram en strikt separation ("En BRS per aktör") skulle antalet dokumenterade processer <strong>öka</strong> med <strong>{expansionCount}</strong> stycken.
+        </div>
       </div>
 
-      <table style={styles.table}>
-        <thead>
-            <tr>
-                <th style={{...styles.thSortable, width: '15%'}} onClick={() => handleSort('id')}>
-                    ID {getSortIcon('id')}
-                </th>
-                <th style={{...styles.thSortable, width: '50%'}} onClick={() => handleSort('title')}>
-                    Titel {getSortIcon('title')}
-                </th>
-                <th style={{...styles.thSortable, width: '35%'}} onClick={() => handleSort('actorName')}>
-                    Aktör {getSortIcon('actorName')}
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            {filteredSortedData.map((row) => {
-                const isExpanded = expandedRows.has(row.uniqueKey);
-                return (
-                    <React.Fragment key={row.uniqueKey}>
-                        <tr 
-                            onClick={() => toggleRow(row.uniqueKey)}
-                            style={{
-                                ...styles.row,
-                                ...(isExpanded ? styles.rowExpanded : {})
-                            }}
-                            onMouseEnter={(e) => { if(!isExpanded) e.currentTarget.style.backgroundColor = '#fafbfc'; }}
-                            onMouseLeave={(e) => { if(!isExpanded) e.currentTarget.style.backgroundColor = 'white'; }}
-                        >
-                            <td style={styles.cell}>
-                                <span style={styles.brsId}>{row.id}</span>
-                            </td>
-                            <td style={styles.cell}>
-                                <div style={{fontWeight: 500}}>{row.title}</div>
-                            </td>
-                            <td style={styles.cell}>
-                                <span style={styles.actorBadge}>{row.actorName}</span>
-                            </td>
-                        </tr>
-                        {isExpanded && (
-                            <tr style={styles.expandableRow}>
-                                <td colSpan={3} style={{padding: 0}}>
-                                    <div style={styles.expandableContent}>
-                                        <div style={{marginBottom: '16px', lineHeight: '1.6'}}>
-                                            <strong style={{color: '#172b4d', display: 'block', marginBottom: '8px'}}>Syfte:</strong>
-                                            {row.purpose}
-                                        </div>
-                                        <button 
-                                            style={styles.navButton}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                onNavigateToBRS(row.id);
-                                            }}
-                                        >
-                                            Gå till dokumentation →
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        )}
-                    </React.Fragment>
-                );
-            })}
-            {filteredSortedData.length === 0 && (
+      {definedCategories.map(category => {
+        const items = groupedData[category];
+        if (items.length === 0) return null;
+
+        // Calculate breakdown stats
+        let initiating = 0;
+        let notifications = 0;
+        let automatic = 0;
+
+        items.forEach(brs => {
+            const titleLower = brs.title.toLowerCase();
+            const match = brs.id.match(/BRS-FLEX-(\d+)/);
+            const numId = match ? parseInt(match[1], 10) : 0;
+            const isFourDigit = numId >= 1000;
+            
+            if (titleLower.includes('notifier') || titleLower.includes('notify')) {
+                notifications++;
+            } else if (isFourDigit || titleLower.startsWith('system:')) {
+                automatic++;
+            } else {
+                initiating++;
+            }
+        });
+
+        return (
+          <div key={category}>
+            <h2 style={styles.sectionTitle}>
+              {category} 
+              <span style={{
+                  marginLeft: '12px', 
+                  fontSize: '0.9rem', 
+                  fontWeight: 400, 
+                  color: '#6b778c', 
+                  backgroundColor: '#f4f5f7', 
+                  padding: '2px 8px', 
+                  borderRadius: '12px'
+              }}>
+                  {items.length} processer
+              </span>
+              <div style={styles.statBreakdown}>
+                 {initiating > 0 && (
+                     <span style={styles.statItem} title="Handlingar som aktören initierar">
+                         ⚡ <strong>{initiating}</strong> Initierande
+                     </span>
+                 )}
+                 {notifications > 0 && (
+                     <span style={styles.statItem} title="Meddelanden som aktören tar emot">
+                         🔔 <strong>{notifications}</strong> Notifieringar
+                     </span>
+                 )}
+                 {automatic > 0 && (
+                     <span style={styles.statItem} title="Automatiska systemfunktioner (4-siffriga)">
+                         ⚙️ <strong>{automatic}</strong> Automatiska
+                     </span>
+                 )}
+              </div>
+            </h2>
+            
+            <table style={styles.table}>
+              <thead>
                 <tr>
-                    <td colSpan={3} style={{...styles.cell, textAlign: 'center', color: '#666', padding: '32px'}}>
-                        Inga transaktioner hittades.
-                    </td>
+                  <th style={{...styles.th, width: '15%'}}>ID</th>
+                  <th style={{...styles.th, width: '15%'}}>Domän</th>
+                  <th style={{...styles.th, width: '40%'}}>Titel</th>
+                  <th style={{...styles.th, width: '30%'}}>Syfte (Kort)</th>
                 </tr>
-            )}
-        </tbody>
-      </table>
+              </thead>
+              <tbody>
+                {items.map((brs, idx) => {
+                  const domainInfo = getDomainInfo(brs.id);
+                  return (
+                    <tr key={brs.id} style={idx % 2 === 1 ? {backgroundColor: '#fafbfc'} : {}}>
+                        <td style={styles.td}>
+                        <span 
+                            style={styles.brsId} 
+                            onClick={() => onNavigateToBRS(brs.id)}
+                        >
+                            {brs.id}
+                        </span>
+                        </td>
+                        <td style={styles.td}>
+                            <span 
+                                style={styles.domainBadge} 
+                                title={domainInfo.title}
+                            >
+                                {domainInfo.label}
+                            </span>
+                        </td>
+                        <td style={{...styles.td, fontWeight: 500}}>{brs.title}</td>
+                        <td style={{...styles.td, fontSize: '0.85rem', color: '#5e6c84'}}>
+                            {brs.purpose.length > 100 ? brs.purpose.substring(0, 100) + '...' : brs.purpose}
+                        </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        );
+      })}
     </div>
   );
 };

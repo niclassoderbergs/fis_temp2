@@ -125,6 +125,14 @@ const styles = {
     marginRight: '8px', 
     fontSize: '0.9rem',
     color: '#0052cc'
+  },
+  limitationBox: {
+    marginTop: '40px',
+    padding: '24px',
+    backgroundColor: '#fff7d6', // Light yellow warning color
+    borderLeft: '4px solid #ffab00',
+    borderRadius: '4px',
+    color: '#172b4d'
   }
 };
 
@@ -187,6 +195,24 @@ export const WelcomePage: React.FC<Props> = ({ onNavigate }) => {
                 </ul>
             </div>
         </div>
+
+        {/* Limitation Section */}
+        <div style={styles.limitationBox}>
+          <h3 style={{marginTop: 0, marginBottom: '12px', color: '#bf2600', fontSize: '1.1rem', fontWeight: 700}}>
+             ⚠️ Begränsningar och status
+          </h3>
+          <p style={{fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '12px'}}>
+            Detta dokument utgör ett <strong>arbetsmaterial och ett utkast</strong> till specifikation för Flexibilitetsregistret (FIS). 
+            Syftet är att visualisera processflöden och datamodeller för diskussion.
+          </p>
+          <ul style={{paddingLeft: '20px', margin: 0, fontSize: '0.95rem', lineHeight: '1.5'}}>
+             <li style={{marginBottom: '6px'}}>Informationsmodeller och attributlistor är preliminära och kan komma att justeras.</li>
+             <li style={{marginBottom: '6px'}}>Detaljerade valideringsregler och felkoder är inte uttömmande definierade.</li>
+             <li style={{marginBottom: '6px'}}>Kopplingen till externa system (t.ex. Datahubben) beskrivs konceptuellt.</li>
+             <li>Felaktigheter och inkonsekvenser kan förekomma då arbetet pågår löpande.</li>
+          </ul>
+        </div>
+
       </div>
 
       {/* Aktörsöversikt - Placerad före JWG */}
